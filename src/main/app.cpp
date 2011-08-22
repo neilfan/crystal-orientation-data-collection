@@ -35,8 +35,7 @@ IMPLEMENT_APP(MainApp)
 // This is executed upon startup, like 'main()' in non-wxWidgets programs.
 bool MainApp::OnInit()
 {
-	MainDialog *dialog = new MainDialog( (wxWindow*) NULL, -1, _T("Crystal Orientation Data Collection"),
-            wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER );
+	MainDialog *dialog = new MainDialog();
 	SetTopWindow(dialog);
 
 	dialog->Show(true);

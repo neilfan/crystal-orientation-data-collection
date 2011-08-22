@@ -30,6 +30,8 @@ END_EVENT_TABLE()
 
 MainDialog::MainDialog()
 {
+    Create( (wxWindow*) NULL, -1, _T("Console - Crystal Orientation Data Collection"),
+            wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER | wxMAXIMIZE_BOX | wxMINIMIZE_BOX );
     OnInit();
 }
 
@@ -42,7 +44,7 @@ MainDialog::MainDialog(wxWindow* parent, wxWindowID id, const wxString& title, c
 MainDialog::~MainDialog()
 {
     // delete the taskbar icon
-    delete taskbaricon ;
+    taskbaricon->Destroy() ;
 }
  
 bool MainDialog::OnInit()

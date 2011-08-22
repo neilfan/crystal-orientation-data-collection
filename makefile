@@ -91,7 +91,7 @@ $(RCOBJ): $(RCFILE)
 	windres -O COFF -o $(RCOBJ) $(RCFILE) 
 
 # Link and produce EXE file
-all : ctags $(OBJS) $(RCOBJ)
+all : $(OBJS) $(RCOBJ)
 	$(CC) $(CFLAGS) $(WXCONFIGFLAGS) -o $(BLDDIR)/$(DEST) $(OBJS) $(RCOBJ) -L$(LIBDIR) $(WXCONFIGLIBS)
 	@echo #All done
 
@@ -115,7 +115,7 @@ clean: clean-objs clean-dest clean-rc
 # build the ctags
 ctags:
 	@echo #Rebuild CTAGS
-	ctags -f tags -RV --exclude=*.svn* $(INCDIR) $(SRCDIR)
+	ctags -f tags -R --exclude=*.svn* $(INCDIR) $(SRCDIR)
 
 # Execute
 run:
