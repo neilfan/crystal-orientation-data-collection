@@ -22,11 +22,15 @@
 CC = g++
 
 # Output from wx-config --libs
-WXCONFIGLIBS = -mthreads -LC:\Portable\Tools\wxWidgets\wxWidgets-2.9.2\lib\gcc_dll -lwxmsw29u -lwxtiff -lwxjpeg -lwxpng -lwxzlib -lwxregexu -lwxexpat -lkernel32 -luser32 -lgdi32 -lcomdlg32 -lwxregexu -lwinspool -lwinmm -lshell32 -lcomctl32 -lole32 -loleaut32 -luuid -lrpcrt4 -ladvapi32 -lwsock32
+# Make sure the path to wxwidget\lib\gcc_dll or like has been added
+#   to LIBRARY_PATH
+WXCONFIGLIBS = -mthreads -lwxmsw29u -lwxtiff -lwxjpeg -lwxpng -lwxzlib -lwxregexu -lwxexpat -lkernel32 -luser32 -lgdi32 -lcomdlg32 -lwxregexu -lwinspool -lwinmm -lshell32 -lcomctl32 -lole32 -loleaut32 -luuid -lrpcrt4 -ladvapi32 -lwsock32
 
 
 # Output from wx-config --cxxflags
-WXCONFIGFLAGS = -mthreads -DHAVE_W32API_H -D__WXMSW__ -D__WXDEBUG__ -D_UNICODE -IC:\Portable\Tools\wxWidgets\wxWidgets-2.9.2\lib\gcc_dll\mswu -IC:\Portable\Tools\wxWidgets\wxWidgets-2.9.2\include -DWXUSINGDLL -Wno-ctor-dtor-privacy -pipe -fmessage-length=0
+# Make sure the path to wxwidget\lib\gcc_dll\mswu and wxwidget\include
+#   or like has been added to CPATH
+WXCONFIGFLAGS = -mthreads -DHAVE_W32API_H -D__WXMSW__ -D__WXDEBUG__ -D_UNICODE -DWXUSINGDLL -Wno-ctor-dtor-privacy -pipe -fmessage-length=0
 
 
 # Compiler parameters
