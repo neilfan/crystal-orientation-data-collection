@@ -12,7 +12,7 @@ BEGIN
             VALUE "InternalName", "crystal-orientation-data-collection"
             VALUE "LegalCopyright", "Deakin University"
             VALUE "OriginalFilename", "crystal-orientation-data-collecton.exe"
-            VALUE "ProductName", "MainAPP"
+            VALUE "ProductName", "ANDS/DC20A"
             VALUE "ProductVersion", "1.0"
         END
     END
@@ -22,3 +22,5 @@ BEGIN
       VALUE "Translation", 0x809, 1252
     END
 END
+
+2 ICON "art/icon.ico"
