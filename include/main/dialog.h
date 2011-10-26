@@ -18,10 +18,19 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#ifndef INCLUDED_MAIN_DIALOG_H
-#define INCLUDED_MAIN_DIALOG_H
+#ifndef INCLUDE_MAIN_DIALOG_H
+#define INCLUDE_MAIN_DIALOG_H
+
+#define MAINDIALOG_TITLE _T("Console - Crystal Orientation Data Collection")
 
 #include <wx/dialog.h>
+#include <wx/listctrl.h>
+#include <wx/listbox.h>
+#include <wx/stattext.h>
+#include <wx/button.h> 
+#include <wx/sizer.h> 
+#include <wx/event.h> 
+
 #include "main/taskbaricon.h"
 
 class MainDialog : public wxDialog
@@ -31,24 +40,27 @@ private:
     DECLARE_EVENT_TABLE()
 
     MainTaskBarIcon *taskbaricon;
+    void set_properties();
+    void set_layout();
+    void set_event_handler();
 
 protected:
+    wxStaticText* labelTitle;
+    wxStaticText* labelClear;
+    wxListBox* listLogs;
+    wxStaticText* labelSetting;
+    wxButton* buttonClose;
     bool OnInit();
 
 public:
     MainDialog() ;
-    MainDialog(
-            wxWindow* parent,
-            wxWindowID id,
-            const wxString& title,
-            const wxPoint& pos = wxDefaultPosition,
-            const wxSize& size = wxDefaultSize,
-            long style = wxDEFAULT_DIALOG_STYLE,
-            const wxString& name = _T("")
-            ) ;
+    void OnClearLog(wxMouseEvent &);
+    void OnSetting(wxMouseEvent &);
+    void OnCloseClicked(wxCommandEvent &);
+    bool AppendLog(const wxString& );
     ~MainDialog() ;
 };
  
  
-#endif // INCLUDED_MAIN_DIALOG_H
+#endif // INCLUDE_MAIN_DIALOG_H
 

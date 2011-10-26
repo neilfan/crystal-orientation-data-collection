@@ -18,15 +18,16 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-
-#include "wx/wxprec.h"
+#include <wx/wxprec.h>
  
 #ifndef WX_PRECOMP
 #	include "wx/wx.h"
 #endif
- 
+
 #include <wx/icon.h>
 #include <wx/taskbar.h>
+
+#include "define.h"
 #include "main/app.h"
 #include "main/dialog.h"
  
@@ -35,10 +36,29 @@ IMPLEMENT_APP(MainApp)
 // This is executed upon startup, like 'main()' in non-wxWidgets programs.
 bool MainApp::OnInit()
 {
+	// check if another instance running
+	m_singleton_checker = new wxSingleInstanceChecker(APP_NAME);
+	if ( m_singleton_checker->IsAnotherRunning() )
+	{
+#if __WIN32__
+		// locate the log window
+		wxWindow* dialog = wxWindow::FindWindowByName(APP_UUID);
+#else
+		wxLogError(_("Another program instance is already running, aborting."));
+#endif
+		return false;
+	}
 	MainDialog *dialog = new MainDialog();
 	SetTopWindow(dialog);
 
 	dialog->Show(true);
 
 	return true;
+}
+
+int MainApp::OnExit()
+{
+	delete m_singleton_checker;
+
+	return 0;
 }

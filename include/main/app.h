@@ -21,10 +21,19 @@
 #ifndef INCLUDED_MAIN_APP_H
 #define INCLUDED_MAIN_APP_H
  
+
+#include <wx/snglinst.h>
+
+#include "process-controller/controller.h"
+
+
 class MainApp : public wxApp
 {
 public:
 	virtual bool OnInit();
+	virtual int OnExit();
+private:
+	wxSingleInstanceChecker * m_singleton_checker ;
 };
  
 DECLARE_APP(MainApp)

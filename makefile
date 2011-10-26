@@ -34,7 +34,7 @@ WXCONFIGFLAGS = -mthreads -DHAVE_W32API_H -D__WXMSW__ -D__WXDEBUG__ -D_UNICODE -
 
 
 # Compiler parameters
-CFLAGS = -O -Wl,-subsystem,windows -Wall
+CFLAGS = -Os -Wl,-subsystem,windows -Wall
 # Compiler parameters for DEBUG
 DEBUG = -g
 
@@ -62,9 +62,10 @@ DEST   = crystal-orientation-data-collection.exe
 
 # List of all .cpp files (no extension required)
 CPPS   = \
-		 main/dialog \
-		 main/app \
-		 main/taskbaricon \
+		main/dialog \
+		main/app \
+		main/taskbaricon \
+
 
 # Work out a list of all source files
 SRCS   = $(addprefix $(SRCDIR)/,  $(addsuffix .cpp, $(CPPS)))
@@ -85,7 +86,7 @@ default: all run
 $(SRCDIR)/main/dialog.cpp: $(ARTDIR)/icon.xpm
 
 # Logic Rule: setup the dependence between object file and it's source file
-$(OBJS): $(BLDDIR)/%.o: $(SRCDIR)/%.cpp
+$(OBJS): $(BLDDIR)/%.o: $(SRCDIR)/%.cpp $(INCDIR)/define.h
 	@test -d $(subst /,\, $(dir $@)) || mkdir $(subst /,\, $(dir $@))
 	$(CC) $(CFLAGS) -c -I$(SRCDIR) -I$(INCDIR) -I$(ARTDIR) $(WXCONFIGFLAGS) -o $@ $< -L$(LIBDIR) $(WXCONFIGLIBS)
 
@@ -94,6 +95,7 @@ $(RCOBJ): $(RCFILE)
 	@echo #Rebuild Resources
 	windres -O COFF -o $(RCOBJ) $(RCFILE) 
 
+	
 # Link and produce EXE file
 all : $(OBJS) $(RCOBJ)
 	$(CC) $(CFLAGS) $(WXCONFIGFLAGS) -o $(BLDDIR)/$(DEST) $(OBJS) $(RCOBJ) -L$(LIBDIR) $(WXCONFIGLIBS)
