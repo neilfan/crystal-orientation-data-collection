@@ -21,8 +21,14 @@
 #ifndef INCLUDED_MAIN_APP_H
 #define INCLUDED_MAIN_APP_H
  
+#define APP_NAME _T("DC20A::CRYSTAL_ORIENTATION_DATA_COLLECTION")
 
-#include <wx/snglinst.h>
+#include "main/connection.h"
+#include "main/client.h"
+#include "main/server.h"
+#include "main/taskbaricon.h"
+#include "main/dialog.h"
+
 
 #include "process-controller/controller.h"
 
@@ -32,8 +38,14 @@ class MainApp : public wxApp
 public:
 	virtual bool OnInit();
 	virtual int OnExit();
+	void ShowLogDialog(bool show);
+	bool IsLogDialogShown();
+	int ExitApplication();
 private:
-	wxSingleInstanceChecker * m_singleton_checker ;
+	MainServer * m_server  ;
+	MainDialog * m_log_dialog ;
+    MainTaskBarIcon * m_taskbaricon;
+
 };
  
 DECLARE_APP(MainApp)

@@ -31,15 +31,12 @@
 #include <wx/sizer.h> 
 #include <wx/event.h> 
 
-#include "main/taskbaricon.h"
-
 class MainDialog : public wxDialog
 {
 private:
     DECLARE_CLASS(MainDialog)
     DECLARE_EVENT_TABLE()
 
-    MainTaskBarIcon *taskbaricon;
     void set_properties();
     void set_layout();
     void set_event_handler();

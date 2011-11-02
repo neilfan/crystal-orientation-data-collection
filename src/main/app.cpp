@@ -24,41 +24,79 @@
 #	include "wx/wx.h"
 #endif
 
+#include <wx/log.h> 
 #include <wx/icon.h>
 #include <wx/taskbar.h>
 
-#include "define.h"
 #include "main/app.h"
-#include "main/dialog.h"
+#include "icon.xpm"
+
  
 IMPLEMENT_APP(MainApp)
  
 // This is executed upon startup, like 'main()' in non-wxWidgets programs.
 bool MainApp::OnInit()
 {
-	// check if another instance running
-	m_singleton_checker = new wxSingleInstanceChecker(APP_NAME);
-	if ( m_singleton_checker->IsAnotherRunning() )
-	{
-#if __WIN32__
-		// locate the log window
-		wxWindow* dialog = wxWindow::FindWindowByName(APP_UUID);
-#else
-		wxLogError(_("Another program instance is already running, aborting."));
-#endif
-		return false;
-	}
-	MainDialog *dialog = new MainDialog();
-	SetTopWindow(dialog);
+	wxLog::EnableLogging(false);
 
-	dialog->Show(true);
+	MainClient * client = new MainClient();
+	if( client->ValidHost( _T("localhost")) )
+	{
+		if(	client->Connect( _T("localhost"), APP_NAME,	_T("TOPIC")	))
+		{
+			client->Disconnect();
+			wxDELETE(client);
+			return false;
+		}
+		else
+		{
+			wxDELETE(client);
+
+			m_server = new MainServer();
+			m_server->Create(APP_NAME);
+		}
+	}
+	// Display the log window
+	m_log_dialog = new MainDialog();
+	SetTopWindow(m_log_dialog);
+	ShowLogDialog(true);
+	
+	// Display taskbar icon
+	m_taskbaricon = new MainTaskBarIcon();
+    m_taskbaricon->SetIcon(icon_xpm);
+
 
 	return true;
 }
 
 int MainApp::OnExit()
 {
-	delete m_singleton_checker;
+	if(m_server)
+	{
+		m_server->Disconnect();
+		wxDELETE(m_server);
+	}
+	return 0;
+}
 
+void MainApp::ShowLogDialog(bool show)
+{
+	m_log_dialog->Show(show);
+}
+
+bool MainApp::IsLogDialogShown()
+{
+	return m_log_dialog->IsShown();
+}
+
+
+int MainApp::ExitApplication()
+{
+	// Close the top window, notify application to exit
+	m_log_dialog->Close(false);
+	
+	// Some other objects to be cleared.
+	m_log_dialog->Destroy();
+	m_taskbaricon->Destroy();
 	return 0;
 }

@@ -18,14 +18,29 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#ifndef INCLUDED_DEFINE_H
-#define INCLUDED_DEFINE_H
+#ifndef INCLUDED_MAIN_SERVER_H
+#define INCLUDED_MAIN_SERVER_H
 
-#define APP_NAME _T("DC20A::CRYSTAL_ORIENTATION_DATA_COLLECTION")
+#include <wx/ipc.h> 
 
-/* A signature for this application to make sure it's identify from
- * other applications.
- */
-#define APP_UUID _T("0c3c3ca0-ff6c-11e0-be50-0800200c9a66")
+#include "main/connection.h"
 
+class MainServer: public wxServer
+{
+public:
+	MainServer();
+	~MainServer();
+    void Disconnect();
+    bool IsConnected() { return m_connection != NULL; }
+    MainConnection *GetConnection() { return m_connection; }
+
+    void Advise();
+    bool CanAdvise() { return m_connection != NULL; }
+
+    virtual wxConnectionBase *OnAcceptConnection(const wxString& topic);
+
+protected:
+    MainConnection *m_connection;
+};
+ 
 #endif

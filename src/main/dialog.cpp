@@ -19,7 +19,8 @@
  */
 
 #include <wx/icon.h>
-#include "define.h"
+#include <wx/msgdlg.h> 
+ 
 #include "main/dialog.h"
 #include "icon.xpm"
 
@@ -31,7 +32,8 @@ END_EVENT_TABLE()
 MainDialog::MainDialog()
 {
     Create( (wxWindow*) NULL, -1, MAINDIALOG_TITLE,
-            wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxMINIMIZE_BOX, APP_UUID  );
+            wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxMINIMIZE_BOX | wxDIALOG_NO_PARENT  );
+
     OnInit();
 }
 
@@ -45,8 +47,6 @@ MainDialog::MainDialog(wxWindow* parent, wxWindowID id, const wxString& title, c
 
 MainDialog::~MainDialog()
 {
-    // delete the taskbar icon
-    taskbaricon->Destroy() ;
 }
  
 bool MainDialog::OnInit()
@@ -66,10 +66,6 @@ bool MainDialog::OnInit()
 
     // set up the task bar icon
     this->SetIcon(icon_xpm);
-
-    taskbaricon = new MainTaskBarIcon();
-    taskbaricon->SetIcon(icon_xpm);
-    taskbaricon->SetDialog(this);
 
     return true;
 }

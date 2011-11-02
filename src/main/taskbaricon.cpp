@@ -20,6 +20,7 @@
 
 #include <wx/wx.h>
 #include "main/taskbaricon.h"
+#include "main/app.h"
 
 enum {
     PU_RESTORE = 10001,
@@ -40,30 +41,24 @@ MainTaskBarIcon::~MainTaskBarIcon()
     RemoveIcon();
 }
 
-void MainTaskBarIcon::SetDialog(wxDialog * d)
-{
-    dialog = d;
-}
-
 void MainTaskBarIcon::OnLeftButtonDClick(wxTaskBarIconEvent&)
 {
-    dialog->Show( !dialog->IsShown() );
+	wxGetApp().ShowLogDialog( ! wxGetApp().IsLogDialogShown() ) ;
 }
 
 void MainTaskBarIcon::OnMenuRestore(wxCommandEvent& )
 {
-    dialog->Show(true);
+	wxGetApp().ShowLogDialog(true) ;
 }
 
 void MainTaskBarIcon::OnMenuExit(wxCommandEvent& )
 {
-    dialog->Close(false);
-    dialog->Destroy();
+	wxGetApp().ExitApplication();
 }
 
 void MainTaskBarIcon::OnMenuHide(wxCommandEvent& )
 {
-    dialog->Show(false);
+	wxGetApp().ShowLogDialog(false) ;
 }
 
 

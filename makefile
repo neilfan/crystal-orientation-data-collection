@@ -65,6 +65,9 @@ CPPS   = \
 		main/dialog \
 		main/app \
 		main/taskbaricon \
+		main/connection \
+		main/client \
+		main/server \
 
 
 # Work out a list of all source files
@@ -81,12 +84,12 @@ RCOBJ  = $(BLDDIR)/main/app-res.o
 
 
 # Default rule, build and run
-default: all run
+default: compile run
 
 $(SRCDIR)/main/dialog.cpp: $(ARTDIR)/icon.xpm
 
 # Logic Rule: setup the dependence between object file and it's source file
-$(OBJS): $(BLDDIR)/%.o: $(SRCDIR)/%.cpp $(INCDIR)/define.h
+$(OBJS): $(BLDDIR)/%.o: $(SRCDIR)/%.cpp
 	@test -d $(subst /,\, $(dir $@)) || mkdir $(subst /,\, $(dir $@))
 	$(CC) $(CFLAGS) -c -I$(SRCDIR) -I$(INCDIR) -I$(ARTDIR) $(WXCONFIGFLAGS) -o $@ $< -L$(LIBDIR) $(WXCONFIGLIBS)
 
@@ -97,9 +100,9 @@ $(RCOBJ): $(RCFILE)
 
 	
 # Link and produce EXE file
-all : $(OBJS) $(RCOBJ)
+compile : $(OBJS) $(RCOBJ)
 	$(CC) $(CFLAGS) $(WXCONFIGFLAGS) -o $(BLDDIR)/$(DEST) $(OBJS) $(RCOBJ) -L$(LIBDIR) $(WXCONFIGLIBS)
-	@echo #All done
+	@echo # Compile done
 
 # Remove all object files
 clean-objs:

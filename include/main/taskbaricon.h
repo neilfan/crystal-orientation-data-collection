@@ -22,7 +22,6 @@
 #define INCLUDED_MAIN_TASKBARICON_H
 
 #include <wx/taskbar.h>
-#include <wx/dialog.h>
 
 /**
  * Override the TaskBarIcon class
@@ -31,7 +30,6 @@
 class MainTaskBarIcon: public wxTaskBarIcon
 {
 private:
-    wxDialog * dialog ;
 
 public:
 #if defined(__WXCOCOA__)
@@ -42,7 +40,6 @@ public:
     {}
 
     ~MainTaskBarIcon();
-    void SetDialog(wxDialog *);
     void OnLeftButtonDClick(wxTaskBarIconEvent&);
     void OnMenuRestore(wxCommandEvent&);
     void OnMenuHide(wxCommandEvent&);
