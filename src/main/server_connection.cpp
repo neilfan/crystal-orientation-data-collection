@@ -20,35 +20,24 @@
 
 #include <wx/msgdlg.h>
 
-#include "main/client.h"
- 
-MainClient::MainClient() : wxClient()
+#include "main/server_connection.h"
+
+bool MainServerConnection::OnExec(const wxString &topic, const wxString &data)
 {
-	m_connection = NULL;
+	return wxConnection::OnExec(topic, data) ;
 }
 
-bool MainClient::Connect(const wxString& sHost, const wxString& sService, const wxString& sTopic)
+bool MainServerConnection::OnPoke(const wxString &topic, const wxString &item, const void *data, size_t size, wxIPCFormat  format)
 {
-
-	m_connection = (MainClientConnection *)MakeConnection(sHost, sService, sTopic);
-	return m_connection    != NULL;
+	return wxConnection::OnPoke(topic, item, data, size, format) ;
 }
 
-wxConnectionBase *MainClient::OnMakeConnection()
+const void* MainServerConnection::OnRequest(const wxString &topic, const wxString &item, size_t * size, wxIPCFormat format)
 {
-	return new MainClientConnection;
+	return wxConnection::OnRequest(topic, item, size, format) ;
 }
 
-void MainClient::Disconnect()
+bool MainServerConnection::OnDisconnect()
 {
-	if (m_connection)
-	{
-		m_connection->Disconnect();
-		wxDELETE(m_connection);
-	}
-}
-
-MainClient::~MainClient()
-{
-	Disconnect();
+	return true;
 }

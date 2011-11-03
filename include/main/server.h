@@ -23,7 +23,7 @@
 
 #include <wx/ipc.h> 
 
-#include "main/connection.h"
+#include "main/server_connection.h"
 
 class MainServer: public wxServer
 {
@@ -32,7 +32,7 @@ public:
 	~MainServer();
 	void Disconnect();
 	bool IsConnected() { return m_connection != NULL; }
-	MainConnection *GetConnection() { return m_connection; }
+	MainServerConnection *GetConnection() { return m_connection; }
 
 	void Advise();
 	bool CanAdvise() { return m_connection != NULL; }
@@ -40,7 +40,7 @@ public:
 	virtual wxConnectionBase *OnAcceptConnection(const wxString& topic);
 
 protected:
-	MainConnection *m_connection;
+	MainServerConnection *m_connection;
 };
  
 #endif

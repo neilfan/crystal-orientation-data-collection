@@ -65,8 +65,9 @@ CPPS   = \
 		main/dialog \
 		main/app \
 		main/taskbaricon \
-		main/connection \
+		main/client_connection \
 		main/client \
+		main/server_connection \
 		main/server \
 
 

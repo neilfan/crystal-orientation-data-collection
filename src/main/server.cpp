@@ -34,12 +34,9 @@ MainServer::~MainServer()
 
 wxConnectionBase *MainServer::OnAcceptConnection(const wxString& topic)
 {
-    wxMessageBox(topic);
-
     if ( topic == "TOPIC" )
     {
-        m_connection = new MainConnection();
-        wxMessageBox("Connection accepted");
+        m_connection = new MainServerConnection();
         return m_connection;
     }
     //else: unknown topic

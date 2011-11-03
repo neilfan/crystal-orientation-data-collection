@@ -18,20 +18,17 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#ifndef INCLUDED_MAIN_CONNECTION_H
-#define INCLUDED_MAIN_CONNECTION_H
+#ifndef INCLUDED_MAIN_CLIENT_CONNECTION_H
+#define INCLUDED_MAIN_CLIENT_CONNECTION_H
 
 #include <wx/ipc.h> 
 /**
  * the connection
  * will be shared by both client and server
  */
-class MainConnection : public wxConnection
+class MainClientConnection : public wxConnection
 {
 public:
-	virtual bool DoExecute(const void *data, size_t size, wxIPCFormat format);
-	virtual const void *Request(const wxString& item, size_t *size = NULL, wxIPCFormat format = wxIPC_TEXT);
-	virtual bool DoPoke(const wxString& item, const void* data, size_t size, wxIPCFormat format);
 	virtual bool OnAdvise(const wxString& topic, const wxString& item, const void *data, size_t size, wxIPCFormat format);
 	virtual bool OnDisconnect();
 };

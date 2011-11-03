@@ -28,6 +28,7 @@
 #include "main/server.h"
 #include "main/taskbaricon.h"
 #include "main/dialog.h"
+#include <wx/fileconf.h> 
 
 
 #include "process-controller/controller.h"
@@ -45,6 +46,7 @@ private:
 	MainServer * m_server  ;
 	MainDialog * m_log_dialog ;
 	MainTaskBarIcon * m_taskbaricon;
+	wxFileConfig * m_file_config ;
 
 };
  

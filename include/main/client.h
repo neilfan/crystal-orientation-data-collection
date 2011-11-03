@@ -23,7 +23,7 @@
 
 #include <wx/ipc.h> 
 
-#include "main/connection.h"
+#include "main/client_connection.h"
 
 class MainClient: public wxClient
 {
@@ -34,9 +34,9 @@ public:
 	void Disconnect();
 	wxConnectionBase *OnMakeConnection();
 	bool IsConnected() { return m_connection != NULL; };
-	MainConnection *GetConnection() { return m_connection; };
+	MainClientConnection *GetConnection() { return m_connection; };
 
 protected:
-	MainConnection     *m_connection;
+	MainClientConnection     *m_connection;
 }; 
 #endif

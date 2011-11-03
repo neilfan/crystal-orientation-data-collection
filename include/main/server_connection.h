@@ -18,37 +18,21 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include <wx/msgdlg.h>
+#ifndef INCLUDED_MAIN_SERVER_CONNECTION_H
+#define INCLUDED_MAIN_SERVER_CONNECTION_H
 
-#include "main/client.h"
- 
-MainClient::MainClient() : wxClient()
+#include <wx/ipc.h> 
+/**
+ * the connection
+ * will be shared by both client and server
+ */
+class MainServerConnection : public wxConnection
 {
-	m_connection = NULL;
-}
+public:
+	virtual bool OnExec(const wxString &topic, const wxString &data);
+	virtual bool OnPoke(const wxString &topic, const wxString &item, const void *data, size_t size, wxIPCFormat format);
+	virtual const void* OnRequest(const wxString &topic, const wxString &item, size_t * size, wxIPCFormat format) ;
+	virtual bool OnDisconnect();
+};
 
-bool MainClient::Connect(const wxString& sHost, const wxString& sService, const wxString& sTopic)
-{
-
-	m_connection = (MainClientConnection *)MakeConnection(sHost, sService, sTopic);
-	return m_connection    != NULL;
-}
-
-wxConnectionBase *MainClient::OnMakeConnection()
-{
-	return new MainClientConnection;
-}
-
-void MainClient::Disconnect()
-{
-	if (m_connection)
-	{
-		m_connection->Disconnect();
-		wxDELETE(m_connection);
-	}
-}
-
-MainClient::~MainClient()
-{
-	Disconnect();
-}
+#endif

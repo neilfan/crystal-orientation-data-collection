@@ -27,6 +27,10 @@
 #include <wx/log.h> 
 #include <wx/icon.h>
 #include <wx/taskbar.h>
+#include <wx/filefn.h> 
+#include <wx/stdpaths.h> 
+#include <wx/wfstream.h> 
+#include <wx/config.h> 
 
 #include "main/app.h"
 #include "icon.xpm"
@@ -38,6 +42,14 @@ IMPLEMENT_APP(MainApp)
 bool MainApp::OnInit()
 {
 	wxLog::EnableLogging(false);
+	// Change working directory same as the binary for portable use
+	wxSetWorkingDirectory( wxPathOnly(wxStandardPaths::Get().GetExecutablePath()) );
+
+	wxFileInputStream stream(_T("crystal-orientation-data-collection.ini"));
+	m_file_config = new wxFileConfig(stream);
+	wxFileConfig::Set(m_file_config);
+
+//	wxMessageBox( wxConfig::Get()->Read(_T("settings/app.owner")));
 
 	MainClient * client = new MainClient();
 	if( client->ValidHost( _T("localhost")) )
@@ -76,6 +88,9 @@ int MainApp::OnExit()
 		m_server->Disconnect();
 		wxDELETE(m_server);
 	}
+	
+	// Do not delete m_file_config as it will be deleted automatically
+
 	return 0;
 }
 

@@ -20,7 +20,8 @@
 
 #include <wx/icon.h>
 #include <wx/msgdlg.h> 
- 
+#include <wx/config.h> 
+
 #include "main/dialog.h"
 #include "icon.xpm"
 
@@ -119,6 +120,8 @@ void MainDialog::OnClearLog(wxMouseEvent& event)
  */
 void MainDialog::OnSetting(wxMouseEvent& event)
 {
+	wxMessageBox( wxConfig::Get()->Read(_T("settings/app.owner")));
+
 }
 
 bool MainDialog::AppendLog(const wxString & label)
