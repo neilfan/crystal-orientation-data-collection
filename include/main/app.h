@@ -23,7 +23,6 @@
  
 #define APP_NAME _T("DC20A::CRYSTAL_ORIENTATION_DATA_COLLECTION")
 
-#include "main/connection.h"
 #include "main/client.h"
 #include "main/server.h"
 #include "main/taskbaricon.h"
