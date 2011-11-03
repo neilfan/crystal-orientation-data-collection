@@ -21,11 +21,8 @@
 #ifndef INCLUDED_MAIN_CLIENT_CONNECTION_H
 #define INCLUDED_MAIN_CLIENT_CONNECTION_H
 
-#include <wx/ipc.h> 
-/**
- * the connection
- * will be shared by both client and server
- */
+#include <wx/ipc.h>
+
 class MainClientConnection : public wxConnection
 {
 public:

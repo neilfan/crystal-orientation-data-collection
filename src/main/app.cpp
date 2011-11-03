@@ -18,22 +18,20 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include <wx/wxprec.h>
- 
-#ifndef WX_PRECOMP
-#include "wx/wx.h"
-#endif
 
 #include <wx/log.h> 
-#include <wx/icon.h>
-#include <wx/taskbar.h>
+
 #include <wx/filefn.h> 
-#include <wx/stdpaths.h> 
 #include <wx/wfstream.h> 
 #include <wx/config.h> 
+#include <wx/stdpaths.h> 
 
-#include "main/app.h"
 #include "icon.xpm"
+#include "main/app.h"
+#include "main/server.h"
+#include "main/taskbaricon.h"
+#include "main/dialog.h"
+#include "main/client.h"
 
  
 IMPLEMENT_APP(MainApp)
@@ -64,18 +62,21 @@ bool MainApp::OnInit()
 		{
 			wxDELETE(client);
 
-			m_server = new MainServer();
-			m_server->Create(APP_NAME);
+			MainServer * server = new MainServer();
+			server->Create(APP_NAME);
+			m_server = wxDynamicCast(server, wxObject);
 		}
 	}
 	// Display the log window
-	m_log_dialog = new MainDialog();
-	SetTopWindow(m_log_dialog);
-	ShowLogDialog(true);
+	MainDialog * log_dialog = new MainDialog();
+	SetTopWindow(log_dialog);
+	log_dialog->Show();
+	m_log_dialog = wxDynamicCast(log_dialog, wxObject) ;
 	
 	// Display taskbar icon
-	m_taskbaricon = new MainTaskBarIcon();
-	m_taskbaricon->SetIcon(icon_xpm);
+	MainTaskBarIcon * taskbaricon = new MainTaskBarIcon();
+	taskbaricon->SetIcon(icon_xpm);
+	m_taskbaricon = wxDynamicCast(taskbaricon, wxObject) ;
 
 
 	return true;
@@ -85,7 +86,7 @@ int MainApp::OnExit()
 {
 	if(m_server)
 	{
-		m_server->Disconnect();
+		wxDynamicCast(m_server, MainServer)->Disconnect();
 		wxDELETE(m_server);
 	}
 	
@@ -96,22 +97,30 @@ int MainApp::OnExit()
 
 void MainApp::ShowLogDialog(bool show)
 {
-	m_log_dialog->Show(show);
+	wxDynamicCast(m_log_dialog, MainDialog)->Show(show);
 }
 
 bool MainApp::IsLogDialogShown()
 {
-	return m_log_dialog->IsShown();
+	return wxDynamicCast(m_log_dialog, MainDialog)->IsShown();
 }
 
 
-int MainApp::ExitApplication()
+void MainApp::ExitApplication()
 {
+	MainDialog * dialog = wxDynamicCast(m_log_dialog, MainDialog) ;
 	// Close the top window, notify application to exit
-	m_log_dialog->Close(false);
+	dialog->Close(false);
 	
 	// Some other objects to be cleared.
-	m_log_dialog->Destroy();
-	m_taskbaricon->Destroy();
-	return 0;
+	dialog->Destroy();
+	
+	MainTaskBarIcon * taskbaricon = wxDynamicCast(m_taskbaricon, MainTaskBarIcon) ;
+	taskbaricon->Destroy();
+
+}
+
+void MainApp::AppendLog(const wxString & string)
+{
+	wxDynamicCast(m_log_dialog, MainDialog)->AppendLog( wxDateTime::Now().FormatISOCombined() + _T(" - ") + string) ;
 }

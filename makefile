@@ -90,7 +90,7 @@ default: compile run
 $(SRCDIR)/main/dialog.cpp: $(ARTDIR)/icon.xpm
 
 # Logic Rule: setup the dependence between object file and it's source file
-$(OBJS): $(BLDDIR)/%.o: $(SRCDIR)/%.cpp
+$(OBJS): $(BLDDIR)/%.o: $(SRCDIR)/%.cpp : $(INCDIR)/%.h
 	@test -d $(subst /,\, $(dir $@)) || mkdir $(subst /,\, $(dir $@))
 	$(CC) $(CFLAGS) -c -I$(SRCDIR) -I$(INCDIR) -I$(ARTDIR) $(WXCONFIGFLAGS) -o $@ $< -L$(LIBDIR) $(WXCONFIGLIBS)
 

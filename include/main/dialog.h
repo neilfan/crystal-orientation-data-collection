@@ -23,6 +23,9 @@
 
 #define MAINDIALOG_TITLE _T("Console - Crystal Orientation Data Collection")
 
+// The maximum numbers of messages to be listed in log window
+#define MAINDIALOG_MESSAGE_COUNT 150
+
 #include <wx/dialog.h>
 #include <wx/listctrl.h>
 #include <wx/listbox.h>

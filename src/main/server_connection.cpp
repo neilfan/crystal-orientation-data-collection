@@ -20,7 +20,10 @@
 
 #include <wx/msgdlg.h>
 
-#include "main/server_connection.h"
+#include "main/server_connection.h" 
+#include "main/app.h"
+
+//IMPLEMENT_CLASS( MainServerConnection, wxConnection )
 
 bool MainServerConnection::OnExec(const wxString &topic, const wxString &data)
 {
@@ -37,7 +40,8 @@ const void* MainServerConnection::OnRequest(const wxString &topic, const wxStrin
 	return wxConnection::OnRequest(topic, item, size, format) ;
 }
 
-bool MainServerConnection::OnDisconnect()
+bool MainServerConnection::OnDisconnect(void)
 {
+	wxGetApp().AppendLog(_T("This application is launched again. Ignore and start a new process"));
 	return true;
 }

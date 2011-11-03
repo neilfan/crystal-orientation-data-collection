@@ -127,6 +127,19 @@ void MainDialog::OnSetting(wxMouseEvent& event)
 bool MainDialog::AppendLog(const wxString & label)
 {
 	listLogs->Append( label );
+	
+	// only hold last MAINDIALOG_MESSAGE_COUNT messages
+	int dif = listLogs->GetCount() - MAINDIALOG_MESSAGE_COUNT ;
+	if(dif>0)
+	{
+		int i ;
+		for(i=0; i< dif ; i++)
+		{
+			listLogs->Delete(0);
+		}
+	}
+	
+	listLogs->SetSelection( listLogs->GetCount()-1) ;
 	return true ;
 }
 

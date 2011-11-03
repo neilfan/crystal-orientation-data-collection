@@ -22,17 +22,14 @@
 #define INCLUDED_MAIN_SERVER_CONNECTION_H
 
 #include <wx/ipc.h> 
-/**
- * the connection
- * will be shared by both client and server
- */
+
 class MainServerConnection : public wxConnection
 {
 public:
-	virtual bool OnExec(const wxString &topic, const wxString &data);
-	virtual bool OnPoke(const wxString &topic, const wxString &item, const void *data, size_t size, wxIPCFormat format);
-	virtual const void* OnRequest(const wxString &topic, const wxString &item, size_t * size, wxIPCFormat format) ;
-	virtual bool OnDisconnect();
+	virtual bool OnExec(const wxString &, const wxString &);
+	virtual bool OnPoke(const wxString &, const wxString &, const void *, size_t , wxIPCFormat );
+	virtual const void* OnRequest(const wxString &, const wxString &, size_t * , wxIPCFormat ) ;
+	virtual bool OnDisconnect(void);
 };
 
 #endif

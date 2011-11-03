@@ -72,6 +72,6 @@ void MainServer::Advise()
 #endif
 		char bytes[3] = { '1', '2', '3' };
 		m_connection->Advise(_T("OK"), bytes, 3, wxIPC_PRIVATE);
-}
+	}
 }
 

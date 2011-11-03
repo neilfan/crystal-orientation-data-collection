@@ -23,30 +23,47 @@
  
 #define APP_NAME _T("DC20A::CRYSTAL_ORIENTATION_DATA_COLLECTION")
 
-#include "main/client.h"
-#include "main/server.h"
-#include "main/taskbaricon.h"
-#include "main/dialog.h"
+#include <wx/wxprec.h>
+ 
+#ifndef WX_PRECOMP
+#include "wx/wx.h"
+#endif
+
 #include <wx/fileconf.h> 
-
-
-#include "process-controller/controller.h"
-
 
 class MainApp : public wxApp
 {
 public:
 	virtual bool OnInit();
 	virtual int OnExit();
+	
+	/**
+	 * Display or hide the log dialog.
+	 * @var bool show Display (true) or Hide (false)
+	 */
 	void ShowLogDialog(bool show);
-	bool IsLogDialogShown();
-	int ExitApplication();
-private:
-	MainServer * m_server  ;
-	MainDialog * m_log_dialog ;
-	MainTaskBarIcon * m_taskbaricon;
-	wxFileConfig * m_file_config ;
 
+	/**
+	 * Determine if the log dialog is displayed on screen
+	 * @return bool Shown (true) or Hide (false)
+	 */
+	bool IsLogDialogShown();
+	
+	/**
+	 * Force the application to exit
+	 */
+	void ExitApplication();
+	
+	/**
+	 * Append a new message to log list
+	 */
+	void AppendLog(const wxString & string);
+
+private:
+	wxObject * m_server ;
+	wxObject * m_taskbaricon;
+	wxObject * m_log_dialog ;
+	wxFileConfig * m_file_config ;
 };
  
 DECLARE_APP(MainApp)
