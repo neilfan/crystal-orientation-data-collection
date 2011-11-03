@@ -23,37 +23,37 @@
 #include "main/connection.h"
  
 bool MainConnection::OnAdvise(const wxString& topic, const wxString& item, const void *data,
-    size_t size, wxIPCFormat format)
+	size_t size, wxIPCFormat format)
 {
-    wxMessageBox(topic);
-    return true;
+	wxMessageBox(topic);
+	return true;
 }
 
 bool MainConnection::OnDisconnect()
 {
-    wxMessageBox(wxT("OnDisconnect()"));
-    return true;
+	wxMessageBox(wxT("OnDisconnect()"));
+	return true;
 }
 
 bool MainConnection::DoExecute(const void *data, size_t size, wxIPCFormat format)
 {
-    bool retval = wxConnection::DoExecute(data, size, format);
-    if (!retval)
-    {
-        wxMessageBox(wxT("Execute failed!"));
-    }
-    return retval;
+	bool retval = wxConnection::DoExecute(data, size, format);
+	if (!retval)
+	{
+		wxMessageBox(wxT("Execute failed!"));
+	}
+	return retval;
 }
 
 const void *MainConnection::Request(const wxString& item, size_t *size, wxIPCFormat format)
 {
-    const void *data =  wxConnection::Request(item, size, format);
-    wxMessageBox(item);
-    return data;
+	const void *data =  wxConnection::Request(item, size, format);
+	wxMessageBox(item);
+	return data;
 }
 
 bool MainConnection::DoPoke(const wxString& item, const void *data, size_t size, wxIPCFormat format)
 {
-    wxMessageBox(item);
-    return wxConnection::DoPoke(item, data, size, format);
+	wxMessageBox(item);
+	return wxConnection::DoPoke(item, data, size, format);
 }

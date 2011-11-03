@@ -31,17 +31,17 @@ END_EVENT_TABLE()
 
 MainDialog::MainDialog()
 {
-    Create( (wxWindow*) NULL, -1, MAINDIALOG_TITLE,
-            wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxMINIMIZE_BOX | wxDIALOG_NO_PARENT  );
+	Create( (wxWindow*) NULL, -1, MAINDIALOG_TITLE,
+			wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxMINIMIZE_BOX | wxDIALOG_NO_PARENT  );
 
-    OnInit();
+	OnInit();
 }
 
 /**
 MainDialog::MainDialog(wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
 {
-    Create( parent, id, title, pos, size, style, name );
-    OnInit();
+	Create( parent, id, title, pos, size, style, name );
+	OnInit();
 }
 */
 
@@ -51,57 +51,57 @@ MainDialog::~MainDialog()
  
 bool MainDialog::OnInit()
 {
-    // define interface and layout
-    labelTitle = new wxStaticText(this, wxID_ANY, wxT("System Logs"));
-    labelClear = new wxStaticText(this, wxID_ANY, wxT("Clear"), wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
-    listLogs = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_SINGLE|wxLB_NEEDED_SB);
-    labelSetting = new wxStaticText(this, wxID_ANY, wxT("Setting"));
-    buttonClose = new wxButton(this, wxID_ANY, wxT("Close"));
+	// define interface and layout
+	labelTitle = new wxStaticText(this, wxID_ANY, wxT("System Logs"));
+	labelClear = new wxStaticText(this, wxID_ANY, wxT("Clear"), wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
+	listLogs = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_SINGLE|wxLB_NEEDED_SB);
+	labelSetting = new wxStaticText(this, wxID_ANY, wxT("Setting"));
+	buttonClose = new wxButton(this, wxID_ANY, wxT("Close"));
 
-    set_properties();
-    set_layout();
+	set_properties();
+	set_layout();
 
-    // binding events
-    set_event_handler();
+	// binding events
+	set_event_handler();
 
-    // set up the task bar icon
-    this->SetIcon(icon_xpm);
+	// set up the task bar icon
+	this->SetIcon(icon_xpm);
 
-    return true;
+	return true;
 }
 
 
 void MainDialog::set_properties()
 {
-    labelClear->SetToolTip(wxT("Clear all system logs"));
-    listLogs->SetMinSize(wxSize(600, 450));
-    labelSetting->SetForegroundColour(wxColour(0, 0, 255));
-    labelClear->SetForegroundColour(wxColour(0, 0, 255));
+	labelClear->SetToolTip(wxT("Clear all system logs"));
+	listLogs->SetMinSize(wxSize(600, 450));
+	labelSetting->SetForegroundColour(wxColour(0, 0, 255));
+	labelClear->SetForegroundColour(wxColour(0, 0, 255));
 }
 
 
 void MainDialog::set_layout()
 {
-    wxFlexGridSizer* sizerMain = new wxFlexGridSizer(3, 1, 0, 0);
-    wxGridSizer* sizerTop = new wxGridSizer(1, 2, 0, 0);
-    wxGridSizer* sizerBottom = new wxGridSizer(1, 2, 0, 0);
-    wxGridSizer* sizerBottomLeft = new wxGridSizer(1, 2, 0, 0);
+	wxFlexGridSizer* sizerMain = new wxFlexGridSizer(3, 1, 0, 0);
+	wxGridSizer* sizerTop = new wxGridSizer(1, 2, 0, 0);
+	wxGridSizer* sizerBottom = new wxGridSizer(1, 2, 0, 0);
+	wxGridSizer* sizerBottomLeft = new wxGridSizer(1, 2, 0, 0);
 
-    sizerTop->Add(labelTitle, 0, wxALL|wxALIGN_CENTER_VERTICAL, 6);
+	sizerTop->Add(labelTitle, 0, wxALL|wxALIGN_CENTER_VERTICAL, 6);
 
-    sizerBottomLeft->Add(labelSetting, 0, wxALL|wxALIGN_CENTER_VERTICAL, 6);
-    sizerBottomLeft->Add(labelClear, 0, wxALL|wxALIGN_CENTER_VERTICAL, 6);
+	sizerBottomLeft->Add(labelSetting, 0, wxALL|wxALIGN_CENTER_VERTICAL, 6);
+	sizerBottomLeft->Add(labelClear, 0, wxALL|wxALIGN_CENTER_VERTICAL, 6);
 
-    sizerBottom->Add(sizerBottomLeft, 0, wxALIGN_CENTER_VERTICAL, 6);
-    sizerBottom->Add(buttonClose, 0, wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL, 6);
+	sizerBottom->Add(sizerBottomLeft, 0, wxALIGN_CENTER_VERTICAL, 6);
+	sizerBottom->Add(buttonClose, 0, wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL, 6);
 
-    sizerMain->Add(sizerTop, 1, wxEXPAND, 0);
-    sizerMain->Add(listLogs, 1, wxALL|wxEXPAND, 2);
-    sizerMain->Add(sizerBottom, 1, wxEXPAND|wxALIGN_BOTTOM, 0);
+	sizerMain->Add(sizerTop, 1, wxEXPAND, 0);
+	sizerMain->Add(listLogs, 1, wxALL|wxEXPAND, 2);
+	sizerMain->Add(sizerBottom, 1, wxEXPAND|wxALIGN_BOTTOM, 0);
 
-    SetSizer(sizerMain);
-    sizerMain->Fit(this);
-    Layout();
+	SetSizer(sizerMain);
+	sizerMain->Fit(this);
+	Layout();
 }
 
 /**
@@ -110,7 +110,7 @@ void MainDialog::set_layout()
  */
 void MainDialog::OnCloseClicked(wxCommandEvent & event)
 {
-    this->Show(false);
+	this->Show(false);
 }
 
 /**
@@ -119,7 +119,7 @@ void MainDialog::OnCloseClicked(wxCommandEvent & event)
  */
 void MainDialog::OnClearLog(wxMouseEvent& event)
 {
-    listLogs->Clear();
+	listLogs->Clear();
 }
 
 /**
@@ -132,19 +132,19 @@ void MainDialog::OnSetting(wxMouseEvent& event)
 
 bool MainDialog::AppendLog(const wxString & label)
 {
-    listLogs->Append( label );
-    return true ;
+	listLogs->Append( label );
+	return true ;
 }
 
 void MainDialog::set_event_handler()
 {
-    // event binding for label "Clear"
-    labelClear->Bind(wxEVT_LEFT_DOWN, &MainDialog::OnClearLog, this);
+	// event binding for label "Clear"
+	labelClear->Bind(wxEVT_LEFT_DOWN, &MainDialog::OnClearLog, this);
 
-    // event binding for label "Setting"
-    labelSetting->Bind(wxEVT_LEFT_DOWN, &MainDialog::OnSetting, this);
+	// event binding for label "Setting"
+	labelSetting->Bind(wxEVT_LEFT_DOWN, &MainDialog::OnSetting, this);
 
-    // event binding for button "Close"
-    buttonClose->Bind( wxEVT_COMMAND_BUTTON_CLICKED, &MainDialog::OnCloseClicked, this );
+	// event binding for button "Close"
+	buttonClose->Bind( wxEVT_COMMAND_BUTTON_CLICKED, &MainDialog::OnCloseClicked, this );
 }
 

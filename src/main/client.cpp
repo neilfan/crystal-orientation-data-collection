@@ -24,31 +24,31 @@
  
 MainClient::MainClient() : wxClient()
 {
-    m_connection = NULL;
+	m_connection = NULL;
 }
 
 bool MainClient::Connect(const wxString& sHost, const wxString& sService, const wxString& sTopic)
 {
 
-    m_connection = (MainConnection *)MakeConnection(sHost, sService, sTopic);
-    return m_connection    != NULL;
+	m_connection = (MainConnection *)MakeConnection(sHost, sService, sTopic);
+	return m_connection    != NULL;
 }
 
 wxConnectionBase *MainClient::OnMakeConnection()
 {
-    return new MainConnection;
+	return new MainConnection;
 }
 
 void MainClient::Disconnect()
 {
-    if (m_connection)
-    {
-        m_connection->Disconnect();
-        wxDELETE(m_connection);
-    }
+	if (m_connection)
+	{
+		m_connection->Disconnect();
+		wxDELETE(m_connection);
+	}
 }
 
 MainClient::~MainClient()
 {
-    Disconnect();
+	Disconnect();
 }

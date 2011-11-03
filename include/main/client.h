@@ -28,15 +28,15 @@
 class MainClient: public wxClient
 {
 public:
-    MainClient();
-    ~MainClient();
-    bool Connect(const wxString& sHost, const wxString& sService, const wxString& sTopic);
-    void Disconnect();
-    wxConnectionBase *OnMakeConnection();
-    bool IsConnected() { return m_connection != NULL; };
-    MainConnection *GetConnection() { return m_connection; };
+	MainClient();
+	~MainClient();
+	bool Connect(const wxString& sHost, const wxString& sService, const wxString& sTopic);
+	void Disconnect();
+	wxConnectionBase *OnMakeConnection();
+	bool IsConnected() { return m_connection != NULL; };
+	MainConnection *GetConnection() { return m_connection; };
 
 protected:
-    MainConnection     *m_connection;
+	MainConnection     *m_connection;
 }; 
 #endif

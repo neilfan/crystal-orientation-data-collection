@@ -21,7 +21,7 @@
 #include <wx/wxprec.h>
  
 #ifndef WX_PRECOMP
-#	include "wx/wx.h"
+#include "wx/wx.h"
 #endif
 
 #include <wx/log.h> 
@@ -63,7 +63,7 @@ bool MainApp::OnInit()
 	
 	// Display taskbar icon
 	m_taskbaricon = new MainTaskBarIcon();
-    m_taskbaricon->SetIcon(icon_xpm);
+	m_taskbaricon->SetIcon(icon_xpm);
 
 
 	return true;

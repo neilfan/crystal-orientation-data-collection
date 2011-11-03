@@ -30,17 +30,17 @@ class MainServer: public wxServer
 public:
 	MainServer();
 	~MainServer();
-    void Disconnect();
-    bool IsConnected() { return m_connection != NULL; }
-    MainConnection *GetConnection() { return m_connection; }
+	void Disconnect();
+	bool IsConnected() { return m_connection != NULL; }
+	MainConnection *GetConnection() { return m_connection; }
 
-    void Advise();
-    bool CanAdvise() { return m_connection != NULL; }
+	void Advise();
+	bool CanAdvise() { return m_connection != NULL; }
 
-    virtual wxConnectionBase *OnAcceptConnection(const wxString& topic);
+	virtual wxConnectionBase *OnAcceptConnection(const wxString& topic);
 
 protected:
-    MainConnection *m_connection;
+	MainConnection *m_connection;
 };
  
 #endif

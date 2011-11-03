@@ -44,7 +44,7 @@ public:
 private:
 	MainServer * m_server  ;
 	MainDialog * m_log_dialog ;
-    MainTaskBarIcon * m_taskbaricon;
+	MainTaskBarIcon * m_taskbaricon;
 
 };
  
