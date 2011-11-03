@@ -33,17 +33,8 @@ MainDialog::MainDialog()
 {
 	Create( (wxWindow*) NULL, -1, MAINDIALOG_TITLE,
 			wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxMINIMIZE_BOX | wxDIALOG_NO_PARENT  );
-
 	OnInit();
 }
-
-/**
-MainDialog::MainDialog(wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
-{
-	Create( parent, id, title, pos, size, style, name );
-	OnInit();
-}
-*/
 
 MainDialog::~MainDialog()
 {
