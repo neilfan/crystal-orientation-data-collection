@@ -34,7 +34,6 @@ public:
 	bool IsConnected() { return m_connection != NULL; }
 	MainServerConnection *GetConnection() { return m_connection; }
 
-	void Advise();
 	bool CanAdvise() { return m_connection != NULL; }
 
 	virtual wxConnectionBase *OnAcceptConnection(const wxString& topic);

@@ -42,6 +42,6 @@ const void* MainServerConnection::OnRequest(const wxString &topic, const wxStrin
 
 bool MainServerConnection::OnDisconnect(void)
 {
-	wxGetApp().AppendLog(_T("This application is launched again. Ignore and start a new process"));
+	wxGetApp().Log(_T("Received a request to launch. Start a new process"));
 	return true;
 }
