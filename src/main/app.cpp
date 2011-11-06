@@ -140,6 +140,8 @@ bool MainApp::IsLogDialogShown()
 
 void MainApp::ExitApplication()
 {
+	Log(_T("Exiting application"));
+
 	MainDialog * dialog = wxDynamicCast(m_log_dialog, MainDialog) ;
 	// Close the top window, notify application to exit
 	dialog->Close(false);
