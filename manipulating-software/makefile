@@ -127,6 +127,7 @@ ctags:
 	@echo #Rebuild CTAGS
 	ctags -f tags -R --exclude=*.svn* $(INCDIR) $(SRCDIR)
 
-# Execute
+# Reset the config file and Execute
 run:
+	copy /y config\sample.ini build\sample.ini
 	@$(BLDDIR)/$(DEST)

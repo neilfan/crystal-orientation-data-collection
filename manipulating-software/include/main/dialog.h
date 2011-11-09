@@ -18,10 +18,13 @@
  * <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * This file is sourced from the export code from wxFormBuilder,
+ * Refer to doc/UIDesign.wxFormBuilder.fbp (wxFormBUilder file)
+ */
+
 #ifndef INCLUDE_MAIN_DIALOG_H
 #define INCLUDE_MAIN_DIALOG_H
-
-#define MAINDIALOG_TITLE _T("Console - Crystal Orientation Data Collection")
 
 // The maximum numbers of messages to be listed in log window
 #define MAINDIALOG_MESSAGE_COUNT 150
@@ -45,20 +48,30 @@ private:
     void set_event_handler();
 
 protected:
-    wxStaticText* labelTitle;
-    wxStaticText* labelClear;
-    wxListBox* listLogs;
-    wxStaticText* labelSetting;
-    wxButton* buttonClose;
-    bool OnInit();
+	wxListBox* m_listLogs;
+	wxStaticText* m_labelSetting;
+	wxStaticText* m_labelClear;
+	wxButton* m_buttonClose;
+	
+	// Virtual event handlers, overide them in your derived class
+	virtual void OnSetting( wxMouseEvent& event ) ;
+	virtual void OnClearLog( wxMouseEvent& event ) ;
+	virtual void OnCloseClicked( wxCommandEvent& event );
+	
 
 public:
-    MainDialog() ;
-    void OnClearLog(wxMouseEvent &);
-    void OnSetting(wxMouseEvent &);
-    void OnCloseClicked(wxCommandEvent &);
+	
+	MainDialog( 
+		wxWindow* parent=NULL,
+		wxWindowID id = wxID_ANY,
+		const wxString& title = wxT("DC20A: Manipulating Software"), 
+		const wxPoint& pos = wxDefaultPosition, 
+		const wxSize& size = wxSize( -1,-1 ), 
+		long style = wxDEFAULT_DIALOG_STYLE|wxMAXIMIZE_BOX|wxMINIMIZE_BOX|wxRESIZE_BORDER|wxSYSTEM_MENU
+	); 
+	~MainDialog();
+
     bool AppendLog(const wxString& );
-    ~MainDialog() ;
 };
  
  
