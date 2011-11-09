@@ -69,6 +69,7 @@ CPPS   = \
 		main/client \
 		main/server_connection \
 		main/server \
+		main/process_controller \
 
 
 # Work out a list of all source files
