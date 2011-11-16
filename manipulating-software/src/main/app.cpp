@@ -195,7 +195,7 @@ void MainApp::Log(const wxString & string)
 	wxLog::FlushActive();
 
 	// Send string to log window
-	wxString  msg = wxDateTime::Now().FormatISOCombined() + _T(" - ") + string ;
+	wxString  msg = wxDateTime::Now().FormatISOCombined() + wxT(" - ") + string ;
 	wxDynamicCast(m_log_dialog, MainDialog)->AppendLog( msg) ;
 }
 
