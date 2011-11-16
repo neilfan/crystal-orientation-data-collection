@@ -64,6 +64,7 @@ class ConfirmDialog : public wxDialog
 		~ConfirmDialog();
 		void OnProjectChoice( wxCommandEvent& event );
 		void OnSize( wxSizeEvent& event ) ;
+		void OnLaunch( wxCommandEvent& event );
 		void ConfirmNewSession(const wxString & equipment_id);
 		void ResetGridMetadata();
 

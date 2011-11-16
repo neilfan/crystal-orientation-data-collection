@@ -209,7 +209,8 @@ ConfirmDialog::ConfirmDialog( wxWindow* parent, wxWindowID id, const wxString& t
 	// Connect Events
 	m_choiceProject->Connect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( ConfirmDialog::OnProjectChoice ), NULL, this );
 	m_gridMetadata->Connect( wxEVT_SIZE, wxSizeEventHandler( ConfirmDialog::OnSize ), NULL, this );
-	
+	m_buttonLaunch->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ConfirmDialog::OnLaunch ), NULL, this );
+
 	/**
 	 * Extra code not imported from wxFormBuilder
 	 * Make sure not overwritten by update on form builder
@@ -234,6 +235,7 @@ ConfirmDialog::~ConfirmDialog()
 	// Disconnect Events
 	m_choiceProject->Disconnect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( ConfirmDialog::OnProjectChoice ), NULL, this );
 	m_gridMetadata->Disconnect( wxEVT_SIZE, wxSizeEventHandler( ConfirmDialog::OnSize ), NULL, this );
+	m_buttonLaunch->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ConfirmDialog::OnLaunch ), NULL, this );
 }
 
 
@@ -302,6 +304,41 @@ void ConfirmDialog::OnSize( wxSizeEvent& event )
 	if(col_size>0)
 	{
 		m_gridMetadata->SetColSize( 0, col_size );
+	}
+}
+
+void ConfirmDialog::OnLaunch( wxCommandEvent& event )
+{
+	// Generate exchange metadata file
+	
+	// Launch the program
+	wxString equipment_id;
+
+	if(m_gridMetadata->GetNumberRows()>0)
+	{
+		equipment_id = m_gridMetadata->GetCellValue (1, 0);
+	}
+	wxMessageBox (equipment_id);
+
+	long launch_enabled = wxFileConfig::Get()->ReadLong (
+			wxT("equipment.")
+			+ equipment_id
+			+ wxT(".launcher.enabled"),
+			0
+		) ;
+	if( false && launch_enabled != 1 )
+	{
+		
+	}
+	else
+	{
+		wxString launch_program = wxFileConfig::Get()->Read(
+				wxT("equipment.")
+				+ equipment_id
+				+ wxT(".launcher.program")
+			) ;
+		wxGetApp().Log(wxT("Starting program ") + launch_program);
+		wxExecute (launch_program);
 	}
 }
 
