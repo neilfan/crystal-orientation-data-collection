@@ -67,6 +67,7 @@ public:
 
 	 /**
 	  * Get config file name
+	  * @return wxString the full path of config name
 	  */
 	  wxString GetConfigFileName() ;
 private:
@@ -74,7 +75,7 @@ private:
 	wxObject * m_taskbaricon;
 	wxObject * m_log_dialog ;
 	wxObject * m_confirm_dialog ;
-	wxString m_config_file_name ;
+	wxString   m_config_file_name ;
 	FILE * m_log_fp;
 };
  

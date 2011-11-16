@@ -318,7 +318,6 @@ void ConfirmDialog::OnLaunch( wxCommandEvent& event )
 	{
 		equipment_id = m_gridMetadata->GetCellValue (1, 0);
 	}
-	wxMessageBox (equipment_id);
 
 	long launch_enabled = wxFileConfig::Get()->ReadLong (
 			wxT("equipment.")
@@ -339,8 +338,11 @@ void ConfirmDialog::OnLaunch( wxCommandEvent& event )
 			) ;
 		wxGetApp().Log(wxT("Starting program ") + launch_program);
 		wxFileName launch_file(launch_program);
-		wxGetApp().Log(launch_file.GetFullPath());
 		long pid = wxExecute (launch_file.GetFullPath());
+		wxGetApp().Log(wxString::Format("Program PID %d", pid));
+		
+		Show(false);
+
 	}
 }
 

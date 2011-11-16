@@ -34,6 +34,7 @@
 #include "main/taskbaricon.h"
 #include "main/dialog.h"
 #include "main/confirm_dialog.h"
+#include "main/process_controller.h"
 #include "main/client.h"
 
  

@@ -19,3 +19,30 @@
  */
 
 #include "main/process_controller.h"
+#include "main/confirm_dialog.h"
+#include "main/app.h"
+
+ProcessController::ProcessController()
+{
+}
+
+ProcessController::~ProcessController()
+{
+	if(m_confirm_dialog!=NULL)
+	{
+		wxDynamicCast(m_confirm_dialog, ConfirmDialog)->Destroy();
+	}
+}
+
+
+void ProcessController::ConfirmNewSession(const wxString & equipment_id)
+{
+	if(m_confirm_dialog==NULL)
+	{
+		// Display the session confirm dialog
+		ConfirmDialog * confirm_dialog = new ConfirmDialog();
+		m_confirm_dialog = wxDynamicCast(confirm_dialog, wxObject) ;
+	}
+	wxDynamicCast(m_confirm_dialog, ConfirmDialog)->ConfirmNewSession(equipment_id) ;
+}
+

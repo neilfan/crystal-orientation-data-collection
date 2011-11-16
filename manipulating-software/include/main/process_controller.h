@@ -18,8 +18,25 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include <wx/thread.h> 
+#include <wx/wxprec.h>
+
+#ifndef WX_PRECOMP
+#include "wx/wx.h"
+#endif
  
-class ProcessController : public wxThread
+class ProcessController
 {
+public:
+
+	ProcessController();
+	~ProcessController();
+
+	/**
+	 * Start Session Confirmation for a new session
+	 */
+	 void ConfirmNewSession(const wxString & equipment_id);
+
+private:
+	wxObject * m_confirm_dialog ;
+
 };
