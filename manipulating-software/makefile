@@ -69,6 +69,7 @@ CPPS   = \
 		main/client \
 		main/server_connection \
 		main/server \
+		main/confirm_dialog \
 		main/process_controller \
 
 
@@ -130,5 +131,6 @@ ctags:
 
 # Reset the config file and Execute
 run:
-	copy /y config\sample.ini build\sample.ini
+	-mkdir $(BLDDIR)\config
+	-copy /y config\sample.ini $(BLDDIR)\config\default.ini
 	@$(BLDDIR)/$(DEST)

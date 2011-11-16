@@ -21,6 +21,7 @@
 #include <wx/msgdlg.h>
 
 #include "main/server.h"
+#include "main/app.h"
 
 MainServer::MainServer() : wxServer()
 {
@@ -34,7 +35,7 @@ MainServer::~MainServer()
 
 wxConnectionBase *MainServer::OnAcceptConnection(const wxString& topic)
 {
-    if ( topic == "TOPIC" )
+    if ( topic == DDE_TOPIC )
     {
         m_connection = new MainServerConnection();
         return m_connection;

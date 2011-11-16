@@ -19,6 +19,9 @@
  */
 
 #include <wx/msgdlg.h>
+#include <wx/config.h> 
+#include <wx/fileconf.h> 
+#include <wx/tokenzr.h> 
 
 #include "main/server_connection.h" 
 #include "main/app.h"
@@ -32,6 +35,29 @@ bool MainServerConnection::OnExec(const wxString &topic, const wxString &data)
 
 bool MainServerConnection::OnPoke(const wxString &topic, const wxString &item, const void *data, size_t size, wxIPCFormat  format)
 {
+	// if an equipment is specified, start monitoring this equipment
+	wxString equipment_id(item);
+	wxGetApp().Log(wxT("Received a request to launch equipment ") + item);
+	if( item == EQUIPMENT_NULL )
+	{
+		wxGetApp().Log(wxT("Invalid Equipment. Loading default equipment from configuration"));
+		wxStringTokenizer tokenizer( wxConfig::Get()->Read( wxT("equipment.list")), ",");
+		while ( tokenizer.HasMoreTokens() )
+		{
+			equipment_id = tokenizer.GetNextToken();
+			break;
+		}
+	}
+	
+	if( wxConfig::Get()->Read( wxT("equipment.") + equipment_id + ".id" ) == wxEmptyString )
+	{
+		wxGetApp().Log(wxT("Equipment ") + equipment_id + wxT(" not defined"));
+	}
+	else
+	{
+		wxGetApp().Log(wxT("Start session confirmation for equipment ") + equipment_id);
+		wxGetApp().ConfirmNewSession(equipment_id);
+	}
 	return wxConnection::OnPoke(topic, item, data, size, format) ;
 }
 
@@ -42,6 +68,5 @@ const void* MainServerConnection::OnRequest(const wxString &topic, const wxStrin
 
 bool MainServerConnection::OnDisconnect(void)
 {
-	wxGetApp().Log(_T("Received a request to launch. Start a new process"));
 	return true;
 }

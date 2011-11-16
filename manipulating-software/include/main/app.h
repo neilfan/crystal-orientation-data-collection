@@ -22,6 +22,8 @@
 #define INCLUDED_MAIN_APP_H
  
 #define APP_NAME _T("DC20A::CRYSTAL_ORIENTATION_DATA_COLLECTION")
+#define DDE_TOPIC _T("DC20A")
+#define EQUIPMENT_NULL _T("NO-NAME-SPECIFIED")
 
 #include <wx/wxprec.h>
 
@@ -57,11 +59,17 @@ public:
 	 * Append a new message to log list
 	 */
 	void Log(const wxString & string);
+	
+	/**
+	 * Start Session Confirmation for a new session
+	 */
+	 void ConfirmNewSession(const wxString & equipment_id);
 
 private:
 	wxObject * m_server ;
 	wxObject * m_taskbaricon;
 	wxObject * m_log_dialog ;
+	wxObject * m_confirm_dialog ;
 	FILE * m_log_fp;
 };
  

@@ -21,17 +21,19 @@
 
 #include <wx/log.h> 
 
-#include <wx/config.h> 
 #include <wx/filefn.h> 
+#include <wx/config.h> 
+#include <wx/fileconf.h> 
 #include <wx/stdpaths.h> 
 #include <wx/wfstream.h> 
-#include <wx/fileconf.h> 
+#include <wx/cmdline.h> 
 
 #include "icon.xpm"
 #include "main/app.h"
 #include "main/server.h"
 #include "main/taskbaricon.h"
 #include "main/dialog.h"
+#include "main/confirm_dialog.h"
 #include "main/client.h"
 
  
@@ -45,13 +47,25 @@ bool MainApp::OnInit()
 	// Change working directory same as the binary for portable use
 	wxSetWorkingDirectory( wxPathOnly(wxStandardPaths::Get().GetExecutablePath()) );
 
+	// Set up command line parameter parser
+	wxCmdLineParser cmd_parser(wxAppConsole::argc , wxAppConsole::argv) ;
+	cmd_parser.AddOption (wxT("c"), wxT("config-file"), wxT("Configuration File"));
+	cmd_parser.AddOption (wxT("e"), wxT("equipment-id"), wxT("Equipment ID"));
 
+	// Which equpiment is associated?
+	wxString equpiment_id(EQUIPMENT_NULL);
 
+	if(cmd_parser.Parse() == 0)
+	{
+		cmd_parser.Found(wxT("equipment-id"), & equpiment_id) ;
+	}
+	
 	MainClient * client = new MainClient();
 	if( client->ValidHost( _T("localhost")) )
 	{
-		if(	client->Connect( _T("localhost"), APP_NAME,	_T("TOPIC")	))
+		if(	client->Connect( _T("localhost"), APP_NAME, DDE_TOPIC))
 		{
+			client->GetConnection()->Poke(equpiment_id, wxEmptyString);
 			client->Disconnect();
 			wxDELETE(client);
 			return false;
@@ -65,8 +79,6 @@ bool MainApp::OnInit()
 			m_server = wxDynamicCast(server, wxObject);
 		}
 	}
-
-
 
 	// Display the log window
 	MainDialog * log_dialog = new MainDialog();
@@ -98,13 +110,27 @@ bool MainApp::OnInit()
 		wxLog::DisableTimestamp();
 	}
 
-	// Init the config file
-	wxFileInputStream cfg_stream(_T("crystal-orientation-data-collection.ini"));
-	wxFileConfig * m_file_config = new wxFileConfig(cfg_stream);
-	wxFileConfig::Set(m_file_config);
-//	wxMessageBox( wxConfig::Get()->Read(_T("settings/app.owner")));
-
 	Log(_T("Seems this is the only instance. Starting application"));
+
+	// Init the config file
+	wxString config_file_name("config/default.ini");
+	if(cmd_parser.Parse() == 0)
+	{
+		cmd_parser.Found(wxT("config-file"), &config_file_name) ;
+	}
+
+	wxFileInputStream cfg_stream(config_file_name);
+	if(cfg_stream.IsOk())
+	{
+		wxFileConfig * m_file_config = new wxFileConfig(cfg_stream);
+		wxFileConfig::Set(m_file_config);
+		Log(_T("Loading from config file ") + config_file_name);
+	}
+	else
+	{
+		Log(_T("Failed to load config file ") + config_file_name);
+	}
+
 
 	return true;
 }
@@ -141,10 +167,16 @@ bool MainApp::IsLogDialogShown()
 void MainApp::ExitApplication()
 {
 	Log(_T("Exiting application"));
-
+	
 	MainDialog * dialog = wxDynamicCast(m_log_dialog, MainDialog) ;
 	// Close the top window, notify application to exit
 	dialog->Close(false);
+
+	// Close session confirmation dialog
+	if(m_confirm_dialog!=NULL)
+	{
+		wxDynamicCast(m_confirm_dialog, ConfirmDialog)->Destroy();
+	}
 	
 	// Some other objects to be cleared.
 	dialog->Destroy();
@@ -160,4 +192,15 @@ void MainApp::Log(const wxString & string)
 	wxDynamicCast(m_log_dialog, MainDialog)->AppendLog( msg) ;
 	wxLogMessage(msg);
 	wxLog::FlushActive();
+}
+
+void MainApp::ConfirmNewSession(const wxString & equipment_id)
+{
+	if(m_confirm_dialog==NULL)
+	{
+		// Display the session confirm dialog
+		ConfirmDialog * confirm_dialog = new ConfirmDialog();
+		m_confirm_dialog = wxDynamicCast(confirm_dialog, wxObject) ;
+	}
+	wxDynamicCast(m_confirm_dialog, ConfirmDialog)->ConfirmNewSession(equipment_id) ;
 }
