@@ -32,9 +32,11 @@
 
 #include <wx/tokenzr.h> 
 #include <wx/icon.h>
+#include <wx/wfstream.h> 
 #include <wx/msgdlg.h> 
 #include <wx/fileconf.h> 
 
+#include "main/app.h"
 #include "main/confirm_dialog.h"
 #include "icon.xpm"
 
@@ -138,7 +140,7 @@ ConfirmDialog::ConfirmDialog( wxWindow* parent, wxWindowID id, const wxString& t
 	staticTextMetadata->Wrap( -1 );
 	sizerMiddle->Add( staticTextMetadata, 0, wxALIGN_TOP|wxALL, 5 );
 	
-	m_gridMetadata = new wxGrid( this, wxID_ANY, wxDefaultPosition, wxSize( 400,300 ), 0 );
+	m_gridMetadata = new wxGrid( this, wxID_ANY, wxDefaultPosition, wxSize( 400,200 ), 0 );
 	
 	// Grid
 	m_gridMetadata->CreateGrid( 0, 1 );
@@ -160,9 +162,7 @@ ConfirmDialog::ConfirmDialog( wxWindow* parent, wxWindowID id, const wxString& t
 	m_gridMetadata->EnableDragRowSize( true );
 	m_gridMetadata->SetRowLabelSize( 250 );
 	m_gridMetadata->SetRowLabelAlignment( wxALIGN_LEFT, wxALIGN_CENTRE );
-	
-	// Label Appearance
-	
+
 	// Cell Defaults
 	m_gridMetadata->SetDefaultCellAlignment( wxALIGN_LEFT, wxALIGN_TOP );
 	sizerMiddle->Add( m_gridMetadata, 0, wxALL|wxEXPAND, 5 );
@@ -225,7 +225,7 @@ ConfirmDialog::ConfirmDialog( wxWindow* parent, wxWindowID id, const wxString& t
 		m_choiceProject->Append(token);
 	}
 
-	// init the metadata list
+
 
 }
 
@@ -240,15 +240,14 @@ ConfirmDialog::~ConfirmDialog()
 
 void ConfirmDialog::OnProjectChoice( wxCommandEvent& event )
 {
+	ResetGridMetadata();
 	if(m_choiceProject->GetSelection()==0)
 	{
 		m_labelTips->SetLabelText(PROJECT_CHOICE_TIP_DEFAULT);
-		ResetGridMetadata();
 	}
 	else if(m_choiceProject->GetSelection()==1)
 	{
 		m_labelTips->SetLabelText(PROJECT_CHOICE_TIP_NONE);
-		ResetGridMetadata();
 	}
 	else
 	{
@@ -262,6 +261,36 @@ void ConfirmDialog::OnProjectChoice( wxCommandEvent& event )
 		);
 		
 		// load project metadata
+		wxString config_file_name = wxFileConfig::Get()->Read(
+				wxT("project.")
+				+ m_choiceProject->GetStringSelection()
+				+ wxT(".metadata.sourcefile")
+			) ;
+		wxFileInputStream cfg_stream(config_file_name);
+		if(cfg_stream.IsOk())
+		{
+			wxGetApp().Log(_T("Loading project metadata list ") + config_file_name);
+			wxFileConfig * metadata_config = new wxFileConfig(cfg_stream);
+			// enumeration variables
+			wxString str;
+			long dummy;
+
+			// first enum all entries
+			metadata_config->GetFirstGroup(str, dummy);;
+			bool bCont = metadata_config->GetFirstEntry(str, dummy);
+			while ( bCont ) {
+				m_gridMetadata->AppendRows ();
+				m_gridMetadata->SetRowLabelValue (m_gridMetadata->GetNumberRows()-1, str);
+				m_gridMetadata->SetCellValue (m_gridMetadata->GetNumberRows()-1, 0, metadata_config->Read(str));
+				
+				bCont = metadata_config->GetNextEntry(str, dummy);
+			}
+			wxDELETE(metadata_config);
+		}
+		else
+		{
+			wxGetApp().Log(wxT("Failed to load project metadata list ") + config_file_name);
+		}
 	}
 }
 

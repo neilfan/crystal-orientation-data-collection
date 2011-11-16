@@ -60,7 +60,6 @@ class ConfirmDialog : public wxDialog
 		wxButton* m_buttonLaunch;
 	
 	public:
-		
 		ConfirmDialog( wxWindow* parent=NULL, wxWindowID id = wxID_ANY, const wxString& title = wxT("Starting a new research session"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( -1,-1 ), long style = wxDEFAULT_DIALOG_STYLE|wxDIALOG_NO_PARENT|wxMAXIMIZE_BOX|wxMINIMIZE_BOX|wxRESIZE_BORDER ); 
 		~ConfirmDialog();
 		void OnProjectChoice( wxCommandEvent& event );
