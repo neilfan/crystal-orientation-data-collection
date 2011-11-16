@@ -125,6 +125,7 @@ bool MainApp::OnInit()
 		wxFileConfig * m_file_config = new wxFileConfig(cfg_stream);
 		wxFileConfig::Set(m_file_config);
 		Log(_T("Loading from config file ") + config_file_name);
+		m_config_file_name = config_file_name ;
 	}
 	else
 	{
@@ -203,4 +204,9 @@ void MainApp::ConfirmNewSession(const wxString & equipment_id)
 		m_confirm_dialog = wxDynamicCast(confirm_dialog, wxObject) ;
 	}
 	wxDynamicCast(m_confirm_dialog, ConfirmDialog)->ConfirmNewSession(equipment_id) ;
+}
+
+wxString MainApp::GetConfigFileName()
+{
+	return m_config_file_name ;
 }

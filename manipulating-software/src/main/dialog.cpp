@@ -26,8 +26,10 @@
 #include <wx/icon.h>
 #include <wx/msgdlg.h> 
 #include <wx/config.h> 
+#include <wx/filename.h> 
 
 #include "main/dialog.h"
+#include "main/app.h"
 #include "icon.xpm"
 
 IMPLEMENT_CLASS( MainDialog, wxDialog )
@@ -128,8 +130,15 @@ void MainDialog::OnClearLog(wxMouseEvent& event)
  */
 void MainDialog::OnSetting(wxMouseEvent& event)
 {
-	wxMessageBox( wxConfig::Get()->Read(_T("settings/app.owner")));
-
+	if( wxGetApp().GetConfigFileName() != wxEmptyString )
+	{
+		wxFileName file_name(wxGetApp().GetConfigFileName());
+		wxLaunchDefaultApplication ( file_name.GetFullPath());
+	}
+	else
+	{
+		wxMessageBox( wxT("Config file not available. Check log for details"));
+	}
 }
 
 bool MainDialog::AppendLog(const wxString & label)

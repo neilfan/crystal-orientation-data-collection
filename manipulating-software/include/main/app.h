@@ -49,7 +49,7 @@ public:
 	 * @return bool Shown (true) or Hide (false)
 	 */
 	bool IsLogDialogShown();
-	
+
 	/**
 	 * Force the application to exit
 	 */
@@ -65,11 +65,16 @@ public:
 	 */
 	 void ConfirmNewSession(const wxString & equipment_id);
 
+	 /**
+	  * Get config file name
+	  */
+	  wxString GetConfigFileName() ;
 private:
 	wxObject * m_server ;
 	wxObject * m_taskbaricon;
 	wxObject * m_log_dialog ;
 	wxObject * m_confirm_dialog ;
+	wxString m_config_file_name ;
 	FILE * m_log_fp;
 };
  

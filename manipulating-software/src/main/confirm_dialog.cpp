@@ -338,7 +338,9 @@ void ConfirmDialog::OnLaunch( wxCommandEvent& event )
 				+ wxT(".launcher.program")
 			) ;
 		wxGetApp().Log(wxT("Starting program ") + launch_program);
-		wxExecute (launch_program);
+		wxFileName launch_file(launch_program);
+		wxGetApp().Log(launch_file.GetFullPath());
+		long pid = wxExecute (launch_file.GetFullPath());
 	}
 }
 
