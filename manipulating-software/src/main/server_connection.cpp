@@ -24,6 +24,7 @@
 #include <wx/tokenzr.h> 
 
 #include "main/server_connection.h" 
+#include "main/process_controller.h"
 #include "main/app.h"
 
 //IMPLEMENT_CLASS( MainServerConnection, wxConnection )
@@ -56,7 +57,7 @@ bool MainServerConnection::OnPoke(const wxString &topic, const wxString &item, c
 	else
 	{
 		wxGetApp().Log(wxT("Start session confirmation for equipment ") + equipment_id);
-		wxGetApp().ConfirmNewSession(equipment_id);
+		ProcessController::Get()->ConfirmNewSession(equipment_id);
 	}
 	return wxConnection::OnPoke(topic, item, data, size, format) ;
 }

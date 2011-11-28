@@ -33,9 +33,8 @@
 #include "main/server.h"
 #include "main/taskbaricon.h"
 #include "main/dialog.h"
-#include "main/confirm_dialog.h"
-#include "main/process_controller.h"
 #include "main/client.h"
+#include "main/process_controller.h"
 
  
 IMPLEMENT_APP(MainApp)
@@ -151,6 +150,7 @@ int MainApp::OnExit()
 	{
 		fclose(m_log_fp);
 	}
+	
 
 	return 0;
 }
@@ -174,17 +174,15 @@ void MainApp::ExitApplication()
 	// Close the top window, notify application to exit
 	dialog->Close(false);
 
-	// Close session confirmation dialog
-	if(m_confirm_dialog!=NULL)
-	{
-		wxDynamicCast(m_confirm_dialog, ConfirmDialog)->Destroy();
-	}
-	
 	// Some other objects to be cleared.
 	dialog->Destroy();
 	
 	MainTaskBarIcon * taskbaricon = wxDynamicCast(m_taskbaricon, MainTaskBarIcon) ;
 	taskbaricon->Destroy();
+
+	// Remove the Process Controller
+	ProcessController * controller = ProcessController::Get();
+	wxDELETE(controller);
 
 }
 
@@ -197,17 +195,6 @@ void MainApp::Log(const wxString & string)
 	// Send string to log window
 	wxString  msg = wxDateTime::Now().FormatISOCombined() + wxT(" - ") + string ;
 	wxDynamicCast(m_log_dialog, MainDialog)->AppendLog( msg) ;
-}
-
-void MainApp::ConfirmNewSession(const wxString & equipment_id)
-{
-	if(m_confirm_dialog==NULL)
-	{
-		// Display the session confirm dialog
-		ConfirmDialog * confirm_dialog = new ConfirmDialog();
-		m_confirm_dialog = wxDynamicCast(confirm_dialog, wxObject) ;
-	}
-	wxDynamicCast(m_confirm_dialog, ConfirmDialog)->ConfirmNewSession(equipment_id) ;
 }
 
 wxString MainApp::GetConfigFileName()

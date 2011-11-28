@@ -52,7 +52,6 @@ class ConfirmDialog : public wxDialog
 	protected:
 		wxFlexGridSizer* m_sizerMain;
 		wxPanel* m_panelBackground;
-		wxTextCtrl* m_textResearcher;
 		wxChoice* m_choiceProject;
 		wxStaticText* m_labelTips;
 		wxGrid* m_gridMetadata;

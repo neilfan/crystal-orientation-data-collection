@@ -90,31 +90,18 @@ ConfirmDialog::ConfirmDialog( wxWindow* parent, wxWindowID id, const wxString& t
 	m_sizerMain->Add( labelTitle, 0, wxALL|wxEXPAND, 5 );
 	
 	wxFlexGridSizer* sizerMiddle;
-	sizerMiddle = new wxFlexGridSizer( 4, 3, 0, 0 );
+	sizerMiddle = new wxFlexGridSizer( 3, 3, 0, 0 );
 	sizerMiddle->AddGrowableCol( 1 );
-	sizerMiddle->AddGrowableRow( 3 );
+	sizerMiddle->AddGrowableRow( 2 );
 	sizerMiddle->SetFlexibleDirection( wxBOTH );
 	sizerMiddle->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
-	
-	wxStaticText* labelResearcher;
-	labelResearcher = new wxStaticText( this, wxID_ANY, wxT("Researcher"), wxDefaultPosition, wxDefaultSize, 0 );
-	labelResearcher->Wrap( -1 );
-	sizerMiddle->Add( labelResearcher, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
-	
-	m_textResearcher = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
-	sizerMiddle->Add( m_textResearcher, 0, wxALL|wxEXPAND, 5 );
-	
-	wxStaticText* staticText9;
-	staticText9 = new wxStaticText( this, wxID_ANY, wxT("*"), wxDefaultPosition, wxDefaultSize, 0 );
-	staticText9->Wrap( -1 );
-	sizerMiddle->Add( staticText9, 0, wxALL, 5 );
 	
 	wxStaticText* labelProject;
 	labelProject = new wxStaticText( this, wxID_ANY, wxT("Research Project"), wxDefaultPosition, wxDefaultSize, 0 );
 	labelProject->Wrap( -1 );
 	sizerMiddle->Add( labelProject, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 	
-	wxString m_choiceProjectChoices[] = { PROJECT_CHOICE_TIP_DEFAULT, wxT("- Not a registered research project -") };
+	wxString m_choiceProjectChoices[] = { wxEmptyString, wxT("- Not a registered research project -") };
 	int m_choiceProjectNChoices = sizeof( m_choiceProjectChoices ) / sizeof( wxString );
 	m_choiceProject = new wxChoice( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_choiceProjectNChoices, m_choiceProjectChoices, 0 );
 	m_choiceProject->SetSelection( 0 );
@@ -128,7 +115,7 @@ ConfirmDialog::ConfirmDialog( wxWindow* parent, wxWindowID id, const wxString& t
 	
 	sizerMiddle->Add( 0, 0, 1, wxEXPAND, 5 );
 	
-	m_labelTips = new wxStaticText( this, wxID_ANY, PROJECT_CHOICE_TIP_DEFAULT, wxDefaultPosition, wxDefaultSize, 0 );
+	m_labelTips = new wxStaticText( this, wxID_ANY, wxT("Please identify your research project ."), wxDefaultPosition, wxDefaultSize, 0 );
 	m_labelTips->Wrap( -1 );
 	sizerMiddle->Add( m_labelTips, 0, wxALL|wxEXPAND, 5 );
 	
@@ -140,7 +127,7 @@ ConfirmDialog::ConfirmDialog( wxWindow* parent, wxWindowID id, const wxString& t
 	staticTextMetadata->Wrap( -1 );
 	sizerMiddle->Add( staticTextMetadata, 0, wxALIGN_TOP|wxALL, 5 );
 	
-	m_gridMetadata = new wxGrid( this, wxID_ANY, wxDefaultPosition, wxSize( 400,200 ), 0 );
+	m_gridMetadata = new wxGrid( this, wxID_ANY, wxDefaultPosition, wxSize( 400,300 ), 0 );
 	
 	// Grid
 	m_gridMetadata->CreateGrid( 0, 1 );
@@ -158,15 +145,16 @@ ConfirmDialog::ConfirmDialog( wxWindow* parent, wxWindowID id, const wxString& t
 	m_gridMetadata->SetColLabelAlignment( wxALIGN_CENTRE, wxALIGN_CENTRE );
 	
 	// Rows
-	m_gridMetadata->AutoSizeRows();
-	m_gridMetadata->EnableDragRowSize( true );
+	m_gridMetadata->EnableDragRowSize( false );
 	m_gridMetadata->SetRowLabelSize( 250 );
 	m_gridMetadata->SetRowLabelAlignment( wxALIGN_LEFT, wxALIGN_CENTRE );
-
+	
+	// Label Appearance
+	
 	// Cell Defaults
 	m_gridMetadata->SetDefaultCellAlignment( wxALIGN_LEFT, wxALIGN_TOP );
 	sizerMiddle->Add( m_gridMetadata, 0, wxALL|wxEXPAND, 5 );
-
+	
 	
 	sizerMiddle->Add( 0, 0, 1, wxEXPAND, 5 );
 	
@@ -205,11 +193,12 @@ ConfirmDialog::ConfirmDialog( wxWindow* parent, wxWindowID id, const wxString& t
 	m_sizerMain->Fit( this );
 	
 	this->Centre( wxBOTH );
-
+	
 	// Connect Events
 	m_choiceProject->Connect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( ConfirmDialog::OnProjectChoice ), NULL, this );
 	m_gridMetadata->Connect( wxEVT_SIZE, wxSizeEventHandler( ConfirmDialog::OnSize ), NULL, this );
 	m_buttonLaunch->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ConfirmDialog::OnLaunch ), NULL, this );
+
 
 	/**
 	 * Extra code not imported from wxFormBuilder

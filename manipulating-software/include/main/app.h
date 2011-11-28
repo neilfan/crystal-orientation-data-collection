@@ -59,11 +59,6 @@ public:
 	 * Append a new message to log list
 	 */
 	void Log(const wxString & string);
-	
-	/**
-	 * Start Session Confirmation for a new session
-	 */
-	 void ConfirmNewSession(const wxString & equipment_id);
 
 	 /**
 	  * Get config file name
@@ -74,7 +69,6 @@ private:
 	wxObject * m_server ;
 	wxObject * m_taskbaricon;
 	wxObject * m_log_dialog ;
-	wxObject * m_confirm_dialog ;
 	wxString   m_config_file_name ;
 	FILE * m_log_fp;
 };

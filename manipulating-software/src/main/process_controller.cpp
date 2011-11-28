@@ -20,10 +20,12 @@
 
 #include "main/process_controller.h"
 #include "main/confirm_dialog.h"
-#include "main/app.h"
+
+ProcessController * ProcessController::m_pInstance = NULL;
 
 ProcessController::ProcessController()
 {
+	m_confirm_dialog = NULL ;
 }
 
 ProcessController::~ProcessController()
@@ -32,6 +34,15 @@ ProcessController::~ProcessController()
 	{
 		wxDynamicCast(m_confirm_dialog, ConfirmDialog)->Destroy();
 	}
+}
+
+ProcessController * ProcessController::Get()
+{
+	if( ! m_pInstance)
+	{
+		m_pInstance = new ProcessController;
+	}
+	return m_pInstance ;
 }
 
 

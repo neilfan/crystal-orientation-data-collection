@@ -17,6 +17,8 @@
  * along with crystal-orientation-data-collection. If not, see
  * <http://www.gnu.org/licenses/>.
  */
+#ifndef INCLUDED_MAIN_PROCESS_CONTROLLER_H
+#define INCLUDED_MAIN_PROCESS_CONTROLLER_H
 
 #include <wx/wxprec.h>
 
@@ -28,15 +30,21 @@ class ProcessController
 {
 public:
 
-	ProcessController();
-	~ProcessController();
+	
+	static ProcessController * Get();
 
 	/**
 	 * Start Session Confirmation for a new session
 	 */
-	 void ConfirmNewSession(const wxString & equipment_id);
+	void ConfirmNewSession(const wxString & equipment_id);
+	~ProcessController();
 
 private:
+	ProcessController();
 	wxObject * m_confirm_dialog ;
 
+	static ProcessController * m_pInstance ;
 };
+
+
+#endif
