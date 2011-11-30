@@ -20,6 +20,8 @@
 #ifndef INCLUDED_MAIN_PROCESS_CONTROLLER_H
 #define INCLUDED_MAIN_PROCESS_CONTROLLER_H
 
+#define SESSION_FILENAME_METADATA wxT("METADATA")
+
 #include <wx/wxprec.h>
 
 #ifndef WX_PRECOMP
@@ -32,16 +34,26 @@ public:
 
 	
 	static ProcessController * Get();
+	~ProcessController();
 
 	/**
 	 * Start Session Confirmation for a new session
 	 */
 	void ConfirmNewSession(const wxString & equipment_id);
-	~ProcessController();
+
+	/**
+	 * Start the equipment
+	 */
+	void StartNewSession(const wxString & exchange_file);
+
 
 private:
 	ProcessController();
 	wxObject * m_confirm_dialog ;
+	wxString m_current_session_id ;
+	wxFileName GetCurrentSessionDirName() ;
+	wxString ReadSessionMetaData(const wxString & key) ;
+	bool LaunchEquipment();
 
 	static ProcessController * m_pInstance ;
 };

@@ -38,6 +38,7 @@
 
 #include "main/app.h"
 #include "main/confirm_dialog.h"
+#include "main/process_controller.h"
 #include "icon.xpm"
 
 #define PROJECT_CHOICE_TIP_DEFAULT wxT("Please identify your research project.")
@@ -127,7 +128,7 @@ ConfirmDialog::ConfirmDialog( wxWindow* parent, wxWindowID id, const wxString& t
 	staticTextMetadata->Wrap( -1 );
 	sizerMiddle->Add( staticTextMetadata, 0, wxALIGN_TOP|wxALL, 5 );
 	
-	m_gridMetadata = new wxGrid( this, wxID_ANY, wxDefaultPosition, wxSize( 400,300 ), 0 );
+	m_gridMetadata = new wxGrid( this, wxID_ANY, wxDefaultPosition, wxSize( 400,250 ), 0 );
 	
 	// Grid
 	m_gridMetadata->CreateGrid( 0, 1 );
@@ -180,7 +181,7 @@ ConfirmDialog::ConfirmDialog( wxWindow* parent, wxWindowID id, const wxString& t
 	m_buttonCancel = new wxButton( this, wxID_CANCEL, wxT("Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
 	bSizer5->Add( m_buttonCancel, 0, wxALL, 5 );
 	
-	m_buttonLaunch = new wxButton( this, wxID_ANY, wxT("Launch"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_buttonLaunch = new wxButton( this, wxID_ANY, wxT("Start"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_buttonLaunch->SetDefault(); 
 	bSizer5->Add( m_buttonLaunch, 0, wxALL, 5 );
 	
@@ -299,40 +300,34 @@ void ConfirmDialog::OnSize( wxSizeEvent& event )
 void ConfirmDialog::OnLaunch( wxCommandEvent& event )
 {
 	// Generate exchange metadata file
-	
-	// Launch the program
-	wxString equipment_id;
+	wxString exchange_filename = wxFileName::CreateTempFileName(wxT("session"));
 
-	if(m_gridMetadata->GetNumberRows()>0)
+	if( exchange_filename != wxEmptyString )
 	{
-		equipment_id = m_gridMetadata->GetCellValue (1, 0);
+		wxFFile exchange_file (exchange_filename, wxT("w+")) ;
+		if( exchange_file.IsOpened())
+		{
+			exchange_file.Write(wxT("[metadata]\n"));
+
+			int row ;
+			for(row=0; row<m_gridMetadata->GetNumberRows(); row++)
+			{
+				exchange_file.Write(
+					m_gridMetadata->GetRowLabelValue( row ) + 
+					wxT("=") +
+					m_gridMetadata->GetCellValue( row, 0 ) +
+					wxT("\n")
+				);
+			}
+			exchange_file.Close();
+		}
 	}
 
-	long launch_enabled = wxFileConfig::Get()->ReadLong (
-			wxT("equipment.")
-			+ equipment_id
-			+ wxT(".launcher.enabled"),
-			0
-		) ;
-	if( false && launch_enabled != 1 )
-	{
-		
-	}
-	else
-	{
-		wxString launch_program = wxFileConfig::Get()->Read(
-				wxT("equipment.")
-				+ equipment_id
-				+ wxT(".launcher.program")
-			) ;
-		wxGetApp().Log(wxT("Starting program ") + launch_program);
-		wxFileName launch_file(launch_program);
-		long pid = wxExecute (launch_file.GetFullPath());
-		wxGetApp().Log(wxString::Format("Program PID %d", pid));
-		
-		Show(false);
+	Show(false);
 
-	}
+	ProcessController::Get()->StartNewSession(exchange_filename);
+
+	return ;
 }
 
 void ConfirmDialog::ConfirmNewSession(const wxString & equipment_id)
@@ -342,10 +337,6 @@ void ConfirmDialog::ConfirmNewSession(const wxString & equipment_id)
 	// update equipment id
 	m_gridMetadata->SetCellValue (1, 0, equipment_id);
 	
-	// update button label
-	m_buttonLaunch->SetLabel(wxT("Launch ") + equipment_id);
-	m_buttonLaunch->Fit();
-
 	// retrieve booking information here
 	Show(true);
 }
@@ -359,15 +350,38 @@ void ConfirmDialog::ResetGridMetadata()
 		equipment_id = m_gridMetadata->GetCellValue (1, 0);
 		m_gridMetadata->DeleteRows (0, m_gridMetadata->GetNumberRows());
 	}
-	m_gridMetadata->InsertRows (0, 2) ;
+	m_gridMetadata->InsertRows (0, 4) ;
 	m_gridMetadata->SetRowLabelValue (0, wxT("session.datetime"));
 	m_gridMetadata->SetRowLabelValue (1, wxT("session.equipment.id"));
+	m_gridMetadata->SetRowLabelValue (2, wxT("session.project.name"));
+	m_gridMetadata->SetRowLabelValue (3, wxT("session.project.leader"));
 
 	m_gridMetadata->SetReadOnly (0, 0);
 	m_gridMetadata->SetReadOnly (1, 0);
+	m_gridMetadata->SetReadOnly (2, 0);
+	m_gridMetadata->SetReadOnly (3, 0);
+	
+	m_gridMetadata->SetCellTextColour(0, 0, wxSystemSettings::GetColour( wxSYS_COLOUR_GRAYTEXT));
+	m_gridMetadata->SetCellTextColour(1, 0, wxSystemSettings::GetColour( wxSYS_COLOUR_GRAYTEXT));
+	m_gridMetadata->SetCellTextColour(2, 0, wxSystemSettings::GetColour( wxSYS_COLOUR_GRAYTEXT));
+	m_gridMetadata->SetCellTextColour(3, 0, wxSystemSettings::GetColour( wxSYS_COLOUR_GRAYTEXT));
+
 
 	m_gridMetadata->SetCellValue (0, 0, wxDateTime::Now().FormatISOCombined());
 	m_gridMetadata->SetCellValue (1, 0, equipment_id);
+	if(m_choiceProject->GetStringSelection() != wxEmptyString)
+	{
+		m_gridMetadata->SetCellValue (2, 0, wxFileConfig::Get()->Read(
+					wxT("project.")
+					+ m_choiceProject->GetStringSelection()
+					+ wxT(".name")
+				));
+		m_gridMetadata->SetCellValue (3, 0, wxFileConfig::Get()->Read(
+					wxT("project.")
+					+ m_choiceProject->GetStringSelection()
+					+ wxT(".owner")
+				));
+	}
 
 }
 
