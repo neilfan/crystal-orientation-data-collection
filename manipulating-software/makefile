@@ -71,6 +71,7 @@ CPPS   = \
 		main/server \
 		main/confirm_dialog \
 		main/process_controller \
+		main/datafile_monitor \
 
 
 # Work out a list of all source files

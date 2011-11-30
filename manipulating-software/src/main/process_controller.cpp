@@ -23,6 +23,7 @@
 #include <wx/fileconf.h> 
 
 #include "main/process_controller.h"
+#include "main/datafile_monitor.h"
 #include "main/confirm_dialog.h"
 #include "main/app.h"
 
