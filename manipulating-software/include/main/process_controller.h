@@ -46,6 +46,7 @@ public:
 	 */
 	void StartNewSession(const wxString & exchange_file);
 
+	bool OnNewDataFileFound(const wxString & file);
 
 private:
 	ProcessController();
@@ -54,6 +55,7 @@ private:
 	wxFileName GetCurrentSessionDirName() ;
 	wxString ReadSessionMetaData(const wxString & key) ;
 	bool LaunchEquipment();
+	bool StartMonitoring();
 
 	static ProcessController * m_pInstance ;
 };

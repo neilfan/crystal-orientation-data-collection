@@ -42,6 +42,9 @@ IMPLEMENT_APP(MainApp)
 // This is executed upon startup, like 'main()' in non-wxWidgets programs.
 bool MainApp::OnInit()
 {
+	/* initialize random seed: */
+	srand ( time(NULL) );
+
 	wxLog::EnableLogging(false);
 
 	// Change working directory same as the binary for portable use

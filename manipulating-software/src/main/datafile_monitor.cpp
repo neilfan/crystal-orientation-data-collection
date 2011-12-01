@@ -35,17 +35,125 @@ DataFileMonitor * DataFileMonitor::Get()
 
 DataFileMonitor :: DataFileMonitor()
 {
-	Connect(wxEVT_FSWATCHER,
-			wxFileSystemWatcherEventHandler(DataFileMonitor::OnFileSystemEvent));
+	m_isMorniting = false;
+	m_arrayExts = new wxArrayString() ;
 }
 
 DataFileMonitor :: ~DataFileMonitor()
 {
-	Disconnect(wxEVT_FSWATCHER,
-		wxFileSystemWatcherEventHandler(DataFileMonitor::OnFileSystemEvent));
+	Reset();
+	wxDELETE(m_arrayExts);
 }
 
+/**
+ * Process the change on filesystem which is just reported.
+ * Need to check the extension of file. (lower case stored in the m_arrayExts)
+ */
 void DataFileMonitor :: OnFileSystemEvent(wxFileSystemWatcherEvent& event)
 {
+	if( ! event.IsError())
+	{
+		wxFileName filename = event.GetNewPath() ;
+		wxString ext = filename.GetExt().Lower();
 
+		unsigned int i ;
+		for( i=0 ;i<m_arrayExts->GetCount() ; i++)
+		{
+			if( m_arrayExts->Item(i) == ext)
+			{
+				// TODO: Report to process controller of this file creation
+				ProcessController::Get()->OnNewDataFileFound( filename.GetFullPath() ) ;
+				break;
+			}
+		}
+	}
+}
+
+/**
+ * Start the monitoring.
+ */
+void DataFileMonitor :: Start()
+{
+	if( ! m_isMorniting )
+	{
+		wxGetApp().Log(wxT("DataFileMonitor Started") );
+
+		unsigned int i ;
+		for( i=0 ;i<m_arrayExts->GetCount() ; i++)
+		{
+			wxGetApp().Log(wxT("  EXT:  ") + m_arrayExts->Item(i) );
+		}
+		
+		wxArrayString * paths = new wxArrayString;
+		GetWatchedPaths(paths) ;
+		for( i=0 ;i<paths->GetCount() ; i++)
+		{
+			wxGetApp().Log(wxT("  PATH: ") + paths->Item(i) );
+		}
+		wxDELETE(paths);
+
+
+		Connect(wxEVT_FSWATCHER,
+				wxFileSystemWatcherEventHandler(DataFileMonitor::OnFileSystemEvent));
+		m_isMorniting = true ;
+	}
+}
+
+/**
+ * Stop the monitoring.
+ * No change with the current monitoring settings
+ */
+void DataFileMonitor :: Stop()
+{
+	if( m_isMorniting )
+	{
+		wxGetApp().Log(wxT("DataFileMonitor Stopped"));
+		Disconnect(wxEVT_FSWATCHER,
+			wxFileSystemWatcherEventHandler(DataFileMonitor::OnFileSystemEvent));
+		m_isMorniting = false ;
+	}
+}
+
+/**
+ * Add a new file extension for monitoring
+ */
+void DataFileMonitor :: AddExtension(const wxString & ext)
+{
+	wxString ext_lower = ext ;
+	ext_lower = ext_lower.Trim().Lower() ;
+
+	if( ext_lower != wxEmptyString )
+	{
+		
+		unsigned int i ;
+		for( i=0 ;i<m_arrayExts->GetCount() ; i++)
+		{
+			if( m_arrayExts->Item(i) == ext_lower)
+			{
+				return ;
+			}
+		}
+		m_arrayExts->Add(ext_lower);
+	}
+}
+
+
+/**
+ * check if the monitor ON or OFF
+ */
+bool DataFileMonitor :: IsMoniotring()
+{
+	return m_isMorniting;
+}
+
+
+/**
+ * Reset the data file monitor
+ * Stop all monitoring and disconnect the event
+ */
+void DataFileMonitor :: Reset()
+{
+	Stop();
+	RemoveAll();
+	m_arrayExts->Clear();
 }

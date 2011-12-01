@@ -30,11 +30,19 @@ public:
 
 	~DataFileMonitor();
 	void OnFileSystemEvent(wxFileSystemWatcherEvent& event);
+	void AddExtension(const wxString & ext) ;
+	void Start();
+	void Stop();
+	void Reset();
+	bool IsMoniotring() ;
 
 
 private:
 	DataFileMonitor();
+	
 	static DataFileMonitor * m_pInstance ;
+	bool m_isMorniting ;
+	wxArrayString * m_arrayExts ;
 
 } ;
 

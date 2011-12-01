@@ -21,6 +21,7 @@
 #include <wx/wfstream.h> 
 #include <wx/msgdlg.h> 
 #include <wx/fileconf.h> 
+#include <wx/tokenzr.h> 
 
 #include "main/process_controller.h"
 #include "main/datafile_monitor.h"
@@ -63,7 +64,35 @@ wxFileName ProcessController::GetCurrentSessionDirName()
 	return session_dir;
 }
 
+/**
+ * Get the setting for current session from the METADATA file
+ */
+wxString ProcessController::ReadSessionMetaData(const wxString & key)
+{
+	wxFileName cfg_filename = GetCurrentSessionDirName();
+	cfg_filename.SetName(SESSION_FILENAME_METADATA) ;
+	cfg_filename.SetEmptyExt();
+	
+	wxFileInputStream cfg_stream(cfg_filename.GetFullPath());
+	if(cfg_stream.IsOk())
+	{
+		wxFileConfig metadata_config(cfg_stream);
+		// enumeration variables
+		wxString str;
 
+		if(metadata_config.Read(wxT("metadata/") + key, &str))
+		{
+			return str ;
+		}
+	}
+	
+	return wxEmptyString ;
+
+}
+
+/*
+ * Present a dialog for confirmation before starting a new session
+ */
 void ProcessController::ConfirmNewSession(const wxString & equipment_id)
 {
 	if(m_confirm_dialog==NULL)
@@ -75,6 +104,10 @@ void ProcessController::ConfirmNewSession(const wxString & equipment_id)
 	wxDynamicCast(m_confirm_dialog, ConfirmDialog)->ConfirmNewSession(equipment_id) ;
 }
 
+
+/*
+ * Start a new session
+ */
 void ProcessController::StartNewSession(const wxString & exchange_file)
 {
 	wxGetApp().Log(_T("Starting session with exchange file ") + exchange_file);
@@ -111,14 +144,14 @@ void ProcessController::StartNewSession(const wxString & exchange_file)
 	// END Create Session Ddirectory structure 
 	
 	LaunchEquipment();
-	
-	// TODO: Start Monitor files here
+	StartMonitoring();
 }
+
 
 
 bool ProcessController::LaunchEquipment()
 {
-	wxString equipment_id = ReadSessionMetaData(_T("session.equipment.id"));
+	wxString equipment_id = ReadSessionMetaData(wxT("session.equipment.id"));
 
 
 	long launch_enabled = wxFileConfig::Get()->ReadLong (
@@ -151,25 +184,58 @@ bool ProcessController::LaunchEquipment()
 	return false;
 }
 
-wxString ProcessController::ReadSessionMetaData(const wxString & key)
-{
-	wxFileName cfg_filename = GetCurrentSessionDirName();
-	cfg_filename.SetName(SESSION_FILENAME_METADATA) ;
-	cfg_filename.SetEmptyExt();
-	
-	wxFileInputStream cfg_stream(cfg_filename.GetFullPath());
-	if(cfg_stream.IsOk())
-	{
-		wxFileConfig metadata_config(cfg_stream);
-		// enumeration variables
-		wxString str;
 
-		if(metadata_config.Read(wxT("metadata/") + key, &str))
+
+
+bool ProcessController::StartMonitoring()
+{
+	// TODO: Start Monitor files here
+	DataFileMonitor * monitor = DataFileMonitor::Get() ;
+	monitor->Reset();
+	
+	wxString equipment_id = ReadSessionMetaData(wxT("session.equipment.id"));
+
+
+	// Set the monitored extensions
+	{
+		wxString exts = wxFileConfig::Get()->Read(
+				wxString::Format(wxT("equipment.%s.monitor.extensions"), equipment_id)
+			) ;
+
+		wxStringTokenizer tokenizer(exts, wxT(", "));
+		while ( tokenizer.HasMoreTokens() )
 		{
-			return str ;
+			monitor->AddExtension( tokenizer.GetNextToken() ) ;
 		}
 	}
-	
-	return wxEmptyString ;
 
+
+	// Set the monitored folders
+	{
+		wxString folders = wxFileConfig::Get()->Read(
+				wxString::Format(wxT("equipment.%s.monitor.directories"), equipment_id)
+			) ;
+
+		wxStringTokenizer tokenizer(folders, wxT(", "));
+		while ( tokenizer.HasMoreTokens() )
+		{
+			// Do not appoint the ext here, but force to be a file path
+			// otherwise only the directory path is returned by wxFileSystemWatcherEvent
+			wxFileName path(tokenizer.GetNextToken(), wxEmptyString, wxEmptyString);
+			monitor->AddTree( path , wxFSW_EVENT_CREATE ) ;
+		}
+	}
+
+
+	monitor->Start();
+
+	return true ;
+}
+
+
+bool ProcessController::OnNewDataFileFound(const wxString & file)
+{
+	//TODO: deal with new file
+	wxMessageBox(file);
+	return true ;
 }
