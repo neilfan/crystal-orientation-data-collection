@@ -17,49 +17,31 @@
  * along with crystal-orientation-data-collection. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-#ifndef INCLUDED_MAIN_PROCESS_CONTROLLER_H
-#define INCLUDED_MAIN_PROCESS_CONTROLLER_H
+#ifndef INCLUDED_MAIN_MACRO_SCHEDULER_H
+#define INCLUDED_MAIN_MACRO_SCHEDULER_H
 
 #define SESSION_FILENAME_METADATA wxT("METADATA")
 
 #include <wx/wxprec.h>
-#include <wx/filename.h> 
 
 #ifndef WX_PRECOMP
 #include "wx/wx.h"
 #endif
  
-class ProcessController
+class MacroScheduler
 {
 public:
 
 	
-	static ProcessController * Get();
-	~ProcessController();
-
-	/**
-	 * Start Session Confirmation for a new session
-	 */
-	void ConfirmNewSession(const wxString & equipment_id);
-
-	/**
-	 * Start the equipment
-	 */
-	void StartNewSession(const wxString & exchange_file);
-
-	bool OnNewDataFileFound(const wxString & file);
+	static MacroScheduler * Get();
+	~MacroScheduler();
 
 private:
-	ProcessController();
-	wxObject * m_confirm_dialog ;
-	wxString m_current_session_id ;
-	wxFileName GetCurrentSessionDirName() ;
-	wxString ReadSessionMetaData(const wxString & key) ;
-	bool LaunchEquipment();
-	bool StartMonitoring();
-	bool ExportFile(const wxString & file);
+	MacroScheduler();
+	static MacroScheduler * m_pInstance ;
 
-	static ProcessController * m_pInstance ;
+
+
 };
 
 

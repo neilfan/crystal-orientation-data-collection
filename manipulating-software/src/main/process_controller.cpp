@@ -17,7 +17,6 @@
  * along with crystal-orientation-data-collection. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-#include <wx/filename.h> 
 #include <wx/wfstream.h> 
 #include <wx/msgdlg.h> 
 #include <wx/fileconf.h> 
@@ -25,6 +24,7 @@
 
 #include "main/process_controller.h"
 #include "main/datafile_monitor.h"
+#include "main/macro_scheduler.h"
 #include "main/confirm_dialog.h"
 #include "main/app.h"
 
@@ -43,6 +43,10 @@ ProcessController::~ProcessController()
 	}
 }
 
+/**
+ * Return the instance
+ * Singleton pattern.
+ */
 ProcessController * ProcessController::Get()
 {
 	if( ! m_pInstance)
@@ -232,10 +236,22 @@ bool ProcessController::StartMonitoring()
 	return true ;
 }
 
-
+/**
+ * Process the creation of new data file
+ */
 bool ProcessController::OnNewDataFileFound(const wxString & file)
 {
 	//TODO: deal with new file
-	wxMessageBox(file);
+	ExportFile(file);
+	return true ;
+}
+
+
+/**
+ * Export new data file
+ */
+bool ProcessController::ExportFile(const wxString & file)
+{
+	MacroScheduler::Get() ;
 	return true ;
 }

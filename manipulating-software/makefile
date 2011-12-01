@@ -72,6 +72,7 @@ CPPS   = \
 		main/confirm_dialog \
 		main/process_controller \
 		main/datafile_monitor \
+		main/macro_scheduler \
 
 
 # Work out a list of all source files
