@@ -35,6 +35,7 @@ public:
 	
 	static MacroScheduler * Get();
 	~MacroScheduler();
+	bool Execute(const wxString & script, const wxString & datafile);
 
 private:
 	MacroScheduler();

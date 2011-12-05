@@ -48,6 +48,7 @@ public:
 	void StartNewSession(const wxString & exchange_file);
 
 	bool OnNewDataFileFound(const wxString & file);
+	bool OnExportTerminate(int pid, int status, const wxString & script, const wxString & datafile);
 
 private:
 	ProcessController();
@@ -58,6 +59,7 @@ private:
 	bool LaunchEquipment();
 	bool StartMonitoring();
 	bool ExportFile(const wxString & file);
+	bool TransferFile(const wxString & file);
 
 	static ProcessController * m_pInstance ;
 };

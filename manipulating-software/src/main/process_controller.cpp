@@ -28,6 +28,7 @@
 #include "main/confirm_dialog.h"
 #include "main/app.h"
 
+
 ProcessController * ProcessController::m_pInstance = NULL;
 
 ProcessController::ProcessController()
@@ -239,10 +240,27 @@ bool ProcessController::StartMonitoring()
 /**
  * Process the creation of new data file
  */
+bool ProcessController::OnExportTerminate(int pid, int status, const wxString & script, const wxString & datafile)
+{
+	// The export is terminated, may success or not
+	// in any case, transfer data to storage
+	wxGetApp().Log(wxString::Format("Export Terminate PID=%d, STATUS=%d", pid, status));
+
+	TransferFile(datafile);
+	return true ;
+}
+
+/**
+ * Process the creation of new data file
+ */
 bool ProcessController::OnNewDataFileFound(const wxString & file)
 {
-	//TODO: deal with new file
-	ExportFile(file);
+	// deal with new file
+	if( ! ExportFile(file) )
+	{
+		// No export? do transfer
+		TransferFile(file);
+	}
 	return true ;
 }
 
@@ -252,6 +270,62 @@ bool ProcessController::OnNewDataFileFound(const wxString & file)
  */
 bool ProcessController::ExportFile(const wxString & file)
 {
-	MacroScheduler::Get() ;
-	return true ;
+	wxString equipment_id = ReadSessionMetaData(wxT("session.equipment.id"));
+
+	// let's have a look if export is supported by this equipment
+	bool enabled = wxFileConfig::Get()->ReadBool(
+			wxString::Format(wxT("equipment.%s.export.enabled"), equipment_id), 
+			true
+		) ;
+	wxGetApp().Log(wxT("Export"));
+	wxGetApp().Log(wxString::Format(" Enabled %d", enabled));
+
+	if(enabled)
+	{
+		// export required, do export before transfer data to storage
+		wxString script = wxFileConfig::Get()->Read(
+				wxString::Format(wxT("equipment.%s.export.script"), equipment_id)
+			) ;
+		
+		wxGetApp().Log(wxString::Format(" Script %s", script));
+		wxGetApp().Log(wxString::Format(" Datafile %s", file));
+
+		MacroScheduler::Get()->Execute(script, file);
+		return true ;
+	}
+
+	// seems the equipment want data file go storage straight away
+	// all right, we can do that by giving a false here
+	return false;
+}
+
+
+/**
+ * Export new data file
+ */
+bool ProcessController::TransferFile(const wxString & file)
+{
+	wxString equipment_id = ReadSessionMetaData(wxT("session.equipment.id"));
+
+	// let's have a look if storage is supported by this equipment
+	bool enabled = wxFileConfig::Get()->ReadBool(
+			wxString::Format(wxT("equipment.%s.storage.enabled"), equipment_id), 
+			true
+		) ;
+
+	bool prompt = wxFileConfig::Get()->ReadBool(
+			wxString::Format(wxT("equipment.%s.storage.prompt"), equipment_id), 
+			true
+		) ;
+		
+	if( enabled )
+	{
+		if(prompt)
+		{
+			// Display a promot dialog, start transfer within 30 seconds
+		}
+		return true ;
+	}
+
+	return false;
 }

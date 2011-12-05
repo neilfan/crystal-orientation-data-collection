@@ -323,7 +323,7 @@ void ConfirmDialog::OnLaunch( wxCommandEvent& event )
 		}
 	}
 
-	EndModal(0);
+	Show(false);
 
 	ProcessController::Get()->StartNewSession(exchange_filename);
 
@@ -338,7 +338,7 @@ void ConfirmDialog::ConfirmNewSession(const wxString & equipment_id)
 	m_gridMetadata->SetCellValue (1, 0, equipment_id);
 	
 	// retrieve booking information here
-	ShowModal();
+	Show(true);
 }
 
 void ConfirmDialog::ResetGridMetadata()
