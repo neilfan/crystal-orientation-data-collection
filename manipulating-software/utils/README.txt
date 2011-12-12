@@ -22,8 +22,8 @@
 Files required in this directory:
 
 smbclient WIN32 Porting
-Path: samba-tng/smbclient.exe
-download from http://download.samba-tng.org/tng/snapshot/win32/smbclient.exe
+Path: smbclientw32/smbclient.exe
+download from http://leecutsco.de/lpackham/smbclient/
 
 AutoHotkey Basic
 Path: AutoHotkey/AutoHotkey.exe
