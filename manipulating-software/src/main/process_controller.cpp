@@ -17,6 +17,7 @@
  * along with crystal-orientation-data-collection. If not, see
  * <http://www.gnu.org/licenses/>.
  */
+
 #include <wx/wfstream.h> 
 #include <wx/msgdlg.h> 
 #include <wx/fileconf.h> 
@@ -24,6 +25,7 @@
 
 #include "main/process_controller.h"
 #include "main/datafile_monitor.h"
+#include "main/datafile_storage.h"
 #include "main/macro_scheduler.h"
 #include "main/confirm_dialog.h"
 #include "main/app.h"
@@ -34,10 +36,14 @@ ProcessController * ProcessController::m_pInstance = NULL;
 ProcessController::ProcessController()
 {
 	m_confirm_dialog = NULL ;
+	
+	// start the file transfer daemon
+	DataFileStorage::Get()->Start() ;
 }
 
 ProcessController::~ProcessController()
 {
+
 	if(m_confirm_dialog!=NULL)
 	{
 		wxDynamicCast(m_confirm_dialog, ConfirmDialog)->Destroy();
@@ -158,15 +164,14 @@ bool ProcessController::LaunchEquipment()
 {
 	wxString equipment_id = ReadSessionMetaData(wxT("session.equipment.id"));
 
-
-	long launch_enabled = wxFileConfig::Get()->ReadLong (
+	bool launch_enabled = wxFileConfig::Get()->ReadBool (
 			wxT("equipment.")
 			+ equipment_id
 			+ wxT(".launcher.enabled"),
-			0
+			false
 		) ;
 
-	if( false && launch_enabled != 1 )
+	if( launch_enabled )
 	{
 		
 	}
@@ -181,11 +186,11 @@ bool ProcessController::LaunchEquipment()
 		wxFileName launch_file(launch_program);
 		long pid = wxExecute (launch_file.GetFullPath());
 		wxGetApp().Log(wxString::Format("Program PID %d", pid));
-		
+
 		return pid != 0 ;
 		
 	}
-	
+
 	return false;
 }
 
@@ -264,7 +269,6 @@ bool ProcessController::OnNewDataFileFound(const wxString & file)
 	return true ;
 }
 
-
 /**
  * Export new data file
  */
@@ -324,6 +328,8 @@ bool ProcessController::TransferFile(const wxString & file)
 		{
 			// Display a promot dialog, start transfer within 30 seconds
 		}
+		
+		// TODO: Transfer file here
 		return true ;
 	}
 

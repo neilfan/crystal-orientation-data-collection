@@ -319,6 +319,17 @@ void ConfirmDialog::OnLaunch( wxCommandEvent& event )
 					wxT("\n")
 				);
 			}
+			
+			/*
+			// extra information to go METADATA
+			exchange_file.Write(
+				m_gridMetadata->GetRowLabelValue( row ) + 
+				wxT("session.equipment.id=") +
+				m_gridMetadata->GetCellValue( row, 0 ) +
+				wxT("\n")
+			);
+			*/
+
 			exchange_file.Close();
 		}
 	}
@@ -350,33 +361,37 @@ void ConfirmDialog::ResetGridMetadata()
 		equipment_id = m_gridMetadata->GetCellValue (1, 0);
 		m_gridMetadata->DeleteRows (0, m_gridMetadata->GetNumberRows());
 	}
-	m_gridMetadata->InsertRows (0, 4) ;
+	m_gridMetadata->InsertRows (0, 5) ;
 	m_gridMetadata->SetRowLabelValue (0, wxT("session.datetime"));
 	m_gridMetadata->SetRowLabelValue (1, wxT("session.equipment.id"));
-	m_gridMetadata->SetRowLabelValue (2, wxT("session.project.name"));
-	m_gridMetadata->SetRowLabelValue (3, wxT("session.project.leader"));
+	m_gridMetadata->SetRowLabelValue (2, wxT("session.project.id"));
+	m_gridMetadata->SetRowLabelValue (3, wxT("session.project.name"));
+	m_gridMetadata->SetRowLabelValue (4, wxT("session.project.leader"));
 
 	m_gridMetadata->SetReadOnly (0, 0);
 	m_gridMetadata->SetReadOnly (1, 0);
 	m_gridMetadata->SetReadOnly (2, 0);
 	m_gridMetadata->SetReadOnly (3, 0);
+	m_gridMetadata->SetReadOnly (4, 0);
 	
 	m_gridMetadata->SetCellTextColour(0, 0, wxSystemSettings::GetColour( wxSYS_COLOUR_GRAYTEXT));
 	m_gridMetadata->SetCellTextColour(1, 0, wxSystemSettings::GetColour( wxSYS_COLOUR_GRAYTEXT));
 	m_gridMetadata->SetCellTextColour(2, 0, wxSystemSettings::GetColour( wxSYS_COLOUR_GRAYTEXT));
 	m_gridMetadata->SetCellTextColour(3, 0, wxSystemSettings::GetColour( wxSYS_COLOUR_GRAYTEXT));
+	m_gridMetadata->SetCellTextColour(4, 0, wxSystemSettings::GetColour( wxSYS_COLOUR_GRAYTEXT));
 
 
 	m_gridMetadata->SetCellValue (0, 0, wxDateTime::Now().FormatISOCombined());
 	m_gridMetadata->SetCellValue (1, 0, equipment_id);
 	if(m_choiceProject->GetStringSelection() != wxEmptyString)
 	{
-		m_gridMetadata->SetCellValue (2, 0, wxFileConfig::Get()->Read(
+		m_gridMetadata->SetCellValue (2, 0, m_choiceProject->GetStringSelection() );
+		m_gridMetadata->SetCellValue (3, 0, wxFileConfig::Get()->Read(
 					wxT("project.")
 					+ m_choiceProject->GetStringSelection()
 					+ wxT(".name")
 				));
-		m_gridMetadata->SetCellValue (3, 0, wxFileConfig::Get()->Read(
+		m_gridMetadata->SetCellValue (4, 0, wxFileConfig::Get()->Read(
 					wxT("project.")
 					+ m_choiceProject->GetStringSelection()
 					+ wxT(".owner")

@@ -24,15 +24,15 @@
 
 #include <wx/wxprec.h>
 #include <wx/filename.h> 
+#include <wx/event.h> 
 
 #ifndef WX_PRECOMP
 #include "wx/wx.h"
 #endif
  
-class ProcessController
+class ProcessController : public wxEvtHandler 
 {
 public:
-
 	
 	static ProcessController * Get();
 	~ProcessController();
@@ -49,19 +49,20 @@ public:
 
 	bool OnNewDataFileFound(const wxString & file);
 	bool OnExportTerminate(int pid, int status, const wxString & script, const wxString & datafile);
+	wxString ReadSessionMetaData(const wxString & key) ;
 
 private:
 	ProcessController();
 	wxObject * m_confirm_dialog ;
 	wxString m_current_session_id ;
 	wxFileName GetCurrentSessionDirName() ;
-	wxString ReadSessionMetaData(const wxString & key) ;
 	bool LaunchEquipment();
 	bool StartMonitoring();
 	bool ExportFile(const wxString & file);
 	bool TransferFile(const wxString & file);
 
 	static ProcessController * m_pInstance ;
+
 };
 
 

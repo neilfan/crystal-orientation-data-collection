@@ -73,6 +73,7 @@ CPPS   = \
 		main/process_controller \
 		main/datafile_monitor \
 		main/macro_scheduler \
+		main/datafile_storage \
 
 
 # Work out a list of all source files
