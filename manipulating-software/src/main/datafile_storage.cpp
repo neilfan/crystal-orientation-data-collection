@@ -24,9 +24,11 @@
 #include <wx/fileconf.h> 
 #include <wx/filename.h> 
 #include <wx/arrstr.h> 
+#include <wx/stream.h> 
 
 #include "main/process_controller.h"
 #include "main/datafile_storage.h"
+#include "main/async_process.h"
 #include "main/app.h"
 
 /**
@@ -35,17 +37,26 @@
  */
 
 // This is the handler for process termination events
-class ValidateProcess : public wxProcess
+class ValidateProcess : public AsyncProcess
 {
 protected:
 	wxString m_datafile;
 	wxString m_destination;
 
 public:
-	ValidateProcess(const wxString& script, const wxString& datafile, const wxString & dest)
-		:wxProcess(), m_datafile(datafile), m_destination(dest)
+	ValidateProcess(const wxString& datafile, const wxString & dest)
+		:AsyncProcess(), m_datafile(datafile), m_destination(dest)
 	{
-		Redirect();
+	}
+	
+	const wxString & GetDataFile()
+	{
+		return m_datafile ;
+	}
+
+	const wxString & GetDestination()
+	{
+		return m_destination ;
 	}
 
 	// instead of overriding this virtual function we might as well process the
@@ -53,9 +64,8 @@ public:
 	// cases
 	virtual void OnTerminate(int pid, int status)
 	{
-
 		DataFileStorage::Get()
-			->OnValidateTerminate(pid, status, m_datafile, m_destination) ;
+			->OnValidateTerminate(status, this) ;
 	}
 
 };
@@ -66,17 +76,28 @@ public:
  */
 
 // This is the handler for process termination events
-class TransferProcess : public wxProcess
+//class TransferProcess : public wxProcess
+
+class TransferProcess : public AsyncProcess
 {
 protected:
 	wxString m_datafile;
 	wxString m_destination;
 
 public:
-	TransferProcess(const wxString& script, const wxString& datafile, const wxString & dest)
-		:wxProcess(), m_datafile(datafile), m_destination(dest)
+	TransferProcess(const wxString& datafile, const wxString & dest)
+		:AsyncProcess(), m_datafile(datafile), m_destination(dest)
 	{
-		Redirect();
+	}
+
+	const wxString & GetDataFile()
+	{
+		return m_datafile ;
+	}
+
+	const wxString & GetDestination()
+	{
+		return m_destination ;
 	}
 
 	// instead of overriding this virtual function we might as well process the
@@ -84,9 +105,7 @@ public:
 	// cases
 	virtual void OnTerminate(int pid, int status)
 	{
-
-		DataFileStorage::Get()
-			->OnTransferTerminate(pid, status, m_datafile, m_destination) ;
+		DataFileStorage::Get()->OnTransferTerminate(status, this) ;
 	}
 
 };
@@ -113,6 +132,11 @@ DataFileStorage::~DataFileStorage()
 {
 	Disconnect( wxEVT_TIMER , wxTimerEventHandler( DataFileStorage::OnTimer ));
 	wxDELETE(m_timer);
+	
+	if(wxProcess::Exists(m_childPid))
+	{
+	}
+		wxProcess::Kill(m_childPid, wxSIGKILL, wxKILL_CHILDREN ) ;
 }
 
 /**
@@ -179,145 +203,173 @@ void DataFileStorage::OnTimer( wxTimerEvent& event )
 				if ( wxFileExists(from) )
 				{
 					// copy file
-					m_isTransferring = false ;
+					m_isTransferring = true ;
 					m_timer->Stop();
 					wxGetApp().Log(
 						wxString::Format("copy %s to %s", from, to)
 					);
 					
-					Transfer( from, to);
-
+					Validate( from, to);
 				}
 			}
 		}
 	}
-
 }
 
-
-bool DataFileStorage::Transfer(const wxString & datafile, const wxString & dest)
+const wxString & DataFileStorage::GetCommandLine()
 {
-	wxString service = wxFileConfig::Get()->Read( wxT("sys.network.smb.service") );
-	wxFileName from(datafile);
-	wxFileName to(dest);
-
-	if(service == wxEmptyString)
+	if(m_cmd==wxEmptyString)
 	{
-		return false;
-	}
+		wxString service = wxFileConfig::Get()->Read( wxT("sys.network.smb.service") );
+		wxString smbclient = wxFileConfig::Get()->Read( wxT("sys.utils.smbclient.program") );
 
-	wxString username = wxFileConfig::Get()->Read( wxT("sys.network.smb.username") );
-	wxString password = wxFileConfig::Get()->Read( wxT("sys.network.smb.password") );
-	wxString domain  = wxFileConfig::Get()->Read( wxT("sys.network.smb.domain") );
-	wxString project_directory = to.GetPath(wxPATH_GET_SEPARATOR, wxPATH_UNIX );
-/*
-	TODO: these lines are for backup only
-
-	wxString project_id = ProcessController::Get()->ReadSessionMetaData(wxT("session.project.id"));
-	wxString project_directory = wxFileConfig::Get()->Read(
-			wxT("project.") + project_id + wxT(".storage.defaultpath")
-		) ;
-
-	if(project_directory == wxEmptyString)
-	{
-		wxGetApp().Log(
-			wxString::Format("Invalid Remote storage path for project %s", project_id)
-		);
-
-		return false;
-	}
-*/
-
-	wxString cmd_line = wxString::Format(wxT("utils/samba-tng/smbclient.exe \"%s\" ") , service);
-
-	if(password != wxEmptyString)
-	{
-		cmd_line += wxString::Format(wxT(" \"%s\"") , password) ;
-	}
-	else
-	{
-		// if no password configed, avoid prompt in shell
-		cmd_line += wxT(" -N")  ;
-	}
-
-	if(username != wxEmptyString)
-	{
-		cmd_line += wxString::Format(wxT(" -U \"%s\"") , username) ;
-	}
-
-	if(domain != wxEmptyString)
-	{
-		cmd_line += wxString::Format(wxT(" -W \"%s\"") , domain) ;
-		cmd_line += wxString::Format(wxT(" -n \"%s\"") , domain) ;
-	}
-
-	// Setup the remote working directory
-	cmd_line += wxString::Format(wxT(" -D \"%s\"") , project_directory) ;
-	wxString cmd ;
-	wxString appendix = wxEmptyString ;
-	
-	do
-	{
-		to.SetName( from.GetName() + appendix ) ;
-		to.SetExt ( from.GetExt() );
-
-		cmd = wxString::Format("%s -c \"ls %s\"", cmd_line, to.GetFullName() );
-		wxGetApp().Log(cmd);
-
-		wxArrayString output;
-		bool filename_exists = true;
-		int code = wxExecute(cmd, output);
-		
-		if ( code != -1 )
+		if(service != wxEmptyString)
 		{
-			// search for the STATUS_NO_SUCH_FILE
-			unsigned int i ;
-			for(i=0; i<output.GetCount(); i++)
-			{
-				wxGetApp().Log(output[i]);
-				if(output[i].Find( wxT("STATUS_NO_SUCH_FILE")) != wxNOT_FOUND )
-				{
-					// A file with same name found on remote storage
-					filename_exists = false ;
-					break ;
-				}
-			}
+			wxString username = wxFileConfig::Get()->Read( wxT("sys.network.smb.username") );
+			wxString password = wxFileConfig::Get()->Read( wxT("sys.network.smb.password") );
+			wxString domain  = wxFileConfig::Get()->Read( wxT("sys.network.smb.domain") );
 
-			if(filename_exists)
+			m_cmd = wxString::Format(wxT("%s \"%s\" ") , smbclient, service);
+
+			if(password != wxEmptyString)
 			{
-				appendix = wxString::Format(wxT("_%u%04u"), wxDateTime::GetTimeNow() , rand()%10000);
+				m_cmd += wxString::Format(wxT(" \"%s\"") , password) ;
 			}
 			else
 			{
-				wxGetApp().Log("File not exists");
-				break;
+				// if no password configed, avoid prompt in shell
+				m_cmd += wxT(" -N")  ;
 			}
-			wxGetApp().Log(appendix);
+
+			if(username != wxEmptyString)
+			{
+				m_cmd += wxString::Format(wxT(" -U \"%s\"") , username) ;
+			}
+
+			if(domain != wxEmptyString)
+			{
+				m_cmd += wxString::Format(wxT(" -W \"%s\"") , domain) ;
+				m_cmd += wxString::Format(wxT(" -n \"%s\"") , domain) ;
+			}
+		}
+	}
+	return m_cmd ;
+
+}
+
+bool DataFileStorage::Transfer(const wxString & datafile, const wxString & dest)
+{
+	wxFileName from(datafile) ;
+	wxFileName to(dest);
+	
+	wxString project_directory = to.GetPath(wxPATH_GET_SEPARATOR, wxPATH_UNIX );
+	
+	wxString cmd_line = wxString::Format("%s -D \"%s\" -c \"put %s %s\"", GetCommandLine(), project_directory, from.GetFullPath(), to.GetFullName() );
+	wxGetApp().Log(wxString::Format("Transfer cmd_line %s", cmd_line));
+	TransferProcess * process = new TransferProcess(from.GetFullPath(), to.GetFullPath(wxPATH_UNIX ));
+	m_childPid = wxExecute(cmd_line, wxEXEC_ASYNC | wxEXEC_MAKE_GROUP_LEADER, process);
+	wxGetApp().Log(wxString::Format("  PID %d", m_childPid));
+
+	return true ;
+}
+
+bool DataFileStorage::Validate(const wxString & datafile, const wxString & dest, const wxString & appendix )
+{
+	wxFileName from(datafile) ;
+	wxFileName to(dest);
+	
+	to.SetName( from.GetName() + appendix ) ;
+	to.SetExt(  from.GetExt()  ) ;
+
+	wxString project_directory = to.GetPath(wxPATH_GET_SEPARATOR, wxPATH_UNIX );
+	
+	wxString cmd_line = wxString::Format(wxT("%s -D \"%s\" -c \"ls %s\" ") , GetCommandLine(), project_directory, to.GetFullName() ) ;
+	wxGetApp().Log(wxString::Format("Validate cmd_line %s", cmd_line));
+
+	ValidateProcess * vprocess = new ValidateProcess(from.GetFullPath(), to.GetFullPath(wxPATH_UNIX ));
+	m_childPid = wxExecute(cmd_line, wxEXEC_ASYNC, vprocess);
+	wxGetApp().Log(wxString::Format("  PID %d", m_childPid));
+	return true ;
+}
+
+bool DataFileStorage::OnTransferTerminate(int status, TransferProcess * process)
+{
+	wxString datafile = process->GetDataFile() ;
+	wxString dest     = process->GetDestination() ;
+
+	wxGetApp().Log(wxString::Format("Transfer Completed %s -> %s", datafile, dest));
+	wxGetApp().Log(wxString::Format("Transfer Status %d", status));
+	
+	wxArrayString output = process->GetStdOutput() ;
+	int i;
+	for(i=0;i<output.GetCount();i++)
+	{
+		wxGetApp().Log(wxString::Format("OUT  %s", output[i]));
+	}
+
+	wxArrayString error = process->GetStdError() ;
+
+	for(i=0;i<error.GetCount();i++)
+	{
+		wxGetApp().Log(wxString::Format("ERR  %s", error[i]));
+	}
+
+	return true ;
+}
+
+bool DataFileStorage::OnValidateTerminate(int status, ValidateProcess * process)
+{
+	wxString datafile = process->GetDataFile() ;
+	wxString dest     = process->GetDestination() ;
+	if(process->IsInputAvailable())
+	{
+		wxInputStream * s = process->GetInputStream() ;
+		wxTextInputStream* output=new wxTextInputStream(*s);
+		
+		bool exists = true ;
+		while(output->GetInputStream().CanRead())
+		{
+			wxString line = output->ReadLine();
+			wxGetApp().Log(wxString::Format("OUTPUT %s", line));
+
+			if(line.Find( wxT("STATUS_NO_SUCH_FILE")) != wxNOT_FOUND)
+			{
+				exists = false ;
+			}
+		}
+		
+		if(exists)
+		{
+			// a file with same name exists on remote storage
+			wxString appendix = wxString::Format(wxT("_%u%04u"), wxDateTime::GetTimeNow() , rand()%10000);
+			Validate( datafile, dest, appendix );
 		}
 		else
 		{
-			return false;
+			Transfer(datafile, dest) ;
 		}
 	}
-	while(true);
-
-	cmd = wxString::Format("%s -c \"put %s %s\"", cmd_line, from.GetFullPath(), to.GetFullName() );
-	wxGetApp().Log(cmd);
-
-	return true ;
-}
-
-bool DataFileStorage::OnTransferTerminate(int pid, int status, const wxString & datafile, const wxString & dest)
-{
-	return true ;
-}
-
-bool DataFileStorage::OnValidateTerminate(int pid, int status, const wxString & datafile, const wxString & dest)
-{
 	return true ;
 }
 
 bool DataFileStorage::AddTask(const wxFileName & from, const wxFileName & to) 
 {
+		/*
+			TODO: these lines are for backup only
+
+			wxString project_id = ProcessController::Get()->ReadSessionMetaData(wxT("session.project.id"));
+			wxString project_directory = wxFileConfig::Get()->Read(
+					wxT("project.") + project_id + wxT(".storage.defaultpath")
+				) ;
+
+			if(project_directory == wxEmptyString)
+			{
+				wxGetApp().Log(
+					wxString::Format("Invalid Remote storage path for project %s", project_id)
+				);
+
+				return false;
+			}
+		*/
 	return true ;
 }

@@ -72,7 +72,7 @@ private:
 	wxString   m_config_file_name ;
 	FILE * m_log_fp;
 };
- 
+
 DECLARE_APP(MainApp)
  
 #endif // INCLUDED_MAIN_APP_H

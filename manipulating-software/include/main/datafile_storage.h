@@ -49,6 +49,10 @@ public:
 	{
 		return m_isTransferring || m_timer->IsRunning() ;
 	}
+	
+	const wxString & GetCommandLine() ;
+	bool Validate(const wxString & datafile, const wxString & dest, const wxString & appendix = wxEmptyString) ;
+	bool Transfer(const wxString & datafile, const wxString & dest);
 
 
 
@@ -60,13 +64,12 @@ protected:
 	bool m_isTransferring ;
 	long m_childPid ;
 	long m_timer_interver ;
+	wxString m_cmd ;
 
 	void OnTimer( wxTimerEvent& event ) ;
-	bool OnValidateTerminate(int pid, int status, const wxString & datafile, const wxString & dest);
-	bool OnTransferTerminate(int pid, int status, const wxString & datafile, const wxString & dest);
+	bool OnValidateTerminate(int status, ValidateProcess * process);
+	bool OnTransferTerminate(int status, TransferProcess * process);
 	DataFileStorage();
-	bool Transfer(const wxString & datafile, const wxString & dest);
-
 	// assign permission to TransferProcess/ValidateProcess class
 	friend class ValidateProcess ;
 	friend class TransferProcess ;

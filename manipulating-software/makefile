@@ -69,6 +69,7 @@ CPPS   = \
 		main/client \
 		main/server_connection \
 		main/server \
+		main/async_process \
 		main/confirm_dialog \
 		main/process_controller \
 		main/datafile_monitor \
