@@ -62,6 +62,8 @@ const wxArrayString & AsyncProcess::GetStdError()
 void AsyncProcess::OnTimer( wxTimerEvent& event )
 {
 
+	// if m_capture
+	// Redirect() is called and no window displayed
 	if( ! m_capture)
 	{
 
@@ -91,6 +93,9 @@ void AsyncProcess::OnTimer( wxTimerEvent& event )
 	}
 	else
 	{
+		// if not capture,
+		// Redirect() is not called, stream of STDOUT/STDERR will always be NULL
+
 		// Capture of output is required?
 		// grab the stream, and put all strings to an array
 
