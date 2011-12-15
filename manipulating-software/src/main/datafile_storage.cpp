@@ -45,7 +45,7 @@ protected:
 
 public:
 	ValidateProcess(const wxString& datafile, const wxString & dest)
-		:AsyncProcess(), m_datafile(datafile), m_destination(dest)
+		:AsyncProcess(true), m_datafile(datafile), m_destination(dest)
 	{
 	}
 	
@@ -67,7 +67,6 @@ public:
 		DataFileStorage::Get()
 			->OnValidateTerminate(status, this) ;
 	}
-
 };
 
 /**
@@ -86,7 +85,7 @@ protected:
 
 public:
 	TransferProcess(const wxString& datafile, const wxString & dest)
-		:AsyncProcess(), m_datafile(datafile), m_destination(dest)
+		:AsyncProcess(false, true), m_datafile(datafile), m_destination(dest)
 	{
 	}
 
@@ -286,8 +285,8 @@ bool DataFileStorage::Validate(const wxString & datafile, const wxString & dest,
 	wxString cmd_line = wxString::Format(wxT("%s -D \"%s\" -c \"ls %s\" ") , GetCommandLine(), project_directory, to.GetFullName() ) ;
 	wxGetApp().Log(wxString::Format("Validate cmd_line %s", cmd_line));
 
-	ValidateProcess * vprocess = new ValidateProcess(from.GetFullPath(), to.GetFullPath(wxPATH_UNIX ));
-	m_childPid = wxExecute(cmd_line, wxEXEC_ASYNC, vprocess);
+	ValidateProcess * process = new ValidateProcess(from.GetFullPath(), to.GetFullPath(wxPATH_UNIX ));
+	m_childPid = wxExecute(cmd_line, wxEXEC_ASYNC, process);
 	wxGetApp().Log(wxString::Format("  PID %d", m_childPid));
 	return true ;
 }
@@ -297,22 +296,8 @@ bool DataFileStorage::OnTransferTerminate(int status, TransferProcess * process)
 	wxString datafile = process->GetDataFile() ;
 	wxString dest     = process->GetDestination() ;
 
-	wxGetApp().Log(wxString::Format("Transfer Completed %s -> %s", datafile, dest));
-	wxGetApp().Log(wxString::Format("Transfer Status %d", status));
-	
-	wxArrayString output = process->GetStdOutput() ;
-	int i;
-	for(i=0;i<output.GetCount();i++)
-	{
-		wxGetApp().Log(wxString::Format("OUT  %s", output[i]));
-	}
-
-	wxArrayString error = process->GetStdError() ;
-
-	for(i=0;i<error.GetCount();i++)
-	{
-		wxGetApp().Log(wxString::Format("ERR  %s", error[i]));
-	}
+	wxGetApp().Log(wxString::Format("Transfer %d Completed %s -> %s", process->GetPid(), datafile, dest));
+	wxGetApp().Log(wxString::Format("Transfer %d Status %d", process->GetPid(), status));
 
 	return true ;
 }
@@ -321,34 +306,44 @@ bool DataFileStorage::OnValidateTerminate(int status, ValidateProcess * process)
 {
 	wxString datafile = process->GetDataFile() ;
 	wxString dest     = process->GetDestination() ;
-	if(process->IsInputAvailable())
-	{
-		wxInputStream * s = process->GetInputStream() ;
-		wxTextInputStream* output=new wxTextInputStream(*s);
-		
-		bool exists = true ;
-		while(output->GetInputStream().CanRead())
-		{
-			wxString line = output->ReadLine();
-			wxGetApp().Log(wxString::Format("OUTPUT %s", line));
+	
+	bool exists = true ;
+	size_t i;
 
-			if(line.Find( wxT("STATUS_NO_SUCH_FILE")) != wxNOT_FOUND)
-			{
-				exists = false ;
-			}
-		}
-		
-		if(exists)
+	// check the stdout
+	wxArrayString output = process->GetStdOutput() ;
+	for(i=0;i<output.GetCount();i++)
+	{
+		wxGetApp().Log(wxString::Format("  OUT %s", output[i]));
+
+		if(output[i].Find( wxT("STATUS_NO_SUCH_FILE")) != wxNOT_FOUND)
 		{
-			// a file with same name exists on remote storage
-			wxString appendix = wxString::Format(wxT("_%u%04u"), wxDateTime::GetTimeNow() , rand()%10000);
-			Validate( datafile, dest, appendix );
-		}
-		else
-		{
-			Transfer(datafile, dest) ;
+			exists = false ;
 		}
 	}
+
+	// check the stderr
+	wxArrayString error = process->GetStdError() ;
+	for(i=0;i<error.GetCount();i++)
+	{
+		wxGetApp().Log(wxString::Format("  ERR %s", error[i]));
+		if(error[i].Find( wxT("STATUS_NO_SUCH_FILE")) != wxNOT_FOUND)
+		{
+			exists = false ;
+		}
+	}
+
+	if(exists)
+	{
+		// a file with same name exists on remote storage
+		wxString appendix = wxString::Format(wxT("_%u%04u"), wxDateTime::GetTimeNow() , rand()%10000);
+		Validate( datafile, dest, appendix );
+	}
+	else
+	{
+		Transfer(datafile, dest) ;
+	}
+	
 	return true ;
 }
 

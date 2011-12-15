@@ -20,22 +20,33 @@
 #include <wx/txtstrm.h> 
 
 #include "main/async_process.h"
+#include "main/app.h"
 
 
-AsyncProcess::AsyncProcess() : wxProcess::wxProcess()
+AsyncProcess::AsyncProcess(bool capture, bool hide) : wxProcess::wxProcess()
 {
-	Redirect();
+	m_capture = capture ;
+	m_hide = hide ;
+
+	if(m_capture)
+	{
+		// if you want to capture the output,
+		// we need to redirect them to stream
+		
+		// and, this will also hide the window automatically
+		Redirect();
+	}
+
 	Connect( wxEVT_TIMER , wxTimerEventHandler( AsyncProcess::OnTimer ));
 
-	m_idleTimer = new wxTimer(this, 10) ;
-	m_idleTimer->Start();
-
+	m_timer = new wxTimer(this, 50) ;
+	m_timer->Start();
 }
 
 AsyncProcess::~AsyncProcess()
 {
 	Disconnect( wxEVT_TIMER , wxTimerEventHandler( AsyncProcess::OnTimer ));
-	wxDELETE(m_idleTimer);
+	wxDELETE(m_timer);
 }
 
 const wxArrayString & AsyncProcess::GetStdOutput()
@@ -50,20 +61,77 @@ const wxArrayString & AsyncProcess::GetStdError()
 
 void AsyncProcess::OnTimer( wxTimerEvent& event )
 {
-	if ( IsInputAvailable() )
-	{
-		wxTextInputStream tis(*GetInputStream());
 
-		// this assumes that the output is always line buffered
-		m_stdout.Add( tis.ReadLine() );
+	if( ! m_capture)
+	{
+
+		// Capture of output is not required?
+		// we just need to hide the window as requested
+
+		if( m_hide )
+		{
+			// so you want to hide the window?
+			// let's go through all windows
+			// and stop the timer when it's really hidden
+			HWND h = ::GetTopWindow(0);
+			while ( h )
+			{
+				DWORD pid;
+				::GetWindowThreadProcessId( h,&pid);
+
+				if ( GetPid() == pid )
+				{
+					// here h is the handle to the window
+					::ShowWindow(h, SW_HIDE);
+					break;
+				}
+				h = ::GetNextWindow( h , GW_HWNDNEXT);
+			}
+		}
 	}
-
-	if ( IsErrorAvailable() )
+	else
 	{
-		wxTextInputStream tis(*GetErrorStream());
+		// Capture of output is required?
+		// grab the stream, and put all strings to an array
 
-		// this assumes that the output is always line buffered
-		wxString msg;
-		m_stderr.Add( tis.ReadLine() );
+		if ( IsInputAvailable() )
+		{
+			wxTextInputStream tis(*GetInputStream());
+
+			// this assumes that the output is always line buffered
+			while( ! tis.GetInputStream().Eof() )
+			{
+				wxString msg = tis.ReadLine() ;
+				if( msg == wxEmptyString )
+				{
+					break;
+				}
+				else
+				{
+					m_stdout.Add( msg );
+					//wxGetApp().Log(wxString::Format("  STDOUT %s", msg ));
+				}
+			}
+		}
+
+		if ( IsErrorAvailable() )
+		{
+			wxTextInputStream tis(*GetErrorStream());
+
+			// this assumes that the output is always line buffered
+			while( ! tis.GetInputStream().Eof() )
+			{
+				wxString msg = tis.ReadLine() ;
+				if( msg == wxEmptyString )
+				{
+					break;
+				}
+				else
+				{
+					m_stderr.Add( msg );
+					//wxGetApp().Log(wxString::Format("  STDERR %s", msg ));
+				}
+			}
+		}
 	}
 }

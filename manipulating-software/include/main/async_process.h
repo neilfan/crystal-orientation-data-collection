@@ -29,13 +29,16 @@
 class AsyncProcess : public wxProcess
 {
 protected:
-	wxTimer * m_idleTimer ;
+	wxTimer * m_timer ;
 	wxArrayString m_stdout ;
 	wxArrayString m_stderr ;
+	size_t m_lineCount ;
+	bool m_capture ;
+	bool m_hide ;
 	void OnTimer( wxTimerEvent& event );
 
 public:
-	AsyncProcess();
+	AsyncProcess(bool capture=true, bool hide=false);
 	~AsyncProcess();
 	const wxArrayString & GetStdOutput();
 	const wxArrayString & GetStdError();
