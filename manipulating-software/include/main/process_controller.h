@@ -20,8 +20,6 @@
 #ifndef INCLUDED_MAIN_PROCESS_CONTROLLER_H
 #define INCLUDED_MAIN_PROCESS_CONTROLLER_H
 
-#define SESSION_FILENAME_METADATA wxT("METADATA")
-
 #include <wx/wxprec.h>
 #include <wx/filename.h> 
 #include <wx/event.h> 

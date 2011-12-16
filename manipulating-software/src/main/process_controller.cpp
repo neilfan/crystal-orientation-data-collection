@@ -129,31 +129,21 @@ void ProcessController::StartNewSession(const wxString & exchange_file)
 	 * Create Session directory structure
 	 */
 	wxString session_id ;
-	wxFileName session_filename ;
-
-	do
-	{
-		session_id = wxString::Format(wxT("%u-%04u"), wxDateTime::GetTimeNow() , rand()%10000);
-		session_filename.AssignDir(wxT("sessions")) ;
-		session_filename.AppendDir(session_id);
-	} while(session_filename.DirExists()) ;
+	wxFileName session_filename("sessions", wxDateTime::Now().Format(FILENAME_DATETIME_FORMAT), "ini") ;
 
 	// session has been assigned an unique id
-	if( ! session_filename.Mkdir(wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL))
+	if( !session_filename.DirExists() )
 	{
-		wxGetApp().Log(wxT("Failed to create dir ") + session_filename.GetPath());
+		wxGetApp().Log(wxString::Format(wxT("Creating dir %s") , session_filename.GetPath()));
+		session_filename.Mkdir(wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
 	}
-	else
-	{
-		m_current_session_id = session_id ;
 
-		wxGetApp().Log(wxT("Created session folder ") + session_filename.GetPath());
-		session_filename.SetName(SESSION_FILENAME_METADATA) ;
-		session_filename.SetEmptyExt();
-		wxCopyFile(exchange_file, session_filename.GetFullPath());
-	}
+	m_current_session_id = session_id ;
+
+	wxCopyFile(exchange_file, session_filename.GetFullPath());
+
 	// END Create Session Ddirectory structure 
-	
+
 	LaunchEquipment();
 	StartMonitoring();
 }

@@ -131,11 +131,6 @@ DataFileStorage::~DataFileStorage()
 {
 	Disconnect( wxEVT_TIMER , wxTimerEventHandler( DataFileStorage::OnTimer ));
 	wxDELETE(m_timer);
-	
-	if(wxProcess::Exists(m_childPid))
-	{
-	}
-		wxProcess::Kill(m_childPid, wxSIGKILL, wxKILL_CHILDREN ) ;
 }
 
 /**
@@ -168,10 +163,7 @@ bool DataFileStorage::Stop()
 		// to stop the transfer
 		// fist we need to make sure the timer is stopped
 		m_timer->Stop();
-		
-		// then we will kill all on-going transferring
-		wxKill  ( m_childPid, wxSIGTERM, NULL, wxKILL_CHILDREN );  
-		
+
 		m_isTransferring = false ;
 	}
 	return true ;
@@ -180,18 +172,64 @@ bool DataFileStorage::Stop()
 void DataFileStorage::OnTimer( wxTimerEvent& event )
 {
 	
-	// check if any task exists
-	wxFileName cache(DATAFILE_STORAGE_CACHE_FILENAME) ;
-	wxRegEx    reg(DATAFILE_STORAGE_CACHE_REGEX) ;
-	
-	wxFileInputStream input( cache.GetFullPath() );
-	if( input.IsOk())
+	if( m_sessionTasks.IsEmpty() )
 	{
+
+		// check if any task exists
+		wxFileName cache(DATAFILE_STORAGE_CACHE_FILENAME) ;
+
+		wxFileInputStream input( cache.GetFullPath() );
+		if( ! input.IsOk() )
+		{
+			// failed to load cache file
+			// wait for next pulse
+			return ;
+		}
+
 		wxTextInputStream text( input );
 
 		while( ! text.GetInputStream().Eof() )
 		{
 			wxString line = text.ReadLine() ;
+			
+			// the line in CACHE file is expected to be a session_id
+			// in the the ./sessions folder
+			
+			// for security, this directory name should not contain any \ or /
+			// You do not want all your disk files transferred to network storage, right?
+
+			if(
+				line.Find( wxUniChar('/') ) != wxNOT_FOUND ||
+				line.Find( wxUniChar('\\') ) != wxNOT_FOUND )
+			{
+				// it's not a good session id
+				continue ;
+			}
+			
+			// found a new session to be transferred
+			m_sessionDirectory = line ;
+
+			wxFileName session_ini("session", line, "ini");
+			if( ! session_ini.FileExists() )
+			{
+				// bad session id, ini file not exist
+				continue ;
+			}
+			
+			
+			// TODO:load file list from exchange file
+			// and put in a queue
+
+
+/*
+			wxString filename;
+
+			bool cont = dir.GetFirst(&filename) ;
+			while ( cont )
+			{
+				m_sessionTasks.Add(filename) ;
+				cont = dir.GetNext(&filename);
+			}
 
 			if ( reg.Matches(line) )
 			{
@@ -211,6 +249,7 @@ void DataFileStorage::OnTimer( wxTimerEvent& event )
 					Validate( from, to);
 				}
 			}
+*/
 		}
 	}
 }
@@ -263,11 +302,15 @@ bool DataFileStorage::Transfer(const wxString & datafile, const wxString & dest)
 	
 	wxString project_directory = to.GetPath(wxPATH_GET_SEPARATOR, wxPATH_UNIX );
 	
-	wxString cmd_line = wxString::Format("%s -D \"%s\" -c \"put %s %s\"", GetCommandLine(), project_directory, from.GetFullPath(), to.GetFullName() );
+	wxString cmd_line = wxString::Format("%s -D \"%s\" -c \"put %s %s\"",
+				GetCommandLine(),
+				project_directory,
+				from.GetFullPath(),
+				to.GetFullName() );
 	wxGetApp().Log(wxString::Format("Transfer cmd_line %s", cmd_line));
 	TransferProcess * process = new TransferProcess(from.GetFullPath(), to.GetFullPath(wxPATH_UNIX ));
-	m_childPid = wxExecute(cmd_line, wxEXEC_ASYNC | wxEXEC_MAKE_GROUP_LEADER, process);
-	wxGetApp().Log(wxString::Format("  PID %d", m_childPid));
+	long pid = wxExecute(cmd_line, wxEXEC_ASYNC | wxEXEC_MAKE_GROUP_LEADER, process);
+	wxGetApp().Log(wxString::Format("  PID %d", pid));
 
 	return true ;
 }
@@ -282,12 +325,15 @@ bool DataFileStorage::Validate(const wxString & datafile, const wxString & dest,
 
 	wxString project_directory = to.GetPath(wxPATH_GET_SEPARATOR, wxPATH_UNIX );
 	
-	wxString cmd_line = wxString::Format(wxT("%s -D \"%s\" -c \"ls %s\" ") , GetCommandLine(), project_directory, to.GetFullName() ) ;
+	wxString cmd_line = wxString::Format(wxT("%s -D \"%s\" -c \"ls %s\" ") ,
+				GetCommandLine(),
+				project_directory,
+				to.GetFullName() ) ;
 	wxGetApp().Log(wxString::Format("Validate cmd_line %s", cmd_line));
 
 	ValidateProcess * process = new ValidateProcess(from.GetFullPath(), to.GetFullPath(wxPATH_UNIX ));
-	m_childPid = wxExecute(cmd_line, wxEXEC_ASYNC, process);
-	wxGetApp().Log(wxString::Format("  PID %d", m_childPid));
+	long pid = wxExecute(cmd_line, wxEXEC_ASYNC, process);
+	wxGetApp().Log(wxString::Format("  PID %d", pid));
 	return true ;
 }
 
@@ -326,7 +372,6 @@ bool DataFileStorage::OnValidateTerminate(int status, ValidateProcess * process)
 	wxArrayString error = process->GetStdError() ;
 	for(i=0;i<error.GetCount();i++)
 	{
-		wxGetApp().Log(wxString::Format("  ERR %s", error[i]));
 		if(error[i].Find( wxT("STATUS_NO_SUCH_FILE")) != wxNOT_FOUND)
 		{
 			exists = false ;
@@ -347,7 +392,7 @@ bool DataFileStorage::OnValidateTerminate(int status, ValidateProcess * process)
 	return true ;
 }
 
-bool DataFileStorage::AddTask(const wxFileName & from, const wxFileName & to) 
+bool DataFileStorage::AddTask(const wxFileName & from, const wxFileName & to)
 {
 		/*
 			TODO: these lines are for backup only

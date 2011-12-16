@@ -44,6 +44,7 @@ bool MainApp::OnInit()
 {
 	/* initialize random seed: */
 	srand ( time(NULL) );
+	setlocale(LC_ALL,"");
 
 	wxLog::EnableLogging(false);
 
@@ -96,7 +97,7 @@ bool MainApp::OnInit()
 
 	// Setup the logging facility
 	// Send logs to both log window and log file
-	wxFileName log_file( "log", wxDateTime::Now().Format(wxT("%Y-%m-%d-%H%M%S.log") ));
+	wxFileName log_file( "log", wxDateTime::Now().Format(FILENAME_DATETIME_FORMAT), "log");
 	if( ! log_file.DirExists())
 	{
 		// create ./log directory if required
@@ -110,7 +111,7 @@ bool MainApp::OnInit()
 		wxLog::SetActiveTarget(m_log);
 		wxLog::SetLogLevel(wxLOG_Message );
 		wxLog::EnableLogging(true);
-		wxLog::SetTimestamp(wxT("%Y-%m-%dT%H:%M:%S"));
+		wxLog::SetTimestamp(FILENAME_DATETIME_FORMAT);
 	}
 
 	Log(_T("Seems this is the only instance. Starting application"));
@@ -196,7 +197,7 @@ void MainApp::Log(const wxString & string)
 	wxLog::FlushActive();
 
 	// Send string to log window
-	wxString  msg = wxDateTime::Now().FormatISOCombined() + wxT(" - ") + string ;
+	wxString  msg = wxDateTime::Now().Format(FILENAME_DATETIME_FORMAT) + wxT(" - ") + string ;
 	wxDynamicCast(m_log_dialog, MainDialog)->AppendLog( msg) ;
 }
 

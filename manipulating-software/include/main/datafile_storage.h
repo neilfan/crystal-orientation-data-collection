@@ -27,6 +27,7 @@
 #include <wx/wxprec.h>
 #include <wx/filename.h> 
 #include <wx/timer.h> 
+#include <wx/arrstr.h>
 
 #ifndef WX_PRECOMP
 #include "wx/wx.h"
@@ -62,9 +63,13 @@ protected:
 	// Timer to check if any transfer task
 	wxTimer * m_timer ;
 	bool m_isTransferring ;
-	long m_childPid ;
 	long m_timer_interver ;
+	
+	// a string to record part of the command line
 	wxString m_cmd ;
+	
+	wxArrayString m_sessionTasks ;
+	wxString m_sessionDirectory ;
 
 	void OnTimer( wxTimerEvent& event ) ;
 	bool OnValidateTerminate(int status, ValidateProcess * process);
