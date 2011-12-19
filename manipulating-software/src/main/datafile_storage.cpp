@@ -25,49 +25,14 @@
 #include <wx/filename.h> 
 #include <wx/arrstr.h> 
 #include <wx/stream.h> 
+#include <wx/string.h> 
+#include <wx/tokenzr.h>
+
 
 #include "main/process_controller.h"
 #include "main/datafile_storage.h"
 #include "main/async_process.h"
 #include "main/app.h"
-
-/**
- * class ValidateProcess
- *
- */
-
-// This is the handler for process termination events
-class ValidateProcess : public AsyncProcess
-{
-protected:
-	wxString m_datafile;
-	wxString m_destination;
-
-public:
-	ValidateProcess(const wxString& datafile, const wxString & dest)
-		:AsyncProcess(true), m_datafile(datafile), m_destination(dest)
-	{
-	}
-	
-	const wxString & GetDataFile()
-	{
-		return m_datafile ;
-	}
-
-	const wxString & GetDestination()
-	{
-		return m_destination ;
-	}
-
-	// instead of overriding this virtual function we might as well process the
-	// event from it in the frame class - this might be more convenient in some
-	// cases
-	virtual void OnTerminate(int pid, int status)
-	{
-		DataFileStorage::Get()
-			->OnValidateTerminate(status, this) ;
-	}
-};
 
 /**
  * class TransferProcess
@@ -80,23 +45,88 @@ public:
 class TransferProcess : public AsyncProcess
 {
 protected:
-	wxString m_datafile;
-	wxString m_destination;
+	wxFileName      m_file;
+	wxFileName      m_dest;
+	wxString        m_sessionId ;
+	wxArrayString   m_cmds ;
+	long            m_posCmds ;
 
 public:
-	TransferProcess(const wxString& datafile, const wxString & dest)
-		:AsyncProcess(false, true), m_datafile(datafile), m_destination(dest)
+	TransferProcess(const wxString & sessionId, const wxString & file, const wxString & dest) : AsyncProcess(false, true)
 	{
+		m_sessionId   = sessionId ;
+		m_posCmds=0;
+
+		wxFileName from(file) ;
+		wxFileName to(dest);
+
+		if( ! to.HasName() )
+		{
+			to.SetName( from.GetName() ) ;
+		}
+
+		if( ! to.HasExt() && from.HasExt() )
+		{
+			to.SetExt(  from.GetExt()  ) ;
+		}
+
+		m_file = from ;
+		m_dest = to ;
+
+		if( ! m_dest.HasName() )
+		{
+			m_dest.SetName( m_file.GetName() ) ;
+		}
+		
+		if( ! m_dest.HasExt() && m_file.HasExt() )
+		{
+			m_dest.SetExt(  m_file.GetExt()  ) ;
+		}
+		
+		m_dest.InsertDir(0, m_sessionId) ;
+		wxArrayString dirs = m_dest.GetDirs() ;
+		wxString currentDir = wxEmptyString ;
+
+		size_t i ;
+		for(i=0; i<dirs.GetCount(); i++)
+		{
+			currentDir += dirs[i] + wxFileName::GetPathSeparator(wxPATH_UNIX ) ;
+			m_cmds.Add( wxString::Format("mkdir %s", currentDir) );
+		}
+		m_cmds.Add(wxString::Format("put \"%s\" \"%s\"", m_file.GetFullPath(), m_dest.GetFullPath()));
 	}
 
-	const wxString & GetDataFile()
+	const wxFileName & GetFile()
 	{
-		return m_datafile ;
+		return m_file ;
 	}
 
-	const wxString & GetDestination()
+	const wxFileName & GetDest()
 	{
-		return m_destination ;
+		return m_dest ;
+	}
+
+	const wxString & GetFirstCommand()
+	{
+		if(m_cmds.IsEmpty())
+		{
+			return wxEmptyString ;
+		}
+		else
+		{
+			return m_cmds[0] ;
+		}
+	}
+
+	const wxString & GetNextCommand()
+	{
+		if(!m_cmds.IsEmpty() && (m_posCmds < m_cmds.GetCount()) )
+		{
+			m_posCmds++ ;
+			return m_cmds[m_posCmds] ;
+		}
+
+		return wxEmptyString ;
 	}
 
 	// instead of overriding this virtual function we might as well process the
@@ -175,6 +205,8 @@ void DataFileStorage::OnTimer( wxTimerEvent& event )
 	if( m_sessionTasks.IsEmpty() )
 	{
 
+		wxGetApp().Log(wxT("Scanning CACHE file for scheduled transfer task"));
+
 		// check if any task exists
 		wxFileName cache(DATAFILE_STORAGE_CACHE_FILENAME) ;
 
@@ -207,50 +239,76 @@ void DataFileStorage::OnTimer( wxTimerEvent& event )
 			}
 			
 			// found a new session to be transferred
-			m_sessionDirectory = line ;
 
-			wxFileName session_ini("session", line, "ini");
+			wxFileName session_ini("sessions", line, "ini");
+			wxGetApp().Log(wxString::Format("Scanning session file: %s", session_ini.GetFullPath()));
 			if( ! session_ini.FileExists() )
 			{
 				// bad session id, ini file not exist
 				continue ;
 			}
-			
-			
+
 			// TODO:load file list from exchange file
 			// and put in a queue
+			// the format of exchange file is available on
+			// http://code.google.com/p/crystal-orientation-data-collection/wiki/SoftwareInterfaceStandard
 
+			// Open the config file
+			wxFileInputStream session( session_ini.GetFullPath() );
+			wxFileConfig session_config( session );
 
-/*
-			wxString filename;
+			// Get the counts of files
+			long count = session_config.ReadLong(wxT("files/count"), 0);
+			wxGetApp().Log(wxString::Format("Session file claims %d to be transferred", count));
 
-			bool cont = dir.GetFirst(&filename) ;
-			while ( cont )
+			if( count == 0)
 			{
-				m_sessionTasks.Add(filename) ;
-				cont = dir.GetNext(&filename);
+				// no task for this session
+				continue ;
 			}
 
-			if ( reg.Matches(line) )
+			m_currentTransferSessionID = line ;
+			m_sessionTasks.Add( wxString::Format("%s > %s", session_ini.GetFullPath(), wxT("METADATA")) );
+			wxGetApp().Log(wxString::Format("Adding session data file '%s' to be transferred to 'METADATA'", session_ini.GetFullPath()));
+
+			long i ;
+			for(i=1; i<=count ;i++)
 			{
-				wxString from = reg.GetMatch(line, 1);
-				wxString to   = reg.GetMatch(line, 2);
-				
-				// the file exist ?
-				if ( wxFileExists(from) )
+				wxString key_file = wxString::Format("files/file%d", i) ;
+				wxString filex = wxEmptyString ;
+				wxString destx = wxEmptyString ;
+
+				if(session_config.HasEntry(key_file))
 				{
-					// copy file
-					m_isTransferring = true ;
-					m_timer->Stop();
-					wxGetApp().Log(
-						wxString::Format("copy %s to %s", from, to)
-					);
-					
-					Validate( from, to);
+					if( session_config.Read(key_file, & filex) )
+					{
+						if( wxFileExists( filex ) )
+						{
+							session_config.Read(wxString::Format("files/destination%d", i) , & destx);
+							m_sessionTasks.Add( filex + DATAFILE_STORAGE_LINE_DELIM + destx );
+							wxGetApp().Log(wxString::Format("Adding session data file '%s' to be transferred to '%s'", filex, destx));
+						}
+					}
 				}
 			}
-*/
+
+			wxGetApp().Log(wxString::Format("Transferring session ID %s", m_currentTransferSessionID));
+
+
+
+			// stop loop, we will not look for any further sessions.
+			// when all transfer completed, this session will be removed from CACHE
+			break ;
+
 		}
+	}
+
+	// Here, we have a list of task to go
+	if( ! m_sessionTasks.IsEmpty() && ! m_isTransferring)
+	{
+		m_isTransferring = true ;
+		wxArrayString array = wxStringTokenize(m_sessionTasks[0],DATAFILE_STORAGE_LINE_DELIM) ;
+		Transfer(array[0], array[1]) ;
 	}
 }
 
@@ -289,6 +347,8 @@ const wxString & DataFileStorage::GetCommandLine()
 				m_cmd += wxString::Format(wxT(" -W \"%s\"") , domain) ;
 				m_cmd += wxString::Format(wxT(" -n \"%s\"") , domain) ;
 			}
+
+
 		}
 	}
 	return m_cmd ;
@@ -297,98 +357,49 @@ const wxString & DataFileStorage::GetCommandLine()
 
 bool DataFileStorage::Transfer(const wxString & datafile, const wxString & dest)
 {
-	wxFileName from(datafile) ;
-	wxFileName to(dest);
-	
-	wxString project_directory = to.GetPath(wxPATH_GET_SEPARATOR, wxPATH_UNIX );
-	
-	wxString cmd_line = wxString::Format("%s -D \"%s\" -c \"put %s %s\"",
-				GetCommandLine(),
-				project_directory,
-				from.GetFullPath(),
-				to.GetFullName() );
-	wxGetApp().Log(wxString::Format("Transfer cmd_line %s", cmd_line));
-	TransferProcess * process = new TransferProcess(from.GetFullPath(), to.GetFullPath(wxPATH_UNIX ));
-	long pid = wxExecute(cmd_line, wxEXEC_ASYNC | wxEXEC_MAKE_GROUP_LEADER, process);
-	wxGetApp().Log(wxString::Format("  PID %d", pid));
 
-	return true ;
-}
+	TransferProcess * process = new TransferProcess(m_currentTransferSessionID, datafile, dest);
 
-bool DataFileStorage::Validate(const wxString & datafile, const wxString & dest, const wxString & appendix )
-{
-	wxFileName from(datafile) ;
-	wxFileName to(dest);
-	
-	to.SetName( from.GetName() + appendix ) ;
-	to.SetExt(  from.GetExt()  ) ;
-
-	wxString project_directory = to.GetPath(wxPATH_GET_SEPARATOR, wxPATH_UNIX );
-	
-	wxString cmd_line = wxString::Format(wxT("%s -D \"%s\" -c \"ls %s\" ") ,
-				GetCommandLine(),
-				project_directory,
-				to.GetFullName() ) ;
-	wxGetApp().Log(wxString::Format("Validate cmd_line %s", cmd_line));
-
-	ValidateProcess * process = new ValidateProcess(from.GetFullPath(), to.GetFullPath(wxPATH_UNIX ));
-	long pid = wxExecute(cmd_line, wxEXEC_ASYNC, process);
-	wxGetApp().Log(wxString::Format("  PID %d", pid));
-	return true ;
-}
-
-bool DataFileStorage::OnTransferTerminate(int status, TransferProcess * process)
-{
-	wxString datafile = process->GetDataFile() ;
-	wxString dest     = process->GetDestination() ;
-
-	wxGetApp().Log(wxString::Format("Transfer %d Completed %s -> %s", process->GetPid(), datafile, dest));
-	wxGetApp().Log(wxString::Format("Transfer %d Status %d", process->GetPid(), status));
-
-	return true ;
-}
-
-bool DataFileStorage::OnValidateTerminate(int status, ValidateProcess * process)
-{
-	wxString datafile = process->GetDataFile() ;
-	wxString dest     = process->GetDestination() ;
-	
-	bool exists = true ;
-	size_t i;
-
-	// check the stdout
-	wxArrayString output = process->GetStdOutput() ;
-	for(i=0;i<output.GetCount();i++)
+	wxString cmd = process->GetFirstCommand() ;
+	if( cmd != wxEmptyString )
 	{
-		wxGetApp().Log(wxString::Format("  OUT %s", output[i]));
-
-		if(output[i].Find( wxT("STATUS_NO_SUCH_FILE")) != wxNOT_FOUND)
-		{
-			exists = false ;
-		}
-	}
-
-	// check the stderr
-	wxArrayString error = process->GetStdError() ;
-	for(i=0;i<error.GetCount();i++)
-	{
-		if(error[i].Find( wxT("STATUS_NO_SUCH_FILE")) != wxNOT_FOUND)
-		{
-			exists = false ;
-		}
-	}
-
-	if(exists)
-	{
-		// a file with same name exists on remote storage
-		wxString appendix = wxString::Format(wxT("_%u%04u"), wxDateTime::GetTimeNow() , rand()%10000);
-		Validate( datafile, dest, appendix );
+		wxString cmd_line = wxString::Format("%s -c \"%s\"",
+					GetCommandLine(),
+					cmd );
+		wxGetApp().Log(wxString::Format("  Executing %s", cmd_line));
+		long pid = wxExecute(cmd_line, wxEXEC_ASYNC | wxEXEC_MAKE_GROUP_LEADER, process);
+		wxGetApp().Log(wxString::Format("  PID %d", pid));
 	}
 	else
 	{
-		Transfer(datafile, dest) ;
+		// this session is done
 	}
-	
+	return true ;
+}
+
+
+bool DataFileStorage::OnTransferTerminate(int status, TransferProcess * process)
+{
+	wxFileName file = process->GetFile() ;
+	wxFileName dest     = process->GetDest() ;
+
+	wxGetApp().Log(wxString::Format("Transfer %d Completed %s -> %s", process->GetPid(), file.GetFullPath(), dest.GetFullPath()));
+	wxGetApp().Log(wxString::Format("Transfer %d Status %d", process->GetPid(), status));
+
+	wxString cmd = process->GetNextCommand() ;
+	if( cmd != wxEmptyString )
+	{
+		wxString cmd_line = wxString::Format("%s -c \"%s\"",
+					GetCommandLine(),
+					cmd );
+		wxGetApp().Log(wxString::Format("  Executing %s", cmd_line));
+		long pid = wxExecute(cmd_line, wxEXEC_ASYNC | wxEXEC_MAKE_GROUP_LEADER, process);
+		wxGetApp().Log(wxString::Format("  PID %d", pid));
+	}
+	else
+	{
+		// this session is done
+	}
 	return true ;
 }
 

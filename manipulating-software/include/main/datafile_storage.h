@@ -20,9 +20,9 @@
 #ifndef INCLUDED_MAIN_DATAFILE_STORAGE_H
 #define INCLUDED_MAIN_DATAFILE_STORAGE_H
 
-#define DATAFILE_STORAGE_TIMER_INTERVAL 5000
-#define DATAFILE_STORAGE_CACHE_FILENAME wxT("./CACHE")
-#define DATAFILE_STORAGE_CACHE_REGEX    wxT("(.+) > (.+)")
+#define DATAFILE_STORAGE_TIMER_INTERVAL     5000
+#define DATAFILE_STORAGE_CACHE_FILENAME     wxT("./CACHE")
+#define DATAFILE_STORAGE_LINE_DELIM         wxT(">")
 
 #include <wx/wxprec.h>
 #include <wx/filename.h> 
@@ -33,7 +33,6 @@
 #include "wx/wx.h"
 #endif
  
-class ValidateProcess ;
 class TransferProcess ;
 class DataFileStorage : public wxEvtHandler 
 {
@@ -52,7 +51,6 @@ public:
 	}
 	
 	const wxString & GetCommandLine() ;
-	bool Validate(const wxString & datafile, const wxString & dest, const wxString & appendix = wxEmptyString) ;
 	bool Transfer(const wxString & datafile, const wxString & dest);
 
 
@@ -69,14 +67,12 @@ protected:
 	wxString m_cmd ;
 	
 	wxArrayString m_sessionTasks ;
-	wxString m_sessionDirectory ;
+	wxString m_currentTransferSessionID ;
 
 	void OnTimer( wxTimerEvent& event ) ;
-	bool OnValidateTerminate(int status, ValidateProcess * process);
 	bool OnTransferTerminate(int status, TransferProcess * process);
 	DataFileStorage();
 	// assign permission to TransferProcess/ValidateProcess class
-	friend class ValidateProcess ;
 	friend class TransferProcess ;
 };
 
