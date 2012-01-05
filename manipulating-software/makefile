@@ -62,20 +62,20 @@ DEST   = crystal-orientation-data-collection.exe
 
 # List of all .cpp files (no extension required)
 CPPS   = \
-		main/dialog \
 		main/app \
-		main/taskbaricon \
-		main/client_connection \
-		main/client \
-		main/server_connection \
-		main/server \
 		main/async_process \
-		main/research_session \
+		main/client \
+		main/client_connection \
 		main/confirm_dialog \
-		main/process_controller \
 		main/datafile_monitor \
-		main/macro_scheduler \
 		main/datafile_storage \
+		main/dialog \
+		main/macro_scheduler \
+		main/process_controller \
+		main/research_session \
+		main/server \
+		main/server_connection \
+		main/taskbaricon \
 
 
 # Work out a list of all source files
@@ -92,7 +92,7 @@ RCOBJ  = $(BLDDIR)/main/app-res.o
 
 
 # Default rule, build and run
-default: compile run
+default: compile 
 
 $(SRCDIR)/main/dialog.cpp: $(ARTDIR)/icon.xpm
 
