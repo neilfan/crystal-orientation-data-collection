@@ -69,9 +69,12 @@ protected:
 	wxArrayString m_sessionTasks ;
 	wxString m_currentTransferSessionID ;
 
+	void FinaliseSession(const wxString & );
 	void OnTimer( wxTimerEvent& event ) ;
 	bool OnTransferTerminate(int status, TransferProcess * process);
 	DataFileStorage();
+
+
 	// assign permission to TransferProcess/ValidateProcess class
 	friend class TransferProcess ;
 };

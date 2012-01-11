@@ -48,12 +48,28 @@ protected:
 	wxFileName      m_file;
 	wxFileName      m_dest;
 	wxString        m_sessionId ;
+	wxString        m_remoteDir ;
 	wxArrayString   m_cmds ;
-	long            m_posCmds ;
+	unsigned long   m_posCmds ;
 
 public:
 	TransferProcess(const wxString & sessionId, const wxString & file, const wxString & dest) : AsyncProcess(false, true)
 	{
+		// load remote project directory
+		wxFileName session_ini("sessions", sessionId, "ini");
+		wxFileInputStream session( session_ini.GetFullPath() );
+		wxFileConfig session_config( session );
+
+		wxString project_id = session_config.Read(wxT("metadata/session.project.id"), wxEmptyString);
+		if( project_id!=wxEmptyString)
+		{
+			m_remoteDir = wxFileConfig::Get()->Read(
+					wxT("project.") + project_id + wxT(".storage.defaultpath")
+				) ;
+		}
+
+
+				
 		m_sessionId   = sessionId ;
 		m_posCmds=0;
 
@@ -91,9 +107,9 @@ public:
 		for(i=0; i<dirs.GetCount(); i++)
 		{
 			currentDir += dirs[i] + wxFileName::GetPathSeparator(wxPATH_UNIX ) ;
-			m_cmds.Add( wxString::Format("mkdir %s", currentDir) );
+			m_cmds.Add( wxString::Format("mkdir \\\"%s\\\"", currentDir) );
 		}
-		m_cmds.Add(wxString::Format("put \"%s\" \"%s\"", m_file.GetFullPath(), m_dest.GetFullPath()));
+		m_cmds.Add(wxString::Format("put \\\"%s\\\" \\\"%s\\\"", m_file.GetFullPath(), m_dest.GetFullPath()));
 	}
 
 	const wxFileName & GetFile()
@@ -106,7 +122,7 @@ public:
 		return m_dest ;
 	}
 
-	const wxString & GetFirstCommand()
+	const wxString GetFirstCommand()
 	{
 		if(m_cmds.IsEmpty())
 		{
@@ -118,9 +134,9 @@ public:
 		}
 	}
 
-	const wxString & GetNextCommand()
+	const wxString GetNextCommand()
 	{
-		if(!m_cmds.IsEmpty() && (m_posCmds < m_cmds.GetCount()) )
+		if(!m_cmds.IsEmpty() && (m_posCmds < (m_cmds.GetCount()-1)) )
 		{
 			m_posCmds++ ;
 			return m_cmds[m_posCmds] ;
@@ -128,7 +144,17 @@ public:
 
 		return wxEmptyString ;
 	}
+	
+	const wxString & GetRemoteDir()
+	{
+		return m_remoteDir ;
+	}
 
+	const wxString & GetSessionId()
+	{
+		return m_sessionId;
+	}
+	
 	// instead of overriding this virtual function we might as well process the
 	// event from it in the frame class - this might be more convenient in some
 	// cases
@@ -231,6 +257,7 @@ void DataFileStorage::OnTimer( wxTimerEvent& event )
 			// You do not want all your disk files transferred to network storage, right?
 
 			if(
+				line==wxEmptyString ||
 				line.Find( wxUniChar('/') ) != wxNOT_FOUND ||
 				line.Find( wxUniChar('\\') ) != wxNOT_FOUND )
 			{
@@ -259,7 +286,7 @@ void DataFileStorage::OnTimer( wxTimerEvent& event )
 
 			// Get the counts of files
 			long count = session_config.ReadLong(wxT("files/count"), 0);
-			wxGetApp().Log(wxString::Format("Session file claims %d to be transferred", count));
+			wxGetApp().Log(wxString::Format("Session file claims %d files to be transferred", count));
 
 			if( count == 0)
 			{
@@ -267,8 +294,10 @@ void DataFileStorage::OnTimer( wxTimerEvent& event )
 				continue ;
 			}
 
+
+			
 			m_currentTransferSessionID = line ;
-			m_sessionTasks.Add( wxString::Format("%s > %s", session_ini.GetFullPath(), wxT("METADATA")) );
+			m_sessionTasks.Add( session_ini.GetFullPath() + DATAFILE_STORAGE_LINE_DELIM + wxT("METADATA"));
 			wxGetApp().Log(wxString::Format("Adding session data file '%s' to be transferred to 'METADATA'", session_ini.GetFullPath()));
 
 			long i ;
@@ -360,19 +389,22 @@ bool DataFileStorage::Transfer(const wxString & datafile, const wxString & dest)
 
 	TransferProcess * process = new TransferProcess(m_currentTransferSessionID, datafile, dest);
 
+
 	wxString cmd = process->GetFirstCommand() ;
 	if( cmd != wxEmptyString )
 	{
-		wxString cmd_line = wxString::Format("%s -c \"%s\"",
+		wxString cmd_line = wxString::Format("%s -D \"%s\" -c \"%s\"",
 					GetCommandLine(),
+					process->GetRemoteDir(),
 					cmd );
-		wxGetApp().Log(wxString::Format("  Executing %s", cmd_line));
-		long pid = wxExecute(cmd_line, wxEXEC_ASYNC | wxEXEC_MAKE_GROUP_LEADER, process);
+		wxGetApp().Log(wxString::Format("  Executing remote command %s", cmd));
+		long pid = wxExecute(cmd_line, wxEXEC_ASYNC | wxEXEC_MAKE_GROUP_LEADER | wxEXEC_HIDE_CONSOLE , process);
 		wxGetApp().Log(wxString::Format("  PID %d", pid));
 	}
 	else
 	{
-		// this session is done
+		// this file in session is done
+		// continue with next file
 	}
 	return true ;
 }
@@ -380,7 +412,7 @@ bool DataFileStorage::Transfer(const wxString & datafile, const wxString & dest)
 
 bool DataFileStorage::OnTransferTerminate(int status, TransferProcess * process)
 {
-	wxFileName file = process->GetFile() ;
+	wxFileName file     = process->GetFile() ;
 	wxFileName dest     = process->GetDest() ;
 
 	wxGetApp().Log(wxString::Format("Transfer %d Completed %s -> %s", process->GetPid(), file.GetFullPath(), dest.GetFullPath()));
@@ -389,16 +421,33 @@ bool DataFileStorage::OnTransferTerminate(int status, TransferProcess * process)
 	wxString cmd = process->GetNextCommand() ;
 	if( cmd != wxEmptyString )
 	{
-		wxString cmd_line = wxString::Format("%s -c \"%s\"",
+		wxString cmd_line = wxString::Format("%s -D \"%s\" -c \"%s\"",
 					GetCommandLine(),
+					process->GetRemoteDir(),
 					cmd );
-		wxGetApp().Log(wxString::Format("  Executing %s", cmd_line));
-		long pid = wxExecute(cmd_line, wxEXEC_ASYNC | wxEXEC_MAKE_GROUP_LEADER, process);
+		wxGetApp().Log(wxString::Format("  Executing remote command %s", cmd));
+		long pid = wxExecute(cmd_line, wxEXEC_ASYNC | wxEXEC_MAKE_GROUP_LEADER | wxEXEC_HIDE_CONSOLE , process);
 		wxGetApp().Log(wxString::Format("  PID %d", pid));
 	}
 	else
 	{
-		// this session is done
+		// this file in session is done
+		// Here, we have a list of task to go
+		if( ! m_sessionTasks.IsEmpty())
+		{
+			m_sessionTasks.RemoveAt(0);
+		}
+
+		if( ! m_sessionTasks.IsEmpty())
+		{
+			wxArrayString array = wxStringTokenize(m_sessionTasks[0],DATAFILE_STORAGE_LINE_DELIM) ;
+			Transfer(array[0], array[1]) ;
+		}
+		else
+		{
+			// session is done
+			FinaliseSession( process->GetSessionId() );
+		}
 	}
 	return true ;
 }
@@ -423,4 +472,23 @@ bool DataFileStorage::AddTask(const wxFileName & from, const wxFileName & to)
 			}
 		*/
 	return true ;
+}
+
+void DataFileStorage::FinaliseSession(const wxString & sessionID)
+{
+	wxFileName filename(DATAFILE_STORAGE_CACHE_FILENAME) ;
+	wxTextFile cache ;
+	cache.Open(filename.GetFullPath()) ;
+	size_t i ;
+	for(i=0; i<cache.GetLineCount() ; i++)
+	{
+		if( cache.GetLine(i) == sessionID )
+		{
+			cache.RemoveLine(i);
+			break;
+		}
+	}
+	cache.Write();
+	cache.Close();
+	m_isTransferring = false;
 }
