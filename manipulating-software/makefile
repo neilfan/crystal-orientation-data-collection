@@ -72,7 +72,6 @@ CPPS   = \
 		main/dialog \
 		main/macro_scheduler \
 		main/process_controller \
-		main/research_session \
 		main/server \
 		main/server_connection \
 		main/taskbaricon \
