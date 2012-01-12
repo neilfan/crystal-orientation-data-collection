@@ -28,7 +28,60 @@
 #include "main/datafile_storage.h"
 #include "main/macro_scheduler.h"
 #include "main/confirm_dialog.h"
+#include "main/async_process.h"
 #include "main/app.h"
+
+class LaunchEquipmentProcess : public AsyncProcess
+{
+protected:
+	wxString        m_sessionId ;
+
+public:
+	LaunchEquipmentProcess(const wxString & sessionId) : AsyncProcess(false, false)
+	{
+		m_sessionId = sessionId ;
+	}
+
+	const wxString & GetSessionId()
+	{
+		return m_sessionId;
+	}
+
+	// instead of overriding this virtual function we might as well process the
+	// event from it in the frame class - this might be more convenient in some
+	// cases
+	virtual void OnTerminate(int pid, int status)
+	{
+		ProcessController::Get()->OnLaunchEquipmentTerminate(pid, status, this) ;
+	}
+
+};
+
+class ConvertDataProcess : public AsyncProcess
+{
+protected:
+	wxString        m_sessionId ;
+
+public:
+	ConvertDataProcess(const wxString & sessionId) : AsyncProcess(false, false)
+	{
+		m_sessionId = sessionId ;
+	}
+
+	const wxString & GetSessionId()
+	{
+		return m_sessionId;
+	}
+
+	// instead of overriding this virtual function we might as well process the
+	// event from it in the frame class - this might be more convenient in some
+	// cases
+	virtual void OnTerminate(int pid, int status)
+	{
+		ProcessController::Get()->OnConvertTerminate(pid, status, this) ;
+	}
+
+};
 
 
 ProcessController * ProcessController::m_pInstance = NULL;
@@ -63,27 +116,19 @@ ProcessController * ProcessController::Get()
 	return m_pInstance ;
 }
 
-wxFileName ProcessController::GetCurrentSessionDirName()
+wxFileName ProcessController::GetCurrentSessionFileName()
 {
-	wxFileName session_dir ;
-	
-	if(m_current_session_id != wxEmptyString)
-	{
-		session_dir.AssignDir(wxT("sessions")) ;
-		session_dir.AppendDir(m_current_session_id);
-	}
-	return session_dir;
+	wxFileName cfg_filename ("sessions", m_current_session_id, "ini") ;
+	return cfg_filename ;
 }
 
 /**
  * Get the setting for current session from the METADATA file
  */
-wxString ProcessController::ReadSessionMetaData(const wxString & key)
+wxString ProcessController::GetEquipmentId()
 {
-	wxFileName cfg_filename = GetCurrentSessionDirName();
-	cfg_filename.SetName(SESSION_FILENAME_METADATA) ;
-	cfg_filename.SetEmptyExt();
-	
+	wxFileName cfg_filename = GetCurrentSessionFileName() ;
+
 	wxFileInputStream cfg_stream(cfg_filename.GetFullPath());
 	if(cfg_stream.IsOk())
 	{
@@ -91,17 +136,13 @@ wxString ProcessController::ReadSessionMetaData(const wxString & key)
 		// enumeration variables
 		wxString str;
 
-		if(metadata_config.Read(wxT("metadata/") + key, &str))
-		{
-			return str ;
-		}
-	}
-	
-	return wxEmptyString ;
+		return metadata_config.Read(wxT("metadata/session.equipment.id"), wxEmptyString);
 
+	}
+	return wxEmptyString ;
 }
 
-/*
+/**
  * Present a dialog for confirmation before starting a new session
  */
 void ProcessController::ConfirmNewSession(const wxString & equipment_id)
@@ -116,20 +157,21 @@ void ProcessController::ConfirmNewSession(const wxString & equipment_id)
 }
 
 
-/*
+/**
  * Start a new session
  */
 void ProcessController::StartNewSession(const wxString & exchange_file)
 {
-	wxGetApp().Log(_T("Starting session with exchange file ") + exchange_file);
+	wxGetApp().Log(wxT("Starting session with exchange file ") + exchange_file);
 
 	// TODO: STOP CURRENT SESSION FIRST
+	FinaliseSession() ;
 
 	/**
 	 * Create Session directory structure
 	 */
-	wxString session_id ;
-	wxFileName session_filename("sessions", wxDateTime::Now().Format(FILENAME_DATETIME_FORMAT), "ini") ;
+	wxString session_id =  wxDateTime::Now().Format(FILENAME_DATETIME_FORMAT);
+	wxFileName session_filename("sessions", session_id , "ini") ;
 
 	// session has been assigned an unique id
 	if( !session_filename.DirExists() )
@@ -149,32 +191,30 @@ void ProcessController::StartNewSession(const wxString & exchange_file)
 }
 
 
-
+/**
+ * Launch the equuipment
+ * @return executed. Ture if launch required, otherwise false
+ */
 bool ProcessController::LaunchEquipment()
 {
-	wxString equipment_id = ReadSessionMetaData(wxT("session.equipment.id"));
+	wxString equipment_id = GetEquipmentId();
 
 	bool launch_enabled = wxFileConfig::Get()->ReadBool (
-			wxT("equipment.")
-			+ equipment_id
-			+ wxT(".launcher.enabled"),
+			wxString::Format(wxT("equipment.%s.launcher.enabled"), equipment_id),
 			false
 		) ;
 
 	if( launch_enabled )
 	{
-		
-	}
-	else
-	{
 		wxString launch_program = wxFileConfig::Get()->Read(
-				wxT("equipment.")
-				+ equipment_id
-				+ wxT(".launcher.program")
+				wxString::Format(wxT("equipment.%s.launcher.program"), equipment_id)
 			) ;
 		wxGetApp().Log(wxT("Starting program ") + launch_program);
+
+		LaunchEquipmentProcess * process = new LaunchEquipmentProcess(m_current_session_id) ;
+
 		wxFileName launch_file(launch_program);
-		long pid = wxExecute (launch_file.GetFullPath());
+		long pid = wxExecute (launch_file.GetFullPath(), wxEXEC_ASYNC, process);
 		wxGetApp().Log(wxString::Format("Program PID %d", pid));
 
 		return pid != 0 ;
@@ -184,7 +224,16 @@ bool ProcessController::LaunchEquipment()
 	return false;
 }
 
-
+bool ProcessController::OnLaunchEquipmentTerminate(int pid, int status, LaunchEquipmentProcess * process)
+{
+	// finalise current session when equipment exits
+	if( m_current_session_id == process->GetSessionId() &&
+		m_current_session_id != wxEmptyString )
+	{
+		FinaliseSession();
+	}
+	return true ;
+}
 
 
 bool ProcessController::StartMonitoring()
@@ -193,7 +242,7 @@ bool ProcessController::StartMonitoring()
 	DataFileMonitor * monitor = DataFileMonitor::Get() ;
 	monitor->Reset();
 	
-	wxString equipment_id = ReadSessionMetaData(wxT("session.equipment.id"));
+	wxString equipment_id = GetEquipmentId();
 
 
 	// Set the monitored extensions
@@ -235,93 +284,167 @@ bool ProcessController::StartMonitoring()
 /**
  * Process the creation of new data file
  */
-bool ProcessController::OnExportTerminate(int pid, int status, const wxString & script, const wxString & datafile)
+bool ProcessController::OnNewDataFileFound(const wxString & file)
 {
-	// The export is terminated, may success or not
-	// in any case, transfer data to storage
-	wxGetApp().Log(wxString::Format("Export Terminate PID=%d, STATUS=%d", pid, status));
+	// put the file in ini
+	wxFileName cfg_filename = GetCurrentSessionFileName() ;
+	wxFileName filename(file, wxPATH_UNIX);
 
-	TransferFile(datafile);
+	wxFileInputStream cfg_stream(cfg_filename.GetFullPath());
+	if(cfg_stream.IsOk())
+	{
+		wxFileConfig config(cfg_stream);
+		// enumeration variables
+		wxString str;
+
+		long count = config.ReadLong(wxT("files/count"), 0) ;
+		count ++ ;
+		config.Write(wxT("files/count"), count) ;
+		config.Write(
+			wxString::Format("files/file%d", count),
+			filename.GetFullPath()
+			);
+		config.Write(
+			wxString::Format("files/destination%d", count),
+			wxT("")
+		);
+		
+		wxFileOutputStream out_stream(cfg_filename.GetFullPath());
+		if(out_stream.IsOk())
+		{
+			config.Save(out_stream);
+			out_stream.Close();
+		}
+	}
+
+	// export the file
+	IsExportEnabled() ? Export() : Convert() ;
+
 	return true ;
+}
+
+bool ProcessController::IsExportEnabled()
+{
+	// let's have a look if export is supported by this equipment
+	return wxFileConfig::Get()->ReadBool(
+			wxString::Format(wxT("equipment.%s.export.enabled"), GetEquipmentId()),
+			false
+		) ;
+}
+
+/**
+ * Export new data file
+ */
+void ProcessController::Export()
+{
+	if(IsExportEnabled())
+	{
+		// export required, do export before transfer data to storage
+		wxString script = wxFileConfig::Get()->Read(
+				wxString::Format(wxT("equipment.%s.export.script"), GetEquipmentId())
+			) ;
+		
+		MacroScheduler::Get()->Execute(script, GetCurrentSessionFileName().GetFullPath());
+	}
 }
 
 /**
  * Process the creation of new data file
  */
-bool ProcessController::OnNewDataFileFound(const wxString & file)
+bool ProcessController::OnExportTerminate(int pid, int status, const wxString & script, const wxString & datafile)
 {
-	// deal with new file
-	if( ! ExportFile(file) )
+	// The export is terminated, may success or not
+	// in any case, transfer data to storage
+	wxGetApp().Log(wxString::Format("Export Terminate PID=%d, STATUS=%d", pid, status));
+	
+	IsConvertEnabled() ? Convert() : FinaliseSession() ;
+
+	return true ;
+}
+
+bool ProcessController::IsConvertEnabled()
+{
+	return wxFileConfig::Get()->ReadBool (
+			wxString::Format("equipment.%s.convert.enabled", GetEquipmentId()),
+			false
+		) ;
+}
+/**
+ * Convert data files
+ */
+void ProcessController::Convert()
+{
+	if( IsConvertEnabled() )
 	{
-		// No export? do transfer
-		TransferFile(file);
+		wxString convert_program = wxFileConfig::Get()->Read(
+			wxString::Format("equipment.%s.convert.program", GetEquipmentId())
+			) ;
+		wxGetApp().Log(wxT("Starting convert program ") + convert_program);
+
+		ConvertDataProcess * process = new ConvertDataProcess(m_current_session_id) ;
+
+		wxFileName filename(convert_program);
+		wxString cmd = wxString::Format(
+				"%s --launched-from-manipulating-software --research-exchange-list \"%s\"",
+				filename.GetFullPath(),
+				GetCurrentSessionFileName().GetFullPath()
+			);
+		long pid = wxExecute(cmd, wxEXEC_ASYNC, process);
+		wxGetApp().Log(wxString::Format("Program PID %d", pid));
+	}
+}
+
+bool ProcessController::OnConvertTerminate(int pid, int status, ConvertDataProcess * process)
+{
+	// finalise current session when equipment exits
+	if( m_current_session_id == process->GetSessionId() &&
+		m_current_session_id != wxEmptyString )
+	{
+		FinaliseSession();
 	}
 	return true ;
 }
 
 /**
- * Export new data file
+ * Finalise current session
+ * What will happen:
+ *   1. Write current session ID to CACHE file
+ *      (so that all files will be synced to storage)
+ *   2. Reset Monitoring
+ * 
+ * @return true when success, otherwise false
  */
-bool ProcessController::ExportFile(const wxString & file)
+void ProcessController::FinaliseSession()
 {
-	wxString equipment_id = ReadSessionMetaData(wxT("session.equipment.id"));
-
-	// let's have a look if export is supported by this equipment
-	bool enabled = wxFileConfig::Get()->ReadBool(
-			wxString::Format(wxT("equipment.%s.export.enabled"), equipment_id), 
-			true
-		) ;
-	wxGetApp().Log(wxT("Export"));
-	wxGetApp().Log(wxString::Format(" Enabled %d", enabled));
-
-	if(enabled)
+	// ITEM 1 : add session to CACHE for storage
+	if( m_current_session_id != wxEmptyString)
 	{
-		// export required, do export before transfer data to storage
-		wxString script = wxFileConfig::Get()->Read(
-				wxString::Format(wxT("equipment.%s.export.script"), equipment_id)
-			) ;
-		
-		wxGetApp().Log(wxString::Format(" Script %s", script));
-		wxGetApp().Log(wxString::Format(" Datafile %s", file));
+		// if no current session, no action required
+		wxTextFile cache(DATAFILE_STORAGE_CACHE_FILENAME);
+		wxString str ;
+		bool is_id_in_cache = false;
 
-		MacroScheduler::Get()->Execute(script, file);
-		return true ;
-	}
+		cache.Exists() ? cache.Open() : cache.Create() ;
 
-	// seems the equipment want data file go storage straight away
-	// all right, we can do that by giving a false here
-	return false;
-}
-
-
-/**
- * Export new data file
- */
-bool ProcessController::TransferFile(const wxString & file)
-{
-	wxString equipment_id = ReadSessionMetaData(wxT("session.equipment.id"));
-
-	// let's have a look if storage is supported by this equipment
-	bool enabled = wxFileConfig::Get()->ReadBool(
-			wxString::Format(wxT("equipment.%s.storage.enabled"), equipment_id), 
-			true
-		) ;
-
-	bool prompt = wxFileConfig::Get()->ReadBool(
-			wxString::Format(wxT("equipment.%s.storage.prompt"), equipment_id), 
-			true
-		) ;
-		
-	if( enabled )
-	{
-		if(prompt)
+		for ( str = cache.GetFirstLine(); !cache.Eof(); str = cache.GetNextLine() )
 		{
-			// Display a promot dialog, start transfer within 30 seconds
+			if(str == m_current_session_id)
+			{
+				is_id_in_cache = true ;
+				break;
+			}
 		}
 		
-		// TODO: Transfer file here
-		return true ;
+		if( ! is_id_in_cache)
+		{
+			cache.AddLine(m_current_session_id);
+		}
+		cache.Write();
+		cache.Close();
 	}
 
-	return false;
+	// ITEM 2: stop monitoring
+	DataFileMonitor * monitor = DataFileMonitor::Get() ;
+	monitor->Reset();
+
 }

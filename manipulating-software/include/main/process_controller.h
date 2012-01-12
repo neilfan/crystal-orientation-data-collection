@@ -27,7 +27,10 @@
 #ifndef WX_PRECOMP
 #include "wx/wx.h"
 #endif
- 
+
+class LaunchEquipmentProcess ;
+class ConvertDataProcess ;
+
 class ProcessController : public wxEvtHandler 
 {
 public:
@@ -44,20 +47,25 @@ public:
 	 * Start the equipment
 	 */
 	void StartNewSession(const wxString & exchange_file);
+	void FinaliseSession();
 
 	bool OnNewDataFileFound(const wxString & file);
+	bool OnLaunchEquipmentTerminate(int pid, int status, LaunchEquipmentProcess *);
+	bool OnConvertTerminate(int pid, int status, ConvertDataProcess *);
 	bool OnExportTerminate(int pid, int status, const wxString & script, const wxString & datafile);
-	wxString ReadSessionMetaData(const wxString & key) ;
 
 private:
 	ProcessController();
 	wxObject * m_confirm_dialog ;
 	wxString m_current_session_id ;
-	wxFileName GetCurrentSessionDirName() ;
+	wxFileName GetCurrentSessionFileName() ;
+	wxString GetEquipmentId() ;
 	bool LaunchEquipment();
 	bool StartMonitoring();
-	bool ExportFile(const wxString & file);
-	bool TransferFile(const wxString & file);
+	bool IsExportEnabled();
+	void Export();
+	bool IsConvertEnabled();
+	void Convert();
 
 	static ProcessController * m_pInstance ;
 

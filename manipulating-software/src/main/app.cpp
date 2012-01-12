@@ -142,6 +142,9 @@ bool MainApp::OnInit()
 
 int MainApp::OnExit()
 {
+	// Finalise current session
+	ProcessController::Get()->FinaliseSession();
+
 	// shutdown the server (DDE)
 	if(m_server!=NULL)
 	{

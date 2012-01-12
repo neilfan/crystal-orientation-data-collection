@@ -231,8 +231,6 @@ void DataFileStorage::OnTimer( wxTimerEvent& event )
 	if( m_sessionTasks.IsEmpty() )
 	{
 
-		wxGetApp().Log(wxT("Scanning CACHE file for scheduled transfer task"));
-
 		// check if any task exists
 		wxFileName cache(DATAFILE_STORAGE_CACHE_FILENAME) ;
 
