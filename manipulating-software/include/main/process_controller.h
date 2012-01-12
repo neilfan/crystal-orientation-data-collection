@@ -59,6 +59,7 @@ private:
 	wxObject * m_confirm_dialog ;
 	wxString m_current_session_id ;
 	wxFileName GetCurrentSessionFileName() ;
+	wxString GetMetadata(const wxString &, const wxString & defaultVal=wxEmptyString) ;
 	wxString GetEquipmentId() ;
 	bool LaunchEquipment();
 	bool StartMonitoring();

@@ -125,7 +125,7 @@ wxFileName ProcessController::GetCurrentSessionFileName()
 /**
  * Get the setting for current session from the METADATA file
  */
-wxString ProcessController::GetEquipmentId()
+wxString ProcessController::GetMetadata(const wxString & key, const wxString & defaultVal)
 {
 	wxFileName cfg_filename = GetCurrentSessionFileName() ;
 
@@ -133,13 +133,15 @@ wxString ProcessController::GetEquipmentId()
 	if(cfg_stream.IsOk())
 	{
 		wxFileConfig metadata_config(cfg_stream);
-		// enumeration variables
-		wxString str;
-
-		return metadata_config.Read(wxT("metadata/session.equipment.id"), wxEmptyString);
+		return metadata_config.Read(wxT("metadata/") + key, defaultVal);
 
 	}
-	return wxEmptyString ;
+	return defaultVal ;
+}
+
+wxString ProcessController::GetEquipmentId()
+{
+	return GetMetadata(wxT("session.equipment.id")) ;
 }
 
 /**
@@ -396,8 +398,12 @@ void ProcessController::Convert()
 
 bool ProcessController::OnConvertTerminate(int pid, int status, ConvertDataProcess * process)
 {
+	// check the error code
+	wxString error = GetMetadata(wxT("error.code"), wxT("0"));
+
 	// finalise current session when equipment exits
-	if( m_current_session_id == process->GetSessionId() &&
+	if( wxAtoi(error) == 0 &&
+		m_current_session_id == process->GetSessionId() &&
 		m_current_session_id != wxEmptyString )
 	{
 		FinaliseSession();
