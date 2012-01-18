@@ -387,7 +387,7 @@ void ProcessController::Convert()
 
 		wxFileName filename(convert_program);
 		wxString cmd = wxString::Format(
-				"%s --launched-from-manipulating-software --research-exchange-list \"%s\"",
+				"%s --launched-from-manipulating-software --research-exchange-file \"%s\"",
 				filename.GetFullPath(),
 				GetCurrentSessionFileName().GetFullPath()
 			);

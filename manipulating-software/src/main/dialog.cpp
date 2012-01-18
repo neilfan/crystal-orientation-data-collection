@@ -93,7 +93,7 @@ MainDialog::MainDialog( wxWindow* parent, wxWindowID id, const wxString& title, 
 	m_labelClear->Connect( wxEVT_LEFT_DOWN, wxMouseEventHandler( MainDialog::OnClearLog ), NULL, this );
 	m_buttonClose->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainDialog::OnCloseClicked ), NULL, this );
 
-		// set up icon
+	// set up icon
 	this->SetIcon(icon_xpm);
 
 }
