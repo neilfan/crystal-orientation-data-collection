@@ -69,6 +69,7 @@ CPPS   = \
 		main/datarow \
 		main/datarow_ang \
 		main/datarow_astar \
+		main/datarow_tsl \
 
 
 # Work out a list of all source files

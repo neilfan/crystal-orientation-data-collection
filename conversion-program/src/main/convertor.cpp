@@ -29,7 +29,7 @@
 #include "main/datarow_ang.h"
 #include "main/datarow_astar.h"
 //#include "main/datarow_hkl.h"
-//#include "main/datarow_tsl.h"
+#include "main/datarow_tsl.h"
 
 Convertor * Convertor::m_pInstance = NULL;
 
@@ -54,30 +54,113 @@ Convertor :: Convertor()
 
 bool Convertor::LoadDataFile(const wxString & file)
 {
+	m_format = Convertor::FORMAT_UNKNOW ;
+
 	m_textfile = new wxTextFile(file) ;
-	return m_textfile->Open() ;
+	m_textfile->Open() ;
+	
+	if( ! m_textfile->IsOpened() )
+	{
+		return false;
+	}
+
+	DataRow::SetCrystalSystemType(None);
+
+	if(	DetermineFormat() == Convertor::FORMAT_TSL ||
+		DetermineFormat() == Convertor::FORMAT_ASTAR )
+	{
+		// find the crystal system here
+		wxString line ;
+		wxString symmetry ;
+		for(line=m_textfile->GetFirstLine() ; ! m_textfile->Eof() ; line=m_textfile->GetNextLine() )
+		{
+			DataRowANG row ;
+			row.Import(line) ;
+			if(row.IsComment())
+			{
+				if(line.StartsWith(wxT("# Symmetry"), &symmetry))
+				{
+					int i = wxAtoi( symmetry.Trim(false).Trim() );
+					if(i==43)
+					{
+						DataRow::SetCrystalSystemType(Cubic);
+					}
+					if(i==6 || i==62)
+					{
+						DataRow::SetCrystalSystemType(Hexagonal);
+					}
+					break;
+				}
+			}
+			else
+			{
+				break;
+			}
+		}
+	}
+	
+	if(DataRow::GetCrystalSystemType() == None)
+	{
+		return false;
+	}
+
+	if(DetermineFormat() == Convertor::FORMAT_TSL)
+	{
+		// load min/max IQ here
+		wxString line ;
+		float min=0;
+		float max=0;
+		bool inited = false;
+		for(line=m_textfile->GetFirstLine() ; ! m_textfile->Eof() ; line=m_textfile->GetNextLine() )
+		{
+			DataRowTSL row ;
+			row.Import(line) ;
+			if(row.IsComment())
+			{
+				continue ;
+			}
+			wxArrayString as = row.ToArrayString() ;
+			float iq = wxAtof(as[5]) ;
+			if( !inited || min>iq)
+			{
+				min=iq ;
+			}
+			if( !inited || max<iq)
+			{
+				max=iq ;
+			}
+			inited = true;
+		}
+		DataRowTSL::SetIQRange(min, max);
+	}
+
+	return true ;
 }
 
 Convertor::Format Convertor::DetermineFormat()
 {
 	if( ! m_textfile->IsOpened())
 	{
-		return Convertor::FORMAT_UNKNOW ;
+		m_format = Convertor::FORMAT_UNKNOW ;
 	}
 	
+	if(m_format != Convertor::FORMAT_UNKNOW )
+	{
+		return m_format ;
+	}
+
 	wxFileName filename( m_textfile->GetName() ) ;
 	
 	if( filename.GetExt().Lower() == FILENAMEEXT_CTF )
 	{
-		return Convertor::FORMAT_HKL ;
+		m_format = Convertor::FORMAT_HKL ;
 	}
-
-	if( filename.GetExt().Lower() == FILENAMEEXT_ANG )
+	else if( filename.GetExt().Lower() == FILENAMEEXT_ANG )
 	{
 		// there are two type of .ang format
 		// ASTAR has 9 columns, while TSL gets 10
 		wxString line ;
-		for(line=m_textfile->GetFirstLine() ; m_textfile->Eof() ; line=m_textfile->GetNextLine() )
+		for(line=m_textfile->GetFirstLine() ; ! m_textfile->Eof() ; line=m_textfile->GetNextLine() )
 		{
 			DataRowANG rowAng ;
 			rowAng.Import(line) ;
@@ -90,18 +173,18 @@ Convertor::Format Convertor::DetermineFormat()
 			
 			if(columnLength==COLUMNLENGTH_ASTAR)
 			{
-				return Convertor::FORMAT_ASTAR;
+				m_format = Convertor::FORMAT_ASTAR;
+				break;
 			}
 			else if(columnLength==COLUMNLENGTH_TSL)
 			{
-				return Convertor::FORMAT_TSL ;
+				m_format = Convertor::FORMAT_TSL ;
+				break;
 			}
-			
 		}
-		return Convertor::FORMAT_ASTAR ;
 	}
 
-	return Convertor::FORMAT_UNKNOW ;
+	return m_format ;
 
 }
 bool Convertor::ToAstar(const wxString & output)

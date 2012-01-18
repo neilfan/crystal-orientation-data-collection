@@ -52,7 +52,14 @@ wxString DataRowASTAR::ToHKL()
 		hkl.Add( wxT("0") ) ;
 		hkl.Add( astar[0] ) ;
 		hkl.Add( astar[1] ) ;
-		hkl.Add( astar[2] ) ;
+		if( DataRowASTAR::GetCrystalSystemType() == Cubic)
+		{
+			hkl.Add( astar[2] ) ;
+		}
+		if( DataRowASTAR::GetCrystalSystemType() == Hexagonal)
+		{
+			hkl.Add( wxString::Format("%f", round( ( wxAtof(astar[2]) + M_PI/2) * pow(10,3) ) / pow(10,3)));
+		}
 		hkl.Add( wxT("0") ) ;
 		hkl.Add( wxString::Format("%f", round( wxAtof(astar[5]) )) );
 		hkl.Add( wxString::Format("%f", wxAtof(astar[6]) * 100) );

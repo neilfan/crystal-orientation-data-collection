@@ -29,12 +29,24 @@
 #include <wx/string.h>
 #include <wx/arrstr.h> 
 
+enum CrystalSystemType
+{
+	None,
+	Triclinic,
+	Monoclinic,
+	Orthorhombic,
+	Tetragonal,
+	Trigonal,
+	Hexagonal,
+	Cubic
+};
 
 class DataRow : public wxObject
 {
 protected:
-	wxChar   	m_delimiter ;
-	wxString 	m_data ;
+	wxChar   					m_delimiter ;
+	wxString 					m_data ;
+	static CrystalSystemType	m_csType ;
 public:
 	DataRow(const wxChar & delimiter);
 	void Import(const wxString & line) ;
@@ -46,6 +58,8 @@ public:
 	virtual wxString ToASTAR() ;
 	virtual wxString ToHKL() ;
 	virtual wxString ToTSL() ;
+	static void SetCrystalSystemType(CrystalSystemType csType);
+	static CrystalSystemType GetCrystalSystemType();
 } ;
 
 #endif

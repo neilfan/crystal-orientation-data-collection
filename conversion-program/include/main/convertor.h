@@ -55,6 +55,7 @@ private:
 	wxTextFile * m_textfile ;
 	int m_progress ;
 	wxArrayString m_generated_files ;
+	Convertor::Format m_format ;
 
 } ;
 

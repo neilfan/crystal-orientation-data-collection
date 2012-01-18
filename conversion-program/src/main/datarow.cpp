@@ -20,7 +20,8 @@
 #include <wx/tokenzr.h>
 
 #include "main/datarow.h"
- 
+CrystalSystemType	DataRow::m_csType = None;
+
 DataRow::DataRow(const wxChar & delimiter)
 {
 	m_delimiter = delimiter ;
@@ -76,4 +77,14 @@ wxString DataRow::ToHKL()
 wxString DataRow::ToTSL()
 {
 	return m_data ;
+}
+
+void DataRow::SetCrystalSystemType(CrystalSystemType csType)
+{
+	DataRow::m_csType = csType ;
+}
+
+CrystalSystemType DataRow::GetCrystalSystemType()
+{
+	return DataRow::m_csType;
 }

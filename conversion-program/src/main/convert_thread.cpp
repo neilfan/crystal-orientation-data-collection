@@ -54,10 +54,12 @@ wxThread::ExitCode ConvertThread::Entry()
 		evt->SetInt(i);
 		wxQueueEvent(m_pHandler, evt);
 
-		convertor->LoadDataFile(m_input.Item(i)) ;
-		convertor->ToAstar() ;
-		convertor->ToHkl  () ;
-		convertor->ToTsl  () ;
+		if( convertor->LoadDataFile(m_input.Item(i)) )
+		{
+			convertor->ToAstar() ;
+			convertor->ToHkl  () ;
+			convertor->ToTsl  () ;
+		}
 	}
 
 	// signal the event handler that this thread is going to be destroyed
