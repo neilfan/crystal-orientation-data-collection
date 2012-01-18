@@ -64,7 +64,11 @@ DEST   = conversion-program.exe
 CPPS   = \
 		main/app \
 		main/convert_dialog \
-		main/datarow_format \
+		main/convert_thread \
+		main/convertor \
+		main/datarow \
+		main/datarow_ang \
+		main/datarow_astar \
 
 
 # Work out a list of all source files

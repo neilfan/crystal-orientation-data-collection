@@ -36,6 +36,8 @@
 #include <wx/sizer.h>
 #include <wx/button.h>
 #include <wx/dialog.h>
+#include <wx/timer.h>
+
 
 
 ///////////////////////////////////////////////////////////////////////////
@@ -47,24 +49,30 @@
 class ConvertDialog : public wxDialog 
 {
 	private:
-	
+		wxTimer * 					m_timer ;
+		wxThread * 					m_thread ;
+		bool						m_isAutoConvertMode ;
+		wxFileName					m_exchange_filename ;
 	protected:
-		wxStaticText* m_staticText1;
-		wxFilePickerCtrl* m_file_from;
-		wxStaticText* m_staticText2;
-		wxTextCtrl* m_file_to;
-		wxGauge* m_progress;
-		wxStdDialogButtonSizer* m_sdbSizer4;
-		wxButton* m_sdbSizer4Apply;
-		wxButton* m_sdbSizer4Cancel;
-	
+		wxStaticText* 				m_staticText1;
+		wxFilePickerCtrl* 			m_file_from;
+		wxGauge* 					m_progress;
+		wxGauge* 					m_stage;
+		wxStaticText* 				m_staticTips;
+		wxStdDialogButtonSizer* 	m_sdbSizer4;
+		wxButton* 					m_sdbSizer4Apply;
+		wxButton* 					m_sdbSizer4Cancel;
 	public:
 		
-		ConvertDialog( wxWindow* parent = NULL, wxWindowID id = wxID_ANY, const wxString& title = wxT("DC20A: Conversion Program"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 330,214 ), long style = wxDEFAULT_DIALOG_STYLE|wxSTAY_ON_TOP ); 
+		ConvertDialog( wxWindow* parent = NULL, wxWindowID id = wxID_ANY, const wxString& title = wxT("DC20A: Conversion Program"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 330,200 ), long style = wxDEFAULT_DIALOG_STYLE|wxSTAY_ON_TOP ); 
 		~ConvertDialog();
+		bool AutoConvert(wxFileName filename) ;
+		void OnTimer( wxTimerEvent& event ) ;
 		virtual void OnApply( wxCommandEvent& event ) ;
 		virtual void OnCancel( wxCommandEvent& event ) ;
 		virtual void OnClose( wxCloseEvent& event ) ;
+		virtual void OnThreadCompleted( wxThreadEvent& event ) ;
+		virtual void OnThreadUpdated( wxThreadEvent& event ) ;
 };
 
 

@@ -53,20 +53,27 @@ bool MainApp::OnInit()
 	cmd_parser.AddSwitch (wxT("l"), wxT("launched-from-manipulating-software"));
 	cmd_parser.AddOption (wxT("e"), wxT("research-exchange-file"), wxT("Exchange File"));
 
+
+	ConvertDialog * dialog = new ConvertDialog();
+	m_dialog = wxDynamicCast(dialog, wxObject) ;
+	dialog->Show(true);
+	SetTopWindow(dialog);
+
 	wxString exchange_file ;
 	if(cmd_parser.Parse() == 0)
 	{
 		if( cmd_parser.Found(wxT("launched-from-manipulating-software")) )
 		{
 			cmd_parser.Found(wxT("research-exchange-file"), & exchange_file) ;
+
+			wxFileName ex(exchange_file);
+			if( ex.FileExists() )
+			{
+				dialog->AutoConvert(ex);
+				// an exchange file is found, turn into auto convert mode
+			}
 		}
-		else
-		{
-			ConvertDialog * dialog = new ConvertDialog();
-			m_dialog = wxDynamicCast(dialog, wxObject) ;
-			dialog->Show(true);
-			SetTopWindow(dialog);
-		}
+		
 	}
 	
 

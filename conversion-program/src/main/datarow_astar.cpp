@@ -17,5 +17,46 @@
  * along with crystal-orientation-data-collection. If not, see
  * <http://www.gnu.org/licenses/>.
  */
+#include <math.h>
+#include <wx/msgdlg.h>
 
- #include "main/datarow_format.h"
+#include "main/datarow_ang.h"
+#include "main/datarow_astar.h"
+
+
+DataRowASTAR::DataRowASTAR()
+{
+}
+
+wxString DataRowASTAR::ToHKL()
+{
+
+	if( IsComment() )
+	{
+		return m_data ;
+	}
+	else
+	{
+		wxArrayString astar = ToArrayString();
+		wxArrayString hkl ;
+
+		if(astar.GetCount()<9)
+		{
+			return wxEmptyString ;
+		}
+		
+		hkl.Add( astar[7] ) ;
+		hkl.Add( astar[3] ) ;
+		hkl.Add( astar[4] ) ;
+		hkl.Add( wxT("0") ) ;
+		hkl.Add( wxT("0") ) ;
+		hkl.Add( astar[0] ) ;
+		hkl.Add( astar[1] ) ;
+		hkl.Add( astar[2] ) ;
+		hkl.Add( wxT("0") ) ;
+		hkl.Add( wxString::Format("%f", round( wxAtof(astar[5]) )) );
+		hkl.Add( wxString::Format("%f", wxAtof(astar[6]) * 100) );
+
+		return wxJoin(hkl, wxT('\t'));
+	}
+}

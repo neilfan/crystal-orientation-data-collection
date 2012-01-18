@@ -17,16 +17,11 @@
  * along with crystal-orientation-data-collection. If not, see
  * <http://www.gnu.org/licenses/>.
  */
+#include <math.h>
 
-#ifndef INCLUDED_MAIN_DATAROW_FORMAT_H
-#define INCLUDED_MAIN_DATAROW_FORMAT_H
+#include "main/datarow_ang.h"
 
-#include <wx/string.h>
 
-class DataRowFormat
+DataRowANG::DataRowANG() : DataRow(wxT(' '))
 {
-protected:
-	wxString m_delimiter ;
-} ;
-
-#endif
+}
