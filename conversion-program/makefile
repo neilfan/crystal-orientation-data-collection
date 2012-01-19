@@ -69,6 +69,7 @@ CPPS   = \
 		main/datarow \
 		main/datarow_ang \
 		main/datarow_astar \
+		main/datarow_hkl \
 		main/datarow_tsl \
 
 

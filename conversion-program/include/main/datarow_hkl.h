@@ -18,19 +18,22 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#ifndef INCLUDED_MAIN_DATAROW_ASTAR_H
-#define INCLUDED_MAIN_DATAROW_ASTAR_H
+#ifndef INCLUDED_MAIN_DATAROW_HKL_H
+#define INCLUDED_MAIN_DATAROW_HKL_H
 
 #include <wx/string.h>
 #include <wx/arrstr.h> 
 
-#include "main/datarow_ang.h"
+#include "main/datarow.h"
 
-class DataRowASTAR : public DataRowANG
+class DataRowHKL : public DataRow
 {
+
 public:
-	DataRowASTAR() ;
-	wxString ToHKL() ;
+	DataRowHKL() ;
+	virtual wxString ToASTAR() ;
+	virtual bool IsComment();
+
 } ;
 
 #endif

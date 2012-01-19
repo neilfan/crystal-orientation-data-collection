@@ -49,7 +49,7 @@ wxString DataRowTSL::ToHKL()
 		wxArrayString tsl = ToArrayString();
 		wxArrayString hkl ;
 
-		if(tsl.GetCount()<9)
+		if(tsl.GetCount()<10)
 		{
 			return wxEmptyString ;
 		}

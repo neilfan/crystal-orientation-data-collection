@@ -171,7 +171,7 @@ void ConvertDialog::OnThreadCompleted(wxThreadEvent & event)
 		{
 			wxFileConfig fc(fis);
 			long count = fc.ReadLong(wxT("files/count"), 0);
-			int i;
+			size_t i;
 			for(i=0; i<file_lists.GetCount() ; i++)
 			{
 				fc.Write(wxString::Format("files/file%d", count+i+1) ,file_lists.Item(i) ) ;

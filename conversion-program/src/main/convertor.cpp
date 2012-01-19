@@ -28,7 +28,7 @@
 #include "main/datarow.h"
 #include "main/datarow_ang.h"
 #include "main/datarow_astar.h"
-//#include "main/datarow_hkl.h"
+#include "main/datarow_hkl.h"
 #include "main/datarow_tsl.h"
 
 Convertor * Convertor::m_pInstance = NULL;
@@ -158,29 +158,16 @@ Convertor::Format Convertor::DetermineFormat()
 	else if( filename.GetExt().Lower() == FILENAMEEXT_ANG )
 	{
 		// there are two type of .ang format
-		// ASTAR has 9 columns, while TSL gets 10
-		wxString line ;
-		for(line=m_textfile->GetFirstLine() ; ! m_textfile->Eof() ; line=m_textfile->GetNextLine() )
+		// Their first line is different
+		wxString line = m_textfile->GetFirstLine();
+		if(line.StartsWith("# File created from ACOM RES results"))
 		{
-			DataRowANG rowAng ;
-			rowAng.Import(line) ;
-			if(rowAng.IsComment())
-			{
-				continue ;
-			}
-			
-			int columnLength = rowAng.ToArrayString().GetCount() ;
-			
-			if(columnLength==COLUMNLENGTH_ASTAR)
-			{
-				m_format = Convertor::FORMAT_ASTAR;
-				break;
-			}
-			else if(columnLength==COLUMNLENGTH_TSL)
-			{
-				m_format = Convertor::FORMAT_TSL ;
-				break;
-			}
+			m_format = Convertor::FORMAT_ASTAR;
+		}
+
+		if(line.StartsWith("# TEM_PIXperUM"))
+		{
+			m_format = Convertor::FORMAT_TSL;
 		}
 	}
 
@@ -212,7 +199,8 @@ bool Convertor::Convert(Convertor::Format format, const wxString & output)
 	if(
 		current_format==format ||
 		current_format==Convertor::FORMAT_UNKNOW ||
-		format==Convertor::FORMAT_UNKNOW
+		(current_format==Convertor::FORMAT_TSL && format==Convertor::FORMAT_ASTAR) ||
+		(current_format==Convertor::FORMAT_ASTAR && format==Convertor::FORMAT_TSL)
 	)
 	{
 		return false ;
@@ -237,6 +225,9 @@ bool Convertor::Convert(Convertor::Format format, const wxString & output)
 	
 		switch(format)
 		{
+			case Convertor::FORMAT_UNKNOW:
+				return false;
+				break;
 			case Convertor::FORMAT_ASTAR:
 				filename->SetName( filename->GetName() + wxT("-ASTAR") ) ;
 				filename->SetExt(FILENAMEEXT_ANG);
@@ -263,16 +254,18 @@ bool Convertor::Convert(Convertor::Format format, const wxString & output)
 	}
 	
 	DataRow * outRow ;
-	switch(format)
+	switch(current_format)
 	{
+		case Convertor::FORMAT_UNKNOW:
+			break;
 		case Convertor::FORMAT_ASTAR:
 			outRow = new DataRowASTAR() ;
 			break;
 		case Convertor::FORMAT_HKL:
-			outRow = new DataRowASTAR() ;
+			outRow = new DataRowHKL() ;
 			break;
 		case Convertor::FORMAT_TSL:
-			outRow = new DataRowASTAR() ;
+			outRow = new DataRowTSL() ;
 			break;
 	}
 
@@ -291,6 +284,8 @@ bool Convertor::Convert(Convertor::Format format, const wxString & output)
 			wxString newLine ;
 			switch(format)
 			{
+				case Convertor::FORMAT_UNKNOW:
+					break;
 				case Convertor::FORMAT_ASTAR:
 					newLine = outRow->ToASTAR() ;
 					break;

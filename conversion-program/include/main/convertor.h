@@ -20,8 +20,7 @@
 #ifndef INCLUDED_MAIN_CONVERTOR_H
 #define INCLUDED_MAIN_CONVERTOR_H
 
-#define COLUMNLENGTH_ASTAR 9
-#define COLUMNLENGTH_TSL   10
+
 #define FILENAMEEXT_ANG    wxT("ang")
 #define FILENAMEEXT_CTF    wxT("ctf")
 
