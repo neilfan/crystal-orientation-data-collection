@@ -110,6 +110,7 @@ bool MainApp::OnInit()
 		wxLog * m_log = new wxLogStderr(m_log_fp) ;
 		wxLog::SetActiveTarget(m_log);
 		wxLog::SetLogLevel(wxLOG_Message );
+		wxLog::SetLogLevel(wxLOG_Trace  );
 		wxLog::EnableLogging(true);
 		wxLog::SetTimestamp(FILENAME_DATETIME_FORMAT);
 	}
@@ -142,9 +143,6 @@ bool MainApp::OnInit()
 
 int MainApp::OnExit()
 {
-	// Finalise current session
-	ProcessController::Get()->FinaliseSession();
-
 	// shutdown the server (DDE)
 	if(m_server!=NULL)
 	{

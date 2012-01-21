@@ -304,32 +304,22 @@ void ConfirmDialog::OnLaunch( wxCommandEvent& event )
 
 	if( exchange_filename != wxEmptyString )
 	{
-		wxFFile exchange_file (exchange_filename, wxT("w+")) ;
+		wxTextFile exchange_file(exchange_filename);
+		exchange_file.Exists() ? exchange_file.Open() : exchange_file.Create() ;
 		if( exchange_file.IsOpened())
 		{
-			exchange_file.Write(wxT("[metadata]\n"));
-
 			int row ;
 			for(row=0; row<m_gridMetadata->GetNumberRows(); row++)
 			{
-				exchange_file.Write(
-					m_gridMetadata->GetRowLabelValue( row ) + 
-					wxT("=") +
-					m_gridMetadata->GetCellValue( row, 0 ) +
-					wxT("\n")
+				exchange_file.AddLine(
+					wxString::Format(
+						"%s=%s",
+						m_gridMetadata->GetRowLabelValue( row ),
+						m_gridMetadata->GetCellValue( row, 0 )
+					)
 				);
 			}
-			
-			/*
-			// extra information to go METADATA
-			exchange_file.Write(
-				m_gridMetadata->GetRowLabelValue( row ) + 
-				wxT("session.equipment.id=") +
-				m_gridMetadata->GetCellValue( row, 0 ) +
-				wxT("\n")
-			);
-			*/
-
+			exchange_file.Write();
 			exchange_file.Close();
 		}
 	}

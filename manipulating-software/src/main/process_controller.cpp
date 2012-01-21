@@ -89,6 +89,7 @@ ProcessController * ProcessController::m_pInstance = NULL;
 ProcessController::ProcessController()
 {
 	m_confirm_dialog = NULL ;
+	m_current_session_id = wxEmptyString ;
 	
 	// start the file transfer daemon
 	DataFileStorage::Get()->Start() ;
@@ -96,7 +97,18 @@ ProcessController::ProcessController()
 
 ProcessController::~ProcessController()
 {
+	FinaliseSession();
 
+/*
+	DataFileMonitor * monitor = DataFileMonitor::Get() ;
+	wxDELETE(monitor);
+
+	DataFileStorage * storage = DataFileStorage::Get() ;
+	wxDELETE(storage);
+
+	MacroScheduler * scheduler = MacroScheduler::Get() ;
+	wxDELETE(scheduler);
+*/
 	if(m_confirm_dialog!=NULL)
 	{
 		wxDynamicCast(m_confirm_dialog, ConfirmDialog)->Destroy();
@@ -425,28 +437,33 @@ void ProcessController::FinaliseSession()
 	// ITEM 1 : add session to CACHE for storage
 	if( m_current_session_id != wxEmptyString)
 	{
-		// if no current session, no action required
-		wxTextFile cache(DATAFILE_STORAGE_CACHE_FILENAME);
-		wxString str ;
-		bool is_id_in_cache = false;
-
-		cache.Exists() ? cache.Open() : cache.Create() ;
-
-		for ( str = cache.GetFirstLine(); !cache.Eof(); str = cache.GetNextLine() )
+		wxFileName csfn = GetCurrentSessionFileName() ;
+		if(csfn.FileExists())
 		{
-			if(str == m_current_session_id)
+
+			// if no current session, no action required
+			wxTextFile cache(DATAFILE_STORAGE_CACHE_FILENAME);
+			wxString str ;
+			bool is_id_in_cache = false;
+
+			cache.Exists() ? cache.Open() : cache.Create() ;
+
+			for ( str = cache.GetFirstLine(); !cache.Eof(); str = cache.GetNextLine() )
 			{
-				is_id_in_cache = true ;
-				break;
+				if(str == m_current_session_id)
+				{
+					is_id_in_cache = true ;
+					break;
+				}
 			}
+			
+			if( ! is_id_in_cache)
+			{
+				cache.AddLine(m_current_session_id);
+			}
+			cache.Write();
+			cache.Close();
 		}
-		
-		if( ! is_id_in_cache)
-		{
-			cache.AddLine(m_current_session_id);
-		}
-		cache.Write();
-		cache.Close();
 	}
 
 	// ITEM 2: stop monitoring
