@@ -99,16 +99,6 @@ ProcessController::~ProcessController()
 {
 	FinaliseSession();
 
-/*
-	DataFileMonitor * monitor = DataFileMonitor::Get() ;
-	wxDELETE(monitor);
-
-	DataFileStorage * storage = DataFileStorage::Get() ;
-	wxDELETE(storage);
-
-	MacroScheduler * scheduler = MacroScheduler::Get() ;
-	wxDELETE(scheduler);
-*/
 	if(m_confirm_dialog!=NULL)
 	{
 		wxDynamicCast(m_confirm_dialog, ConfirmDialog)->Destroy();
@@ -173,16 +163,20 @@ void ProcessController::ConfirmNewSession(const wxString & equipment_id)
 
 /**
  * Start a new session
+ * @exchange_file A temp file in same format of Session INI
+ *
+ * Copy the exchange_file to /sessions/ directory and rename
  */
 void ProcessController::StartNewSession(const wxString & exchange_file)
 {
 	wxGetApp().Log(wxT("Starting session with exchange file ") + exchange_file);
 
-	// TODO: STOP CURRENT SESSION FIRST
+	// STOP CURRENT SESSION FIRST
 	FinaliseSession() ;
 
 	/**
-	 * Create Session directory structure
+	 * Create Session INI
+	 * name format session_id.ini where session_id is a time-based string
 	 */
 	wxString session_id =  wxDateTime::Now().Format(FILENAME_DATETIME_FORMAT);
 	wxFileName session_filename("sessions", session_id , "ini") ;
@@ -238,6 +232,10 @@ bool ProcessController::LaunchEquipment()
 	return false;
 }
 
+/**
+ * The equipment software exits
+ * Need to export text-data/convert format/transfer to ISILON
+ */
 bool ProcessController::OnLaunchEquipmentTerminate(int pid, int status, LaunchEquipmentProcess * process)
 {
 	// finalise current session when equipment exits
