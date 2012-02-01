@@ -69,7 +69,7 @@ public:
 		}
 
 
-				
+
 		m_sessionId   = sessionId ;
 		m_posCmds=0;
 
@@ -124,21 +124,22 @@ public:
 
 	const wxString GetFirstCommand()
 	{
+		m_posCmds=0;
 		if(m_cmds.IsEmpty())
 		{
 			return wxEmptyString ;
 		}
 		else
 		{
-			return m_cmds[0] ;
+			return m_cmds[m_posCmds] ;
 		}
 	}
 
 	const wxString GetNextCommand()
 	{
-		if(!m_cmds.IsEmpty() && (m_posCmds < (m_cmds.GetCount()-1)) )
+		m_posCmds++ ;
+		if(!m_cmds.IsEmpty() && m_posCmds < m_cmds.GetCount() )
 		{
-			m_posCmds++ ;
 			return m_cmds[m_posCmds] ;
 		}
 
@@ -307,14 +308,12 @@ void DataFileStorage::OnTimer( wxTimerEvent& event )
 
 				if(session_config.HasEntry(key_file))
 				{
-					if( session_config.Read(key_file, & filex) )
+					filex = session_config.Read(key_file, wxEmptyString) ;
+					if( filex!=wxEmptyString && wxFileExists( filex ) )
 					{
-						if( wxFileExists( filex ) )
-						{
-							session_config.Read(wxString::Format("files/destination%d", i) , & destx);
-							m_sessionTasks.Add( filex + DATAFILE_STORAGE_LINE_DELIM + destx );
-							wxGetApp().Log(wxString::Format("Adding session data file '%s' to be transferred to '%s'", filex, destx));
-						}
+						destx = session_config.Read(wxString::Format("files/destination%d", i) , wxEmptyString);
+						m_sessionTasks.Add( filex + DATAFILE_STORAGE_LINE_DELIM + destx );
+						wxGetApp().Log(wxString::Format("Adding session data file '%s' to be transferred to '%s'", filex, destx));
 					}
 				}
 			}
@@ -416,38 +415,52 @@ bool DataFileStorage::OnTransferTerminate(int status, TransferProcess * process)
 	wxGetApp().Log(wxString::Format("Transfer %d Completed %s -> %s", process->GetPid(), file.GetFullPath(), dest.GetFullPath()));
 	wxGetApp().Log(wxString::Format("Transfer %d Status %d", process->GetPid(), status));
 
-	wxString cmd = process->GetNextCommand() ;
-	if( cmd != wxEmptyString )
+	if(status==0)
 	{
-		wxString cmd_line = wxString::Format("%s -D \"%s\" -c \"%s\"",
-					GetCommandLine(),
-					process->GetRemoteDir(),
-					cmd );
-		wxGetApp().Log(wxString::Format("  Executing remote command %s", cmd));
-		long pid = wxExecute(cmd_line, wxEXEC_ASYNC | wxEXEC_MAKE_GROUP_LEADER | wxEXEC_HIDE_CONSOLE , process);
-		wxGetApp().Log(wxString::Format("  PID %d", pid));
-	}
-	else
-	{
-		// this file in session is done
-		// Here, we have a list of task to go
-		if( ! m_sessionTasks.IsEmpty())
+		wxString cmd = process->GetNextCommand() ;
+		if( cmd != wxEmptyString )
 		{
-			m_sessionTasks.RemoveAt(0);
-		}
-
-		if( ! m_sessionTasks.IsEmpty())
-		{
-			wxArrayString array = wxStringTokenize(m_sessionTasks[0],DATAFILE_STORAGE_LINE_DELIM) ;
-			Transfer(array[0], array[1]) ;
+			wxString cmd_line = wxString::Format("%s -D \"%s\" -c \"%s\"",
+						GetCommandLine(),
+						process->GetRemoteDir(),
+						cmd );
+			wxGetApp().Log(wxString::Format("  Executing remote command %s", cmd));
+			long pid = wxExecute(cmd_line, wxEXEC_ASYNC | wxEXEC_MAKE_GROUP_LEADER | wxEXEC_HIDE_CONSOLE , process);
+			wxGetApp().Log(wxString::Format("  PID %d", pid));
 		}
 		else
 		{
-			// session is done
-			FinaliseSession( process->GetSessionId() );
+			// this file in session is done
+			// Here, we have a list of task to go
+			if( ! m_sessionTasks.IsEmpty())
+			{
+				m_sessionTasks.RemoveAt(0);
+			}
+
+			if( ! m_sessionTasks.IsEmpty() && m_sessionTasks[0]!=wxEmptyString)
+			{
+				wxArrayString array = wxStringTokenize(m_sessionTasks[0],DATAFILE_STORAGE_LINE_DELIM) ;
+				if(array.GetCount()==1)
+				{
+					// by default upload to SESSION directory
+					array.Add(wxT("./"));
+				}
+				Transfer(array[0], array[1]) ;
+			}
+			else
+			{
+				// session is done
+				FinaliseSession( process->GetSessionId() );
+			}
 		}
+		return true ;
 	}
-	return true ;
+
+	// if status is not 0
+	// an error occured, stop transfer and wait for next try
+	m_isTransferring = false;
+
+	return false;
 }
 
 bool DataFileStorage::AddTask(const wxFileName & from, const wxFileName & to)

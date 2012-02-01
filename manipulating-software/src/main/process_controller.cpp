@@ -194,8 +194,8 @@ void ProcessController::StartNewSession(const wxString & exchange_file)
 
 	// END Create Session Ddirectory structure 
 
-	LaunchEquipment();
 	StartMonitoring();
+	LaunchEquipment();
 }
 
 
@@ -212,22 +212,26 @@ bool ProcessController::LaunchEquipment()
 			false
 		) ;
 
-	if( launch_enabled )
+	wxString launch_program = wxFileConfig::Get()->Read(
+			wxString::Format(wxT("equipment.%s.launcher.program"), equipment_id)
+		) ;
+	if( launch_enabled && launch_program!=wxEmptyString)
 	{
-		wxString launch_program = wxFileConfig::Get()->Read(
-				wxString::Format(wxT("equipment.%s.launcher.program"), equipment_id)
-			) ;
 		wxGetApp().Log(wxT("Starting program ") + launch_program);
-
-		LaunchEquipmentProcess * process = new LaunchEquipmentProcess(m_current_session_id) ;
-
-		wxFileName launch_file(launch_program);
-		long pid = wxExecute (launch_file.GetFullPath(), wxEXEC_ASYNC, process);
-		wxGetApp().Log(wxString::Format("Program PID %d", pid));
-
-		return pid != 0 ;
-		
 	}
+	else
+	{
+		launch_program = DUMMY_PROGRAM_CMD ;
+	}
+
+	LaunchEquipmentProcess * process = new LaunchEquipmentProcess(m_current_session_id) ;
+
+	wxFileName launch_file(launch_program);
+	long pid = wxExecute (launch_file.GetFullPath(), wxEXEC_ASYNC, process);
+	wxGetApp().Log(wxString::Format("LaunchEquipment Program PID %d", pid));
+
+	return pid != 0 ;
+		
 
 	return false;
 }
@@ -238,6 +242,11 @@ bool ProcessController::LaunchEquipment()
  */
 bool ProcessController::OnLaunchEquipmentTerminate(int pid, int status, LaunchEquipmentProcess * process)
 {
+	// export the file
+	Export() ;
+//	IsExportEnabled() ? Export() : Convert() ;
+
+
 	// finalise current session when equipment exits
 	if( m_current_session_id == process->GetSessionId() &&
 		m_current_session_id != wxEmptyString )
@@ -329,9 +338,6 @@ bool ProcessController::OnNewDataFileFound(const wxString & file)
 		}
 	}
 
-	// export the file
-	IsExportEnabled() ? Export() : Convert() ;
-
 	return true ;
 }
 
@@ -349,15 +355,21 @@ bool ProcessController::IsExportEnabled()
  */
 void ProcessController::Export()
 {
+	wxString script ;
 	if(IsExportEnabled())
 	{
 		// export required, do export before transfer data to storage
-		wxString script = wxFileConfig::Get()->Read(
+		script = wxFileConfig::Get()->Read(
 				wxString::Format(wxT("equipment.%s.export.script"), GetEquipmentId())
 			) ;
-		
-		MacroScheduler::Get()->Execute(script, GetCurrentSessionFileName().GetFullPath());
 	}
+	
+	if( script == wxEmptyString)
+	{
+		script = DUMMY_PROGRAM_CMD ;
+	}
+
+	MacroScheduler::Get()->Execute(script, GetCurrentSessionFileName().GetFullPath());
 }
 
 /**
@@ -369,7 +381,8 @@ bool ProcessController::OnExportTerminate(int pid, int status, const wxString & 
 	// in any case, transfer data to storage
 	wxGetApp().Log(wxString::Format("Export Terminate PID=%d, STATUS=%d", pid, status));
 	
-	IsConvertEnabled() ? Convert() : FinaliseSession() ;
+	// IsConvertEnabled() ? Convert() : FinaliseSession() ;
+	Convert() ;
 
 	return true ;
 }
@@ -386,24 +399,34 @@ bool ProcessController::IsConvertEnabled()
  */
 void ProcessController::Convert()
 {
+	wxString cmd ;
+	wxString convert_program ;
 	if( IsConvertEnabled() )
 	{
-		wxString convert_program = wxFileConfig::Get()->Read(
+		convert_program = wxFileConfig::Get()->Read(
 			wxString::Format("equipment.%s.convert.program", GetEquipmentId())
 			) ;
 		wxGetApp().Log(wxT("Starting convert program ") + convert_program);
+	}
 
-		ConvertDataProcess * process = new ConvertDataProcess(m_current_session_id) ;
+	ConvertDataProcess * process = new ConvertDataProcess(m_current_session_id) ;
 
+	if( convert_program != wxEmptyString )
+	{
 		wxFileName filename(convert_program);
-		wxString cmd = wxString::Format(
+		cmd = wxString::Format(
 				"%s --launched-from-manipulating-software --research-exchange-file \"%s\"",
 				filename.GetFullPath(),
 				GetCurrentSessionFileName().GetFullPath()
 			);
-		long pid = wxExecute(cmd, wxEXEC_ASYNC, process);
-		wxGetApp().Log(wxString::Format("Program PID %d", pid));
 	}
+	else
+	{
+		cmd = DUMMY_PROGRAM_CMD ;
+	}
+
+	long pid = wxExecute(cmd, wxEXEC_ASYNC, process);
+	wxGetApp().Log(wxString::Format("Convert Program PID %d", pid));
 }
 
 bool ProcessController::OnConvertTerminate(int pid, int status, ConvertDataProcess * process)

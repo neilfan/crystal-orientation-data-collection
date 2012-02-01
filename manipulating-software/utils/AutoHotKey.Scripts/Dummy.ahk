@@ -18,6 +18,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#NoTrayIcon
+;#NoTrayIcon
+MsgBox "Hi"
 
 Sleep 1000

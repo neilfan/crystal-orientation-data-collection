@@ -20,6 +20,8 @@
 #ifndef INCLUDED_MAIN_PROCESS_CONTROLLER_H
 #define INCLUDED_MAIN_PROCESS_CONTROLLER_H
 
+#define DUMMY_PROGRAM_CMD				wxT(" ")
+
 #include <wx/wxprec.h>
 #include <wx/filename.h> 
 #include <wx/event.h> 
