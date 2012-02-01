@@ -18,6 +18,9 @@
  * <http://www.gnu.org/licenses/>.
  */
 
+#NoEnv
+#NoTrayIcon 
+
 
 SetKeyDelay			50
 SetControlDelay		50

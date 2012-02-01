@@ -171,7 +171,7 @@ void ProcessController::StartNewSession(const wxString & exchange_file)
 {
 	wxGetApp().Log(wxT("Starting session with exchange file ") + exchange_file);
 
-	// STOP CURRENT SESSION FIRST
+	// STOP PREVIOUS SESSION FIRST
 	FinaliseSession() ;
 
 	/**
