@@ -99,9 +99,10 @@ void AsyncProcess::OnTimer( wxTimerEvent& event )
 		// Capture of output is required?
 		// grab the stream, and put all strings to an array
 
-		if ( IsInputAvailable() )
+		if ( GetInputStream()!=NULL)
 		{
 			wxTextInputStream tis(*GetInputStream());
+
 
 			// this assumes that the output is always line buffered
 			while( ! tis.GetInputStream().Eof() )
@@ -114,7 +115,7 @@ void AsyncProcess::OnTimer( wxTimerEvent& event )
 				else
 				{
 					m_stdout.Add( msg );
-					//wxGetApp().Log(wxString::Format("  STDOUT %s", msg ));
+//					wxGetApp().Log(wxString::Format("  STDOUT %s", msg ));
 				}
 			}
 		}
@@ -134,7 +135,7 @@ void AsyncProcess::OnTimer( wxTimerEvent& event )
 				else
 				{
 					m_stderr.Add( msg );
-					//wxGetApp().Log(wxString::Format("  STDERR %s", msg ));
+//					wxGetApp().Log(wxString::Format("  STDERR %s", msg ));
 				}
 			}
 		}

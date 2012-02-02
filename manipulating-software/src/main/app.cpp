@@ -35,6 +35,7 @@
 #include "main/dialog.h"
 #include "main/client.h"
 #include "main/process_controller.h"
+#include "main/project_updater.h"
 
  
 IMPLEMENT_APP(MainApp)
@@ -131,12 +132,14 @@ bool MainApp::OnInit()
 		wxFileConfig::Set(m_file_config);
 		Log(_T("Loading from config file ") + config_file_name);
 		m_config_file_name = config_file_name ;
+
+		ProjectUpdater::Get()->Update() ;
+		ProjectUpdater::Get()->Start() ;
 	}
 	else
 	{
 		Log(_T("Failed to load config file ") + config_file_name);
 	}
-
 
 	return true;
 }

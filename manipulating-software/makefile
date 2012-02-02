@@ -75,9 +75,12 @@ CPPS   = \
 		main/launchequipment_process \
 		main/macro_scheduler \
 		main/process_controller \
+		main/project_updater \
 		main/server \
 		main/server_connection \
 		main/taskbaricon \
+		main/transfer_process \
+		main/update_process \
 
 
 # Work out a list of all source files
