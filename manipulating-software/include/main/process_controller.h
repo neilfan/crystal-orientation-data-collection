@@ -20,7 +20,7 @@
 #ifndef INCLUDED_MAIN_PROCESS_CONTROLLER_H
 #define INCLUDED_MAIN_PROCESS_CONTROLLER_H
 
-#define DUMMY_PROGRAM_CMD				wxT(" ")
+#define DUMMY_PROGRAM_CMD				wxT("cmd /c exit")
 
 #include <wx/wxprec.h>
 #include <wx/filename.h> 

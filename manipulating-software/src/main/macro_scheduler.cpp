@@ -22,42 +22,9 @@
 #include <wx/process.h> 
 
 #include "main/process_controller.h"
+#include "main/export_process.h"
 #include "main/macro_scheduler.h"
 #include "main/app.h"
-
-/**
- * class ExportProcess
- *
- */
-
-// This is the handler for process termination events
-class ExportProcess : public wxProcess
-{
-protected:
-    wxString m_script;
-	wxString m_datafile;
-
-public:
-    ExportProcess(const wxString& script, const wxString& datafile)
-		:wxProcess(), m_script(script), m_datafile(datafile)
-    {
-    }
-
-    // instead of overriding this virtual function we might as well process the
-    // event from it in the frame class - this might be more convenient in some
-    // cases
-    virtual void OnTerminate(int pid, int status)
-	{
-
-		ProcessController::Get()
-			->OnExportTerminate(pid, status, m_script, m_datafile) ;
-	}
-
-};
-
-
-
-
 
 
 

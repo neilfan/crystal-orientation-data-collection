@@ -25,64 +25,13 @@
 
 #include "main/process_controller.h"
 #include "main/datafile_monitor.h"
+#include "main/launchequipment_process.h"
+#include "main/convertdata_process.h"
 #include "main/datafile_storage.h"
 #include "main/macro_scheduler.h"
 #include "main/confirm_dialog.h"
 #include "main/async_process.h"
 #include "main/app.h"
-
-class LaunchEquipmentProcess : public AsyncProcess
-{
-protected:
-	wxString        m_sessionId ;
-
-public:
-	LaunchEquipmentProcess(const wxString & sessionId) : AsyncProcess(false, false)
-	{
-		m_sessionId = sessionId ;
-	}
-
-	const wxString & GetSessionId()
-	{
-		return m_sessionId;
-	}
-
-	// instead of overriding this virtual function we might as well process the
-	// event from it in the frame class - this might be more convenient in some
-	// cases
-	virtual void OnTerminate(int pid, int status)
-	{
-		ProcessController::Get()->OnLaunchEquipmentTerminate(pid, status, this) ;
-	}
-
-};
-
-class ConvertDataProcess : public AsyncProcess
-{
-protected:
-	wxString        m_sessionId ;
-
-public:
-	ConvertDataProcess(const wxString & sessionId) : AsyncProcess(false, false)
-	{
-		m_sessionId = sessionId ;
-	}
-
-	const wxString & GetSessionId()
-	{
-		return m_sessionId;
-	}
-
-	// instead of overriding this virtual function we might as well process the
-	// event from it in the frame class - this might be more convenient in some
-	// cases
-	virtual void OnTerminate(int pid, int status)
-	{
-		ProcessController::Get()->OnConvertTerminate(pid, status, this) ;
-	}
-
-};
-
 
 ProcessController * ProcessController::m_pInstance = NULL;
 
@@ -356,12 +305,14 @@ bool ProcessController::IsExportEnabled()
 void ProcessController::Export()
 {
 	wxString script ;
+	wxString sessionIni = wxEmptyString ;
 	if(IsExportEnabled())
 	{
 		// export required, do export before transfer data to storage
 		script = wxFileConfig::Get()->Read(
 				wxString::Format(wxT("equipment.%s.export.script"), GetEquipmentId())
 			) ;
+		sessionIni = GetCurrentSessionFileName().GetFullPath() ;
 	}
 	
 	if( script == wxEmptyString)
@@ -369,7 +320,7 @@ void ProcessController::Export()
 		script = DUMMY_PROGRAM_CMD ;
 	}
 
-	MacroScheduler::Get()->Execute(script, GetCurrentSessionFileName().GetFullPath());
+	MacroScheduler::Get()->Execute(script, sessionIni);
 }
 
 /**

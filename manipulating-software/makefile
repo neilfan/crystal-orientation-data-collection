@@ -67,9 +67,12 @@ CPPS   = \
 		main/client \
 		main/client_connection \
 		main/confirm_dialog \
+		main/convertdata_process \
 		main/datafile_monitor \
 		main/datafile_storage \
 		main/dialog \
+		main/export_process \
+		main/launchequipment_process \
 		main/macro_scheduler \
 		main/process_controller \
 		main/server \
