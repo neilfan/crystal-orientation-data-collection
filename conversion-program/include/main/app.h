@@ -21,11 +21,15 @@
 #ifndef INCLUDED_MAIN_APP_H
 #define INCLUDED_MAIN_APP_H
 
+#define FILENAME_DELIM         wxT(">")
+
 #include <wx/wxprec.h>
 
 #ifndef WX_PRECOMP
 #include "wx/wx.h"
 #endif
+#include <wx/tokenzr.h>
+
 
 
 class MainApp : public wxApp

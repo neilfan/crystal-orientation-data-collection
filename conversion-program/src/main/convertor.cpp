@@ -52,6 +52,11 @@ Convertor :: Convertor()
 	m_progress = 0;
 }
 
+void Convertor::SetDest(const wxString & dest)
+{
+	m_dest = dest ;
+}
+
 bool Convertor::LoadDataFile(const wxString & file)
 {
 	m_format = Convertor::FORMAT_UNKNOW ;
@@ -302,7 +307,7 @@ bool Convertor::Convert(Convertor::Format format, const wxString & output)
 	out.Write();
 	out.Close();
 
-	m_generated_files.Add(filename->GetFullPath());
+	m_generated_files.Add(filename->GetFullPath() + FILENAME_DELIM + m_dest);
 
 	wxDELETE(filename);
 	wxDELETE(outRow);

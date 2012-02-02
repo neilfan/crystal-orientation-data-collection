@@ -47,6 +47,7 @@ public:
 	bool ToTsl  (const wxString & output=wxEmptyString) ;
 	int  GetProgress();
 	wxArrayString GetGeneratedFiles() ;
+	void SetDest(const wxString &) ;
 private:
 	Convertor();
 	bool Convert(Convertor::Format format, const wxString & output=wxEmptyString) ;
@@ -55,6 +56,7 @@ private:
 	int m_progress ;
 	wxArrayString m_generated_files ;
 	Convertor::Format m_format ;
+	wxString m_dest ;
 
 } ;
 

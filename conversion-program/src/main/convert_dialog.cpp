@@ -29,6 +29,7 @@
 #include "main/convert_dialog.h"
 #include "main/convert_thread.h"
 #include "main/convertor.h"
+#include "main/app.h"
 
 
 ///////////////////////////////////////////////////////////////////////////
@@ -174,7 +175,15 @@ void ConvertDialog::OnThreadCompleted(wxThreadEvent & event)
 			size_t i;
 			for(i=0; i<file_lists.GetCount() ; i++)
 			{
-				fc.Write(wxString::Format("files/file%d", count+i+1) ,file_lists.Item(i) ) ;
+				wxArrayString array = wxStringTokenize(file_lists.Item(i) , FILENAME_DELIM) ;
+				if(array.GetCount()==1)
+				{
+				// by default upload to SESSION directory
+					array.Add(wxT(""));
+				}
+
+				fc.Write(wxString::Format("files/file%d", count+i+1) ,array[0] ) ;
+				fc.Write(wxString::Format("files/destination%d", count+i+1) ,array[1] ) ;
 			}
 			fc.Write(wxT("files/count") , file_lists.GetCount() + count ) ;
 
@@ -213,9 +222,10 @@ bool ConvertDialog::AutoConvert(wxFileName filename)
 		for(i=1; i<=count ; i++)
 		{
 			wxString f = fc.Read(wxString::Format("files/file%d", i) ,wxEmptyString) ;
+			wxString d = fc.Read(wxString::Format("files/destination%d", i) ,wxEmptyString) ;
 			if( f!=wxEmptyString )
 			{
-				file_lists.Add(f) ;
+				file_lists.Add(f + FILENAME_DELIM + d) ;
 			}
 		}
 	}

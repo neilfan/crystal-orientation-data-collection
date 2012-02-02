@@ -20,6 +20,7 @@
 
 #include "main/convert_thread.h"
 #include "main/convertor.h"
+#include "main/app.h"
 
 wxDEFINE_EVENT(wxEVT_COMMAND_CONVERTTHREAD_COMPLETED, wxThreadEvent);
 wxDEFINE_EVENT(wxEVT_COMMAND_CONVERTTHREAD_UPDATE,    wxThreadEvent);
@@ -53,8 +54,16 @@ wxThread::ExitCode ConvertThread::Entry()
 		evt->SetExtraLong(m_input.GetCount());
 		evt->SetInt(i);
 		wxQueueEvent(m_pHandler, evt);
+		
+		wxArrayString array = wxStringTokenize(m_input.Item(i) , FILENAME_DELIM) ;
+		if(array.GetCount()==1)
+		{
+			// by default upload to SESSION directory
+			array.Add(wxT(""));
+		}
+		convertor->SetDest(array[1]);
 
-		if( convertor->LoadDataFile(m_input.Item(i)) )
+		if( convertor->LoadDataFile(array[0]) )
 		{
 			convertor->ToAstar() ;
 			convertor->ToHkl  () ;
