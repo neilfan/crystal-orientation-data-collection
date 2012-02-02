@@ -267,7 +267,6 @@ void DataFileStorage::OnTimer( wxTimerEvent& event )
 			// found a new session to be transferred
 
 			wxFileName session_ini("sessions", line, "ini");
-			wxGetApp().Log(wxString::Format("Scanning session file: %s", session_ini.GetFullPath()));
 			if( ! session_ini.FileExists() )
 			{
 				// bad session id, ini file not exist
@@ -285,7 +284,6 @@ void DataFileStorage::OnTimer( wxTimerEvent& event )
 
 			// Get the counts of files
 			long count = session_config.ReadLong(wxT("files/count"), 0);
-			wxGetApp().Log(wxString::Format("Session file claims %d files to be transferred", count));
 
 			if( count == 0)
 			{
@@ -293,8 +291,9 @@ void DataFileStorage::OnTimer( wxTimerEvent& event )
 				continue ;
 			}
 
+			wxGetApp().Log(wxString::Format("Scanning session file: %s", session_ini.GetFullPath()));
+			wxGetApp().Log(wxString::Format("Session file claims %d files to be transferred", count));
 
-			
 			m_currentTransferSessionID = line ;
 			m_sessionTasks.Add( session_ini.GetFullPath() + DATAFILE_STORAGE_LINE_DELIM + wxT("METADATA"));
 			wxGetApp().Log(wxString::Format("Adding session data file '%s' to be transferred to 'METADATA'", session_ini.GetFullPath()));
@@ -334,6 +333,11 @@ void DataFileStorage::OnTimer( wxTimerEvent& event )
 	{
 		m_isTransferring = true ;
 		wxArrayString array = wxStringTokenize(m_sessionTasks[0],DATAFILE_STORAGE_LINE_DELIM) ;
+		if(array.GetCount()==1)
+		{
+			// by default upload to SESSION directory
+			array.Add(wxT("./"));
+		}
 		Transfer(array[0], array[1]) ;
 	}
 }

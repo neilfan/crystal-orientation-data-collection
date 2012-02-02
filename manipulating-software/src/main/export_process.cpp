@@ -21,10 +21,14 @@
 #include "main/export_process.h"
 #include "main/process_controller.h"
 
-ExportProcess::ExportProcess(const wxString& script, const wxString& datafile) : AsyncProcess(false, false)
+ExportProcess::ExportProcess(const wxString& sessionId) : AsyncProcess(false, false)
 {
-	m_script = script ;
-	m_datafile = datafile ;
+	m_sessionId = sessionId ;
+}
+
+const wxString & ExportProcess::GetSessionId()
+{
+	return m_sessionId;
 }
 
 // instead of overriding this virtual function we might as well process the
@@ -34,5 +38,5 @@ void ExportProcess::OnTerminate(int pid, int status)
 {
 
 	ProcessController::Get()
-		->OnExportTerminate(pid, status, m_script, m_datafile) ;
+		->OnExportTerminate(pid, status, this) ;
 }

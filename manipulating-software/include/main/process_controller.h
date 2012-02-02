@@ -20,7 +20,7 @@
 #ifndef INCLUDED_MAIN_PROCESS_CONTROLLER_H
 #define INCLUDED_MAIN_PROCESS_CONTROLLER_H
 
-#define DUMMY_PROGRAM_CMD				wxT("cmd /c exit")
+#define DUMMY_PROGRAM_CMD				wxFileConfig::Get()->Read(wxT("sys.utils.dummy.program"))
 
 #include <wx/wxprec.h>
 #include <wx/filename.h> 
@@ -32,6 +32,7 @@
 
 class LaunchEquipmentProcess ;
 class ConvertDataProcess ;
+class ExportProcess ;
 
 class ProcessController : public wxEvtHandler 
 {
@@ -54,7 +55,7 @@ public:
 	bool OnNewDataFileFound(const wxString & file);
 	bool OnLaunchEquipmentTerminate(int pid, int status, LaunchEquipmentProcess *);
 	bool OnConvertTerminate(int pid, int status, ConvertDataProcess *);
-	bool OnExportTerminate(int pid, int status, const wxString & script, const wxString & datafile);
+	bool OnExportTerminate(int pid, int status, ExportProcess *);
 
 private:
 	ProcessController();

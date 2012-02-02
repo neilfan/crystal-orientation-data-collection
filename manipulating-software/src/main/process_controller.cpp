@@ -27,6 +27,7 @@
 #include "main/datafile_monitor.h"
 #include "main/launchequipment_process.h"
 #include "main/convertdata_process.h"
+#include "main/export_process.h"
 #include "main/datafile_storage.h"
 #include "main/macro_scheduler.h"
 #include "main/confirm_dialog.h"
@@ -164,6 +165,7 @@ bool ProcessController::LaunchEquipment()
 	wxString launch_program = wxFileConfig::Get()->Read(
 			wxString::Format(wxT("equipment.%s.launcher.program"), equipment_id)
 		) ;
+
 	if( launch_enabled && launch_program!=wxEmptyString)
 	{
 		wxGetApp().Log(wxT("Starting program ") + launch_program);
@@ -200,7 +202,7 @@ bool ProcessController::OnLaunchEquipmentTerminate(int pid, int status, LaunchEq
 	if( m_current_session_id == process->GetSessionId() &&
 		m_current_session_id != wxEmptyString )
 	{
-		FinaliseSession();
+//		FinaliseSession();
 	}
 	return true ;
 }
@@ -256,9 +258,29 @@ bool ProcessController::StartMonitoring()
  */
 bool ProcessController::OnNewDataFileFound(const wxString & file)
 {
+	wxFileName filename(file);
+	wxFileName relativePath(file);
+
+	DataFileMonitor * monitor = DataFileMonitor::Get() ;
+	wxArrayString * paths = new wxArrayString;
+	size_t i ;
+
+	monitor->GetWatchedPaths(paths) ;
+	
+	// calc the relative path
+	for( i=0 ;i<paths->GetCount() ; i++)
+	{
+		wxFileName path( paths->Item(i) ) ;
+		if( relativePath.GetFullPath().Find( path.GetFullPath() ) == 0 )
+		{
+			// make it a relative path
+			relativePath.MakeRelativeTo(path.GetFullPath());
+			continue;
+		}
+	}
+
 	// put the file in ini
 	wxFileName cfg_filename = GetCurrentSessionFileName() ;
-	wxFileName filename(file, wxPATH_UNIX);
 
 	wxFileInputStream cfg_stream(cfg_filename.GetFullPath());
 	if(cfg_stream.IsOk())
@@ -276,7 +298,7 @@ bool ProcessController::OnNewDataFileFound(const wxString & file)
 			);
 		config.Write(
 			wxString::Format("files/destination%d", count),
-			wxT("")
+			relativePath.IsRelative() ? relativePath.GetPath(wxPATH_GET_SEPARATOR) : wxT("")
 		);
 		
 		wxFileOutputStream out_stream(cfg_filename.GetFullPath());
@@ -304,29 +326,37 @@ bool ProcessController::IsExportEnabled()
  */
 void ProcessController::Export()
 {
-	wxString script ;
-	wxString sessionIni = wxEmptyString ;
+	wxString cmd = wxEmptyString;
+
 	if(IsExportEnabled())
 	{
 		// export required, do export before transfer data to storage
-		script = wxFileConfig::Get()->Read(
-				wxString::Format(wxT("equipment.%s.export.script"), GetEquipmentId())
+		wxString program = wxFileConfig::Get()->Read(
+				wxString::Format(wxT("equipment.%s.export.program"), GetEquipmentId())
 			) ;
-		sessionIni = GetCurrentSessionFileName().GetFullPath() ;
+
+		cmd = wxString::Format(
+						wxT("\"%s\" \"%s\""),
+						program,
+						GetCurrentSessionFileName().GetFullPath()
+						);
+
+		wxGetApp().Log(wxString::Format("Export cmd %s", cmd));
+
 	}
 	
-	if( script == wxEmptyString)
+	if( cmd == wxEmptyString)
 	{
-		script = DUMMY_PROGRAM_CMD ;
+		cmd = DUMMY_PROGRAM_CMD ;
 	}
 
-	MacroScheduler::Get()->Execute(script, sessionIni);
+	MacroScheduler::Get()->Execute(cmd);
 }
 
 /**
  * Process the creation of new data file
  */
-bool ProcessController::OnExportTerminate(int pid, int status, const wxString & script, const wxString & datafile)
+bool ProcessController::OnExportTerminate(int pid, int status, ExportProcess * process)
 {
 	// The export is terminated, may success or not
 	// in any case, transfer data to storage
@@ -341,7 +371,7 @@ bool ProcessController::OnExportTerminate(int pid, int status, const wxString & 
 bool ProcessController::IsConvertEnabled()
 {
 	return wxFileConfig::Get()->ReadBool (
-			wxString::Format("equipment.%s.convert.enabled", GetEquipmentId()),
+			wxString::Format("equipment.%s.processing.enabled", GetEquipmentId()),
 			false
 		) ;
 }
@@ -355,9 +385,9 @@ void ProcessController::Convert()
 	if( IsConvertEnabled() )
 	{
 		convert_program = wxFileConfig::Get()->Read(
-			wxString::Format("equipment.%s.convert.program", GetEquipmentId())
+			wxString::Format("equipment.%s.processing.program", GetEquipmentId())
 			) ;
-		wxGetApp().Log(wxT("Starting convert program ") + convert_program);
+		wxGetApp().Log(wxT("Starting processing program ") + convert_program);
 	}
 
 	ConvertDataProcess * process = new ConvertDataProcess(m_current_session_id) ;
@@ -377,7 +407,7 @@ void ProcessController::Convert()
 	}
 
 	long pid = wxExecute(cmd, wxEXEC_ASYNC, process);
-	wxGetApp().Log(wxString::Format("Convert Program PID %d", pid));
+	wxGetApp().Log(wxString::Format("Processing Program PID %d", pid));
 }
 
 bool ProcessController::OnConvertTerminate(int pid, int status, ConvertDataProcess * process)

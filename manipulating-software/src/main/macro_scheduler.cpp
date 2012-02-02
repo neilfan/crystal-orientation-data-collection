@@ -54,19 +54,10 @@ MacroScheduler * MacroScheduler::Get()
 /**
  * Start the macro schedule
  */
-bool MacroScheduler::Execute(const wxString & script, const wxString & datafile)
+bool MacroScheduler::Execute(const wxString & cmd)
 {
-	wxString program = wxFileConfig::Get()->Read(wxT("sys.macroscheduler.program"));
-	wxString cmd = wxString::Format(
-					wxT("\"%s\" \"%s\" \"%s\""),
-					program,
-					script,
-					datafile
-					);
 
-	wxGetApp().Log(wxString::Format("Export cmd %s", cmd));
-
-	ExportProcess * const callback = new ExportProcess(script, datafile) ;
+	ExportProcess * const callback = new ExportProcess(cmd) ;
 	long pid = wxExecute(cmd, wxEXEC_ASYNC, callback) ;
 	
 	return pid > 0 ;

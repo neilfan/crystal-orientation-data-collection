@@ -34,11 +34,12 @@
 class ExportProcess : public AsyncProcess
 {
 protected:
-	wxString m_script;
-	wxString m_datafile;
+	wxString        m_sessionId ;
 
 public:
-	ExportProcess(const wxString& script, const wxString& datafile);
+	ExportProcess(const wxString & sessionId);
+	
+	const wxString & GetSessionId();
 
 	virtual void OnTerminate(int pid, int status) ;
 };

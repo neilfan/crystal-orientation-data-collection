@@ -308,6 +308,8 @@ void ConfirmDialog::OnLaunch( wxCommandEvent& event )
 		exchange_file.Exists() ? exchange_file.Open() : exchange_file.Create() ;
 		if( exchange_file.IsOpened())
 		{
+			exchange_file.AddLine("[metadata]");
+
 			int row ;
 			for(row=0; row<m_gridMetadata->GetNumberRows(); row++)
 			{
