@@ -25,7 +25,7 @@ HKL_FOLDER		:= "C:\CHANNEL5\"
 
 
 
-Run %HKL_EXECUTEABLE%, %HKL_FOLDER%, UseErrorLevel
+Run %HKL_EXECUTEABLE%, %HKL_FOLDER%, UseErrorLevel, PID
 
 if ErrorLevel
 {
@@ -36,11 +36,11 @@ WinWait ahk_class %HKL_WinClass%
 
 LOOP
 {
-	IfWinNotExist ahk_class %HKL_WinClass%
+	IfWinNotExist ahk_pid %PID%
 	{
 		Exit 0
 	}
-	IfWinExist %HKL_JOBREPORT%
+	IfWinExist ahk_class %HKL_DONECLASS%
 	{
 		WinActivate ahk_class %HKL_DONECLASS%
 		WinWaitActive ahk_class %HKL_DONECLASS%

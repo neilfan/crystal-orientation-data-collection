@@ -24,8 +24,7 @@
 
 SetKeyDelay			50
 SetControlDelay		50
-BlockInput			SendAndMouse
-ListVars
+BlockInput				SendAndMouse
 
 HKL_EXECUTEABLE		:= "C:\CHANNEL5\Manager.exe"
 HKL_FOLDER			:= "C:\CHANNEL5\"
@@ -33,7 +32,7 @@ HKL_MAINCLASS		:= "TfPrjManagerMain"
 HKL_PROFCLASS		:= "THKLProfileForm"
 
 inputFile = %1%
-outputFile = RegExReplace(inputFile, ".*\\") . ".tmp"
+outputFile := RegExReplace(inputFile, ".*\\") . ".tmp"
 if ! FileExist(inputFile)
 {
 	ExitApp
@@ -58,6 +57,7 @@ IniRead files_count, %inputFile%, files, count, 0
 
 Loop %files_count%
 {
+
 	IniRead cpr_name, %inputFile%, files, file%A_INDEX%
 	ext := SubStr(cpr_name, -2)
 	StringUpper ext, ext 
@@ -69,6 +69,10 @@ Loop %files_count%
 			WinWaitActive ahk_class %HKL_MAINCLASS%
 			Send {CTRLDOWN}o{CTRLUP}
 			Send {DEL}
+			; Remove the / and \\ characters
+			StringReplace cpr_name, cpr_name, \\, \, 1
+			StringReplace cpr_name, cpr_name, /, \, 1
+
 			Send %cpr_name%
 			Send {ENTER}
 		}
@@ -95,7 +99,6 @@ Loop %files_count%
 			WinGet wid, ID, ahk_class %HKL_MAINCLASS% ; retrieve the ID of a window to check
 			Loop
 			{
-				Global NR_temp, TimeOut, wid
 				Responding := DllCall("SendMessageTimeout", "UInt", wid, "UInt", 0x0000, "Int", 0, "Int", 0, "UInt", 0x0002, "UInt", TimeOut, "UInt *", NR_temp)
 				If Responding = 1 
 				{

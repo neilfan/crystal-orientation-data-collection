@@ -18,7 +18,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-;#NoTrayIcon
-MsgBox "Hi"
+#NoTrayIcon
 
 Sleep 1000
+MsgBox Hello
