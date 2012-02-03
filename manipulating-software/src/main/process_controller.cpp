@@ -336,7 +336,7 @@ void ProcessController::Export()
 			) ;
 
 		cmd = wxString::Format(
-						wxT("\"%s\" \"%s\""),
+						wxT("%s \"%s\""),
 						program,
 						GetCurrentSessionFileName().GetFullPath()
 						);
@@ -466,6 +466,8 @@ void ProcessController::FinaliseSession()
 			cache.Write();
 			cache.Close();
 		}
+		
+		m_current_session_id = wxEmptyString ;
 	}
 
 	// ITEM 2: stop monitoring
