@@ -439,6 +439,10 @@ void ProcessController::FinaliseSession()
 	// ITEM 1 : add session to CACHE for storage
 	if( m_current_session_id != wxEmptyString)
 	{
+		wxGetApp().Log(
+			wxString::Format(wxT("Session %s Finalised.") , m_current_session_id )
+		);
+
 		wxFileName csfn = GetCurrentSessionFileName() ;
 		if(csfn.FileExists())
 		{
@@ -473,5 +477,7 @@ void ProcessController::FinaliseSession()
 	// ITEM 2: stop monitoring
 	DataFileMonitor * monitor = DataFileMonitor::Get() ;
 	monitor->Reset();
+	
+
 
 }
