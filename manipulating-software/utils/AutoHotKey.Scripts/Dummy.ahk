@@ -21,4 +21,5 @@
 #NoTrayIcon
 
 Sleep 1000
-MsgBox Hello
+
+ExitApp
