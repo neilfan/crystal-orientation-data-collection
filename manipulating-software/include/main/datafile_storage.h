@@ -22,6 +22,7 @@
 
 #define DATAFILE_STORAGE_TIMER_INTERVAL     30000
 #define DATAFILE_STORAGE_CACHE_FILENAME     wxT("./CACHE")
+#define DATAFILE_STORAGE_METADATA_FILENAME  wxT("METADATA.ini")
 #define DATAFILE_STORAGE_LINE_DELIM         wxT(">")
 
 #include <wx/wxprec.h>

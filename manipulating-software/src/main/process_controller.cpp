@@ -31,6 +31,7 @@
 #include "main/datafile_storage.h"
 #include "main/macro_scheduler.h"
 #include "main/confirm_dialog.h"
+#include "main/notify_dialog.h"
 #include "main/async_process.h"
 #include "main/app.h"
 
@@ -53,6 +54,8 @@ ProcessController::~ProcessController()
 	{
 		wxDynamicCast(m_confirm_dialog, ConfirmDialog)->Destroy();
 	}
+	
+	NotifyDialog::Get()->Destroy();
 }
 
 /**
@@ -446,6 +449,8 @@ void ProcessController::FinaliseSession()
 		wxFileName csfn = GetCurrentSessionFileName() ;
 		if(csfn.FileExists())
 		{
+
+			NotifyDialog::Get()->Notify(csfn.GetFullPath());
 
 			// if no current session, no action required
 			wxTextFile cache(DATAFILE_STORAGE_CACHE_FILENAME);

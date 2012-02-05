@@ -343,7 +343,13 @@ void ConfirmDialog::OnLaunch( wxCommandEvent& event )
 
 void ConfirmDialog::ConfirmNewSession(const wxString & equipment_id)
 {
-	ResetGridMetadata();
+	if(m_gridMetadata->GetNumberRows()<2)
+	{
+		ResetGridMetadata();
+	}
+
+	// update current date time
+	m_gridMetadata->SetCellValue (0, 0, wxDateTime::Now().FormatISOCombined());
 	
 	// update equipment id
 	m_gridMetadata->SetCellValue (1, 0, equipment_id);

@@ -74,6 +74,7 @@ CPPS   = \
 		main/export_process \
 		main/launchequipment_process \
 		main/macro_scheduler \
+		main/notify_dialog \
 		main/process_controller \
 		main/project_updater \
 		main/server \

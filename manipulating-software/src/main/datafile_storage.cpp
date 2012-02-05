@@ -164,8 +164,8 @@ void DataFileStorage::OnTimer( wxTimerEvent& event )
 			wxGetApp().Log(wxString::Format("Session file claims %d files to be transferred", count));
 
 			m_currentTransferSessionID = line ;
-			m_sessionTasks.Add( session_ini.GetFullPath() + DATAFILE_STORAGE_LINE_DELIM + wxT("METADATA"));
-			wxGetApp().Log(wxString::Format("Adding session data file '%s' to be transferred to 'METADATA'", session_ini.GetFullPath()));
+			m_sessionTasks.Add( session_ini.GetFullPath() + DATAFILE_STORAGE_LINE_DELIM + DATAFILE_STORAGE_METADATA_FILENAME);
+			wxGetApp().Log(wxString::Format("Adding session data file '%s' to be transferred to '%s'", session_ini.GetFullPath(), DATAFILE_STORAGE_METADATA_FILENAME));
 
 			long i ;
 			for(i=1; i<=count ;i++)
@@ -267,9 +267,7 @@ bool DataFileStorage::Transfer(const wxString & datafile, const wxString & dest)
 					GetCommandLine(),
 					process->GetRemoteDir(),
 					cmd );
-		wxGetApp().Log(wxString::Format("  Executing remote command %s", cmd));
-		long pid = wxExecute(cmd_line, wxEXEC_ASYNC | wxEXEC_MAKE_GROUP_LEADER | wxEXEC_HIDE_CONSOLE , process);
-		wxGetApp().Log(wxString::Format("  PID %d", pid));
+		wxExecute(cmd_line, wxEXEC_ASYNC | wxEXEC_MAKE_GROUP_LEADER | wxEXEC_HIDE_CONSOLE , process);
 	}
 	else
 	{
@@ -285,8 +283,6 @@ bool DataFileStorage::OnTransferTerminate(int status, TransferProcess * process)
 	wxFileName file     = process->GetFile() ;
 	wxFileName dest     = process->GetDest() ;
 
-	wxGetApp().Log(wxString::Format("Transfer %d Completed %s -> %s", process->GetPid(), file.GetFullPath(), dest.GetFullPath()));
-	wxGetApp().Log(wxString::Format("Transfer %d Status %d", process->GetPid(), status));
 
 	if(status==0)
 	{
@@ -297,9 +293,7 @@ bool DataFileStorage::OnTransferTerminate(int status, TransferProcess * process)
 						GetCommandLine(),
 						process->GetRemoteDir(),
 						cmd );
-			wxGetApp().Log(wxString::Format("  Executing remote command %s", cmd));
-			long pid = wxExecute(cmd_line, wxEXEC_ASYNC | wxEXEC_MAKE_GROUP_LEADER | wxEXEC_HIDE_CONSOLE , process);
-			wxGetApp().Log(wxString::Format("  PID %d", pid));
+			 wxExecute(cmd_line, wxEXEC_ASYNC | wxEXEC_MAKE_GROUP_LEADER | wxEXEC_HIDE_CONSOLE , process);
 		}
 		else
 		{
@@ -327,6 +321,11 @@ bool DataFileStorage::OnTransferTerminate(int status, TransferProcess * process)
 			}
 		}
 		return true ;
+	}
+	else
+	{
+		wxGetApp().Log(wxString::Format("Transfer %d Failed %s -> %s", process->GetPid(), file.GetFullPath(), dest.GetFullPath()));
+		wxGetApp().Log(wxString::Format("Transfer %d Status %d", process->GetPid(), status));
 	}
 
 	// if status is not 0
