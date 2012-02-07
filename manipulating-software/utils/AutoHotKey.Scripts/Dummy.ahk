@@ -18,7 +18,11 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#NoTrayIcon
+#NoEnv
+
+SetKeyDelay			50
+SetControlDelay		50
+BlockInput				SendAndMouse
 
 Sleep 1000
 

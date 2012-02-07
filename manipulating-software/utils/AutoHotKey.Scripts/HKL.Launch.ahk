@@ -17,6 +17,12 @@
  * along with crystal-orientation-data-collection. If not, see
  * <http://www.gnu.org/licenses/>.
  */
+ 
+#NoEnv
+
+SetKeyDelay			50
+SetControlDelay		50
+BlockInput				SendAndMouse
 
 HKL_WinClass	:= "TfFlamencoMain"
 HKL_DONECLASS	:= "TdlgJobsDone"

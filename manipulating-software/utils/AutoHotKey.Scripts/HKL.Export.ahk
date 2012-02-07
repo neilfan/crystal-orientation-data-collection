@@ -19,8 +19,6 @@
  */
 
 #NoEnv
-#NoTrayIcon 
-
 
 SetKeyDelay			50
 SetControlDelay		50
