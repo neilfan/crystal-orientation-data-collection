@@ -23,7 +23,7 @@ Files required in this directory:
 
 smbclient WIN32 Porting
 Path: smbclientw32/smbclient.exe
-download from http://leecutsco.de/lpackham/smbclient/
+download from http://leecutsco.de/lpackham/smbclient/ or http://www.hagyroom.com/labs/smbclient/
 
 AutoHotkey Basic
 Path: AutoHotkey/AutoHotkey.exe
