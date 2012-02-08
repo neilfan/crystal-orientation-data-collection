@@ -278,6 +278,12 @@ bool ProcessController::StartMonitoring()
  */
 bool ProcessController::OnNewDataFileFound(const wxString & file)
 {
+	// shall we ignore all sub-folders?
+	bool isFlatFolder = wxFileConfig::Get()->ReadBool(
+			wxT("sys.network.smb.flatfolder"),
+			false
+		) ;
+
 	wxFileName filename(file);
 	wxFileName relativePath(file);
 
@@ -316,11 +322,15 @@ bool ProcessController::OnNewDataFileFound(const wxString & file)
 			wxString::Format("files/file%d", count),
 			filename.GetFullPath()
 			);
+
+		// if isFlatFolder is true, ignore all sub-folder settings
+		// all files will be stored in a flat directory
+		// Warning: files with same name may be overwritten
 		config.Write(
 			wxString::Format("files/destination%d", count),
-			relativePath.IsRelative() ? relativePath.GetPath(wxPATH_GET_SEPARATOR) : wxT("")
+			relativePath.IsRelative() && !isFlatFolder ? relativePath.GetPath(wxPATH_GET_SEPARATOR) : wxT("")
 		);
-		
+
 		wxFileOutputStream out_stream(cfg_filename.GetFullPath());
 		if(out_stream.IsOk())
 		{
