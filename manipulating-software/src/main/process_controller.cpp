@@ -82,6 +82,11 @@ wxFileName ProcessController::GetCurrentSessionFileName()
  */
 wxString ProcessController::GetMetadata(const wxString & key, const wxString & defaultVal)
 {
+	if( m_current_session_id == wxEmptyString )
+	{
+		return defaultVal ;
+	}
+	
 	wxFileName cfg_filename = GetCurrentSessionFileName() ;
 
 	wxFileInputStream cfg_stream(cfg_filename.GetFullPath());
@@ -98,6 +103,12 @@ wxString ProcessController::GetEquipmentId()
 {
 	return GetMetadata(wxT("session.equipment.id")) ;
 }
+
+wxString ProcessController::GetProjectId()
+{
+	return GetMetadata(wxT("session.project.id")) ;
+}
+
 
 /**
  * Present a dialog for confirmation before starting a new session
@@ -127,27 +138,35 @@ void ProcessController::StartNewSession(const wxString & exchange_file)
 	// STOP PREVIOUS SESSION FIRST
 	FinaliseSession() ;
 
-	/**
-	 * Create Session INI
-	 * name format session_id.ini where session_id is a time-based string
-	 */
-	wxString session_id =  wxDateTime::Now().Format(FILENAME_DATETIME_FORMAT);
-	wxFileName session_filename("sessions", session_id , "ini") ;
+	wxFileInputStream cfg_stream(exchange_file);
 
-	// session has been assigned an unique id
-	if( !session_filename.DirExists() )
+	if(cfg_stream.IsOk())
 	{
-		wxGetApp().Log(wxString::Format(wxT("Creating dir %s") , session_filename.GetPath()));
-		session_filename.Mkdir(wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
+		wxFileConfig metadata_config(cfg_stream);
+		/**
+		 * Create Session INI
+		 * name format session_id.ini where session_id is a time-based string
+		 */
+		wxString session_id =  wxDateTime::Now().Format(FILENAME_DATETIME_FORMAT);
+		wxFileName session_filename("sessions", session_id , "ini") ;
+
+		// session has been assigned an unique id
+		if( !session_filename.DirExists() )
+		{
+			wxGetApp().Log(wxString::Format(wxT("Creating dir %s") , session_filename.GetPath()));
+			session_filename.Mkdir(wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
+		}
+
+		m_current_session_id = session_id ;
+
+		wxCopyFile(exchange_file, session_filename.GetFullPath());
+
+		// END Create Session Ddirectory structure 
+		if( metadata_config.Read(wxT("metadata/session.project.id")) != wxEmptyString )
+		{
+			StartMonitoring();
+		}
 	}
-
-	m_current_session_id = session_id ;
-
-	wxCopyFile(exchange_file, session_filename.GetFullPath());
-
-	// END Create Session Ddirectory structure 
-
-	StartMonitoring();
 	LaunchEquipment();
 }
 
@@ -196,16 +215,14 @@ bool ProcessController::LaunchEquipment()
  */
 bool ProcessController::OnLaunchEquipmentTerminate(int pid, int status, LaunchEquipmentProcess * process)
 {
-	// export the file
-	Export() ;
-//	IsExportEnabled() ? Export() : Convert() ;
-
-
 	// finalise current session when equipment exits
 	if( m_current_session_id == process->GetSessionId() &&
-		m_current_session_id != wxEmptyString )
+		m_current_session_id != wxEmptyString &&
+		GetProjectId() != wxEmptyString
+	)
 	{
-//		FinaliseSession();
+		// export the file
+		Export() ;
 	}
 	return true ;
 }
@@ -421,7 +438,9 @@ bool ProcessController::OnConvertTerminate(int pid, int status, ConvertDataProce
 	// finalise current session when equipment exits
 	if( wxAtoi(error) == 0 &&
 		m_current_session_id == process->GetSessionId() &&
-		m_current_session_id != wxEmptyString )
+		m_current_session_id != wxEmptyString &&
+		GetProjectId() != wxEmptyString
+	)
 	{
 		FinaliseSession();
 	}
@@ -440,7 +459,10 @@ bool ProcessController::OnConvertTerminate(int pid, int status, ConvertDataProce
 void ProcessController::FinaliseSession()
 {
 	// ITEM 1 : add session to CACHE for storage
-	if( m_current_session_id != wxEmptyString)
+	if(
+		m_current_session_id != wxEmptyString &&
+		GetProjectId() != wxEmptyString
+	)
 	{
 		wxGetApp().Log(
 			wxString::Format(wxT("Session %s Finalised.") , m_current_session_id )

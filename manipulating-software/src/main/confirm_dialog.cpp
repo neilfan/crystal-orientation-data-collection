@@ -234,6 +234,9 @@ ConfirmDialog::~ConfirmDialog()
 void ConfirmDialog::OnProjectChoice( wxCommandEvent& event )
 {
 	ResetGridMetadata();
+	
+	
+
 	if(m_choiceProject->GetSelection()==0)
 	{
 		m_labelTips->SetLabelText(PROJECT_CHOICE_TIP_DEFAULT);
@@ -245,52 +248,55 @@ void ConfirmDialog::OnProjectChoice( wxCommandEvent& event )
 	else
 	{
 		wxFileName projectINI(wxT("projects"), m_choiceProject->GetStringSelection(), wxT("ini")) ;
-		wxString config_file_name = projectINI.GetFullPath() ;
-		wxFileInputStream cfg_stream(config_file_name);
 
-		// Set the tips as project name
-		
 		// load project metadata
-		if(cfg_stream.IsOk())
+		if(projectINI.FileExists())
 		{
-			wxFileConfig * metadata_config = new wxFileConfig(cfg_stream);
 
-			m_labelTips->SetLabelText(
-				metadata_config->Read(wxT("project/project.name"))
-			);
-
-			// enumeration variables
-			wxString str;
-			long dummy;
-
-			// first enum all entries
-			bool bCont = metadata_config->GetFirstGroup(str, dummy);
-			while (bCont)
+			wxFileInputStream cfg_stream(projectINI.GetFullPath());
+			
+			if(cfg_stream.IsOk())
 			{
-				if( str == wxT("metadata") )
+				wxFileConfig * metadata_config = new wxFileConfig(cfg_stream);
+
+				m_labelTips->SetLabelText(
+					metadata_config->Read(wxT("project/project.name"))
+				);
+
+				// enumeration variables
+				wxString str;
+				long dummy;
+
+				// first enum all entries
+				bool bCont = metadata_config->GetFirstGroup(str, dummy);
+				while (bCont)
 				{
-					metadata_config->SetPath(str);
-					bool cont = metadata_config->GetFirstEntry(str, dummy);
+					if( str == wxT("metadata") )
+					{
+						metadata_config->SetPath(str);
+						bool cont = metadata_config->GetFirstEntry(str, dummy);
 
-					while ( cont ) {
-						m_gridMetadata->AppendRows();
-						m_gridMetadata->SetRowLabelValue(m_gridMetadata->GetNumberRows()-1, str);
-						m_gridMetadata->SetCellValue(m_gridMetadata->GetNumberRows()-1, 0, metadata_config->Read(str));
-						
-						cont = metadata_config->GetNextEntry(str, dummy);
+						while ( cont ) {
+							m_gridMetadata->AppendRows();
+							m_gridMetadata->SetRowLabelValue(m_gridMetadata->GetNumberRows()-1, str);
+							m_gridMetadata->SetCellValue(m_gridMetadata->GetNumberRows()-1, 0, metadata_config->Read(str));
+							
+							cont = metadata_config->GetNextEntry(str, dummy);
+						}
+
+						break;
 					}
-
-					break;
+					bCont = metadata_config->GetNextGroup(str, dummy) ;
 				}
-				bCont = metadata_config->GetNextGroup(str, dummy) ;
-			}
 
-			wxDELETE(metadata_config);
+				wxDELETE(metadata_config);
+				
+				return ;
+			}
 		}
-		else
-		{
-			wxGetApp().Log(wxT("Failed to load project metadata list ") + config_file_name);
-		}
+
+		wxGetApp().Log(wxT("Failed to load project metadata list ") + projectINI.GetFullPath());
+
 	}
 }
 
@@ -362,12 +368,7 @@ void ConfirmDialog::ResetGridMetadata()
 {
 	wxString equipment_id;
 	
-	wxFileName projectINI(wxT("projects"), m_choiceProject->GetStringSelection(), wxT("ini")) ;
-	wxString config_file_name = projectINI.GetFullPath() ;
-	wxFileInputStream cfg_stream(config_file_name);
 
-	// Set the tips as project name
-	
 
 	if(m_gridMetadata->GetNumberRows()>0)
 	{
@@ -398,14 +399,21 @@ void ConfirmDialog::ResetGridMetadata()
 	m_gridMetadata->SetCellValue (1, 0, equipment_id);
 
 	// load project metadata
-	if(cfg_stream.IsOk())
-	{
-		wxFileConfig * metadata_config = new wxFileConfig(cfg_stream);
+	wxFileName projectINI(wxT("projects"), m_choiceProject->GetStringSelection(), wxT("ini")) ;
 
-		m_gridMetadata->SetCellValue (2, 0, m_choiceProject->GetStringSelection() );
-		m_gridMetadata->SetCellValue (3, 0, metadata_config->Read(wxT("project/project.name")));
-		m_gridMetadata->SetCellValue (4, 0, metadata_config->Read(wxT("project/project.owner")));
-		wxDELETE(metadata_config);
+	// Set the tips as project name
+	if(projectINI.FileExists())
+	{
+		wxFileInputStream cfg_stream(projectINI.GetFullPath());
+		if(cfg_stream.IsOk())
+		{
+			wxFileConfig * metadata_config = new wxFileConfig(cfg_stream);
+
+			m_gridMetadata->SetCellValue (2, 0, m_choiceProject->GetStringSelection() );
+			m_gridMetadata->SetCellValue (3, 0, metadata_config->Read(wxT("project/project.name")));
+			m_gridMetadata->SetCellValue (4, 0, metadata_config->Read(wxT("project/project.owner")));
+			wxDELETE(metadata_config);
+		}
 	}
 
 }

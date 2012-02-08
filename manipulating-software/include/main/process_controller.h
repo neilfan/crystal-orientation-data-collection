@@ -64,6 +64,7 @@ private:
 	wxFileName GetCurrentSessionFileName() ;
 	wxString GetMetadata(const wxString &, const wxString & defaultVal=wxEmptyString) ;
 	wxString GetEquipmentId() ;
+	wxString GetProjectId() ;
 	bool LaunchEquipment();
 	bool StartMonitoring();
 	bool IsExportEnabled();
