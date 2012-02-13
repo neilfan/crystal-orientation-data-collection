@@ -29,6 +29,9 @@
 #include <wx/cmdline.h> 
 #include <wx/tokenzr.h> 
 #include <wx/dir.h>
+#include <wx/base64.h>
+#include <wx/buffer.h>
+
 
 #include "icon.xpm"
 #include "main/app.h"
@@ -48,6 +51,7 @@ bool MainApp::OnInit()
 	/* initialize random seed: */
 	srand ( time(NULL) );
 	setlocale(LC_ALL,"");
+	
 	
 	m_log_file_name = wxEmptyString ;
 

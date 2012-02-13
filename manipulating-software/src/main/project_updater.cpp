@@ -27,7 +27,8 @@
 #include <wx/stream.h> 
 #include <wx/string.h> 
 #include <wx/tokenzr.h>
-
+#include <wx/base64.h>
+#include <wx/buffer.h>
 
 #include "main/project_updater.h"
 #include "main/update_process.h"
@@ -104,8 +105,11 @@ wxString ProjectUpdater::GetCommandLine(const wxString & cmd)
 		if(service != wxEmptyString)
 		{
 			wxString username = wxFileConfig::Get()->Read( wxT("sys.network.smb.username") );
-			wxString password = wxFileConfig::Get()->Read( wxT("sys.network.smb.password") );
+			wxString password_enc = wxFileConfig::Get()->Read( wxT("sys.network.smb.password") );
 			wxString domain  = wxFileConfig::Get()->Read( wxT("sys.network.smb.domain") );
+
+			wxMemoryBuffer mb( wxBase64Decode(password_enc) ) ;
+			wxString password((const char *)mb.GetData(), mb.GetDataLen());
 
 			m_cmd = wxString::Format(wxT("%s \"%s\" ") , smbclient, service);
 
