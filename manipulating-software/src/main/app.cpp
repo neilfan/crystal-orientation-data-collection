@@ -54,20 +54,23 @@ bool MainApp::OnInit()
 	
 	
 	m_log_file_name = wxEmptyString ;
+	m_log_fp = NULL ;
+	m_log_dialog = NULL ;
 
 	wxLog::EnableLogging(false);
+
+	// Change working directory same as the binary for portable use
+	wxSetWorkingDirectory( wxPathOnly(wxStandardPaths::Get().GetExecutablePath()) );
 	
 	// wxWidgets has a bug that first call to wxDateTime::Format will ignore the timezone
 	// setting. Call here once for allignment
 	wxDateTime::Today().Format(DATETIME_FORMAT_DATE);
 
-	// Change working directory same as the binary for portable use
-	wxSetWorkingDirectory( wxPathOnly(wxStandardPaths::Get().GetExecutablePath()) );
-
 	// Set up command line parameter parser
 	wxCmdLineParser cmd_parser(wxAppConsole::argc , wxAppConsole::argv) ;
 	cmd_parser.AddOption (wxT("c"), wxT("config-file"), wxT("Configuration File"));
 	cmd_parser.AddOption (wxT("e"), wxT("equipment-id"), wxT("Equipment ID"));
+	cmd_parser.AddSwitch (wxT("q"), wxT("quiet"), wxT("Quite Mode"));
 
 	// Which equipment is associated?
 	wxString equipment_id(EQUIPMENT_NULL);
@@ -76,7 +79,9 @@ bool MainApp::OnInit()
 	{
 		cmd_parser.Found(wxT("equipment-id"), & equipment_id) ;
 	}
-	
+
+	// determine if another instance already run
+	// DDE mode
 	MainClient * client = new MainClient();
 	if( client->ValidHost( _T("localhost")) )
 	{
@@ -94,11 +99,6 @@ bool MainApp::OnInit()
 			MainServer * server = new MainServer();
 			server->Create(APP_NAME);
 			m_server = wxDynamicCast(server, wxObject);
-			
-			if(equipment_id != EQUIPMENT_NULL )
-			{
-				LaunchEquipment(equipment_id);
-			}
 		}
 	}
 
@@ -106,13 +106,19 @@ bool MainApp::OnInit()
 	// Display the log window
 	MainDialog * log_dialog = new MainDialog();
 	SetTopWindow(log_dialog);
-	log_dialog->Show();
 	m_log_dialog = wxDynamicCast(log_dialog, wxObject) ;
-	
+	if( ! cmd_parser.Found(wxT("quiet")) )
+	{
+		log_dialog->Show();
+	}
+
+
 	// Display taskbar icon
 	MainTaskBarIcon * taskbaricon = new MainTaskBarIcon();
 	taskbaricon->SetIcon(icon_xpm);
 	m_taskbaricon = wxDynamicCast(taskbaricon, wxObject) ;
+
+	Log(wxT("Seems this is the only instance. Starting application"));
 
 	// Init the config file
 	wxString config_file_name("config/default.ini");
@@ -121,14 +127,12 @@ bool MainApp::OnInit()
 		cmd_parser.Found(wxT("config-file"), &config_file_name) ;
 	}
 
-	Log(wxT("Seems this is the only instance. Starting application"));
-
 	wxFileInputStream cfg_stream(config_file_name);
 	if(cfg_stream.IsOk())
 	{
+		Log(wxT("Loading from config file ") + config_file_name);
 		wxFileConfig * m_file_config = new wxFileConfig(cfg_stream);
 		wxFileConfig::Set(m_file_config);
-		Log(_T("Loading from config file ") + config_file_name);
 		m_config_file_name = config_file_name ;
 
 		wxArrayString projects ;
@@ -142,10 +146,17 @@ bool MainApp::OnInit()
 	{
 		Log(wxT("Failed to load config file ") + config_file_name);
 	}
-	
+
 	// init the process controller
 	// data transfer will start automatically from now on
 	ProcessController::Get() ;
+
+
+	// requesting a equipment to start ?
+	if(equipment_id != EQUIPMENT_NULL )
+	{
+		LaunchEquipment(equipment_id);
+	}
 
 	return true;
 }
@@ -182,7 +193,7 @@ bool MainApp::IsLogDialogShown()
 
 void MainApp::ExitApplication()
 {
-	Log(_T("Exiting application"));
+	Log(wxT("Exiting application"));
 	
 	MainDialog * dialog = wxDynamicCast(m_log_dialog, MainDialog) ;
 	// Close the top window, notify application to exit
@@ -203,7 +214,6 @@ void MainApp::ExitApplication()
 void MainApp::Log(const wxString & string)
 {
 	wxFileName log_file( "log", wxDateTime::Today().Format(DATETIME_FORMAT_DATE), "log");
-
 	if( m_log_file_name==wxEmptyString || m_log_file_name!= log_file.GetFullName())
 	{
 		m_log_file_name = log_file.GetFullName() ;
@@ -212,7 +222,9 @@ void MainApp::Log(const wxString & string)
 			// create ./log directory if required
 			log_file.Mkdir();
 		}
+
 		wxLog::EnableLogging(false);
+
 		if(m_log_fp!=NULL)
 		{
 			fclose(m_log_fp);
@@ -232,10 +244,13 @@ void MainApp::Log(const wxString & string)
 	}
 
 
-
 	// Send string to log window
 	wxString  msg = wxDateTime::Now().Format(DATETIME_FORMAT_DEFAULT) + wxT(" - ") + string ;
-	wxDynamicCast(m_log_dialog, MainDialog)->AppendLog( msg) ;
+	
+	if( m_log_dialog != NULL)
+	{
+		wxDynamicCast(m_log_dialog, MainDialog)->AppendLog( msg) ;
+	}
 
 	// send string to log file
 	wxLogMessage(msg);
