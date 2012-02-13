@@ -25,7 +25,6 @@ NotifyDialog * NotifyDialog::Get()
 NotifyDialog::NotifyDialog( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
 {
 	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
-	this->SetBackgroundColour( wxSystemSettings::GetColour( wxSYS_COLOUR_INFOBK ) );
 	
 	wxFlexGridSizer* fgSizer;
 	fgSizer = new wxFlexGridSizer( 2, 2, 0, 0 );
@@ -61,6 +60,7 @@ void NotifyDialog::Notify(const wxString & session_file)
 	wxString text = wxString::Format(NOTIFY_TEXT, session_file);
 	m_labelNotification->SetLabelMarkup (text);
 	Show(true);
+	SetFocus();
 }
 
 NotifyDialog::~NotifyDialog()

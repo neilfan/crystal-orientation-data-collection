@@ -147,7 +147,7 @@ void ProcessController::StartNewSession(const wxString & exchange_file)
 		 * Create Session INI
 		 * name format session_id.ini where session_id is a time-based string
 		 */
-		wxString session_id =  wxDateTime::Now().Format(FILENAME_DATETIME_FORMAT);
+		wxString session_id =  wxDateTime::Now().Format(DATETIME_FORMAT_DEFAULT);
 		wxFileName session_filename("sessions", session_id , "ini") ;
 
 		// session has been assigned an unique id
@@ -263,7 +263,10 @@ bool ProcessController::StartMonitoring()
 			// Do not appoint the ext here, but force to be a file path
 			// otherwise only the directory path is returned by wxFileSystemWatcherEvent
 			wxFileName path(tokenizer.GetNextToken(), wxEmptyString, wxEmptyString);
-			monitor->AddTree( path , wxFSW_EVENT_CREATE ) ;
+			if(path.DirExists())
+			{
+				monitor->AddTree( path , wxFSW_EVENT_CREATE ) ;
+			}
 		}
 	}
 
@@ -485,9 +488,11 @@ void ProcessController::FinaliseSession()
 			NotifyDialog::Get()->Notify(csfn.GetFullPath());
 
 			// if no current session, no action required
-			wxTextFile cache(DATAFILE_STORAGE_CACHE_FILENAME);
 			wxString str ;
 			bool is_id_in_cache = false;
+
+			wxFileName filename(DATAFILE_STORAGE_CACHE_FILENAME) ;
+			wxTextFile cache(filename.GetFullPath()) ;
 
 			cache.Exists() ? cache.Open() : cache.Create() ;
 

@@ -360,8 +360,9 @@ bool DataFileStorage::AddTask(const wxFileName & from, const wxFileName & to)
 void DataFileStorage::FinaliseSession(const wxString & sessionID)
 {
 	wxFileName filename(DATAFILE_STORAGE_CACHE_FILENAME) ;
-	wxTextFile cache ;
-	cache.Open(filename.GetFullPath()) ;
+	wxTextFile cache(filename.GetFullPath()) ;
+	cache.Exists() ? cache.Open() : cache.Create() ;
+
 	size_t i ;
 	for(i=0; i<cache.GetLineCount() ; i++)
 	{

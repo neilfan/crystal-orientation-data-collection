@@ -24,7 +24,8 @@
 #define APP_NAME wxT("DC20A::CRYSTAL_ORIENTATION_DATA_COLLECTION")
 #define DDE_TOPIC wxT("DC20A")
 #define EQUIPMENT_NULL wxT("NO-NAME-SPECIFIED")
-#define FILENAME_DATETIME_FORMAT wxT("%Y%m%d-%H%M%S")
+#define DATETIME_FORMAT_DEFAULT wxT("%Y%m%d-%H%M%S")
+#define DATETIME_FORMAT_DATE wxT("%Y%m%d")
 
 #include <wx/wxprec.h>
 
@@ -65,12 +66,16 @@ public:
 	  * Get config file name
 	  * @return wxString the full path of config name
 	  */
-	  wxString GetConfigFileName() ;
+	wxString GetConfigFileName() ;
+
+	void LaunchEquipment(const wxString &) ;
+
 private:
 	wxObject * m_server ;
 	wxObject * m_taskbaricon;
 	wxObject * m_log_dialog ;
 	wxString   m_config_file_name ;
+	wxString   m_log_file_name ;
 	FILE * m_log_fp;
 };
 

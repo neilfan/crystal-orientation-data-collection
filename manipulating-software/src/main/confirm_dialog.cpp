@@ -362,6 +362,7 @@ void ConfirmDialog::ConfirmNewSession(const wxString & equipment_id)
 	
 	// retrieve booking information here
 	Show(true);
+	SetFocus();
 }
 
 void ConfirmDialog::ResetGridMetadata()

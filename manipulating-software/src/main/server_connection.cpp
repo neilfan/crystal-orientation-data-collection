@@ -36,29 +36,7 @@ bool MainServerConnection::OnExec(const wxString &topic, const wxString &data)
 
 bool MainServerConnection::OnPoke(const wxString &topic, const wxString &item, const void *data, size_t size, wxIPCFormat  format)
 {
-	// if an equipment is specified, start monitoring this equipment
-	wxString equipment_id(item);
-	wxGetApp().Log(wxT("Received a request to launch equipment ") + item);
-	if( item == EQUIPMENT_NULL )
-	{
-		wxGetApp().Log(wxT("Invalid Equipment. Loading default equipment from configuration"));
-		wxStringTokenizer tokenizer( wxConfig::Get()->Read( wxT("equipment.list")), ",");
-		while ( tokenizer.HasMoreTokens() )
-		{
-			equipment_id = tokenizer.GetNextToken();
-			break;
-		}
-	}
-	
-	if( wxConfig::Get()->Read( wxT("equipment.") + equipment_id + ".id" ) == wxEmptyString )
-	{
-		wxGetApp().Log(wxT("Equipment ") + equipment_id + wxT(" not defined"));
-	}
-	else
-	{
-		wxGetApp().Log(wxT("Start session confirmation for equipment ") + equipment_id);
-		ProcessController::Get()->ConfirmNewSession(equipment_id);
-	}
+	wxGetApp().LaunchEquipment(item);
 	return wxConnection::OnPoke(topic, item, data, size, format) ;
 }
 

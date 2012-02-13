@@ -27,6 +27,8 @@
 #include <wx/stdpaths.h> 
 #include <wx/wfstream.h> 
 #include <wx/cmdline.h> 
+#include <wx/tokenzr.h> 
+#include <wx/dir.h>
 
 #include "icon.xpm"
 #include "main/app.h"
@@ -46,8 +48,14 @@ bool MainApp::OnInit()
 	/* initialize random seed: */
 	srand ( time(NULL) );
 	setlocale(LC_ALL,"");
+	
+	m_log_file_name = wxEmptyString ;
 
 	wxLog::EnableLogging(false);
+	
+	// wxWidgets has a bug that first call to wxDateTime::Format will ignore the timezone
+	// setting. Call here once for allignment
+	wxDateTime::Today().Format(DATETIME_FORMAT_DATE);
 
 	// Change working directory same as the binary for portable use
 	wxSetWorkingDirectory( wxPathOnly(wxStandardPaths::Get().GetExecutablePath()) );
@@ -57,12 +65,12 @@ bool MainApp::OnInit()
 	cmd_parser.AddOption (wxT("c"), wxT("config-file"), wxT("Configuration File"));
 	cmd_parser.AddOption (wxT("e"), wxT("equipment-id"), wxT("Equipment ID"));
 
-	// Which equpiment is associated?
-	wxString equpiment_id(EQUIPMENT_NULL);
+	// Which equipment is associated?
+	wxString equipment_id(EQUIPMENT_NULL);
 
 	if(cmd_parser.Parse() == 0)
 	{
-		cmd_parser.Found(wxT("equipment-id"), & equpiment_id) ;
+		cmd_parser.Found(wxT("equipment-id"), & equipment_id) ;
 	}
 	
 	MainClient * client = new MainClient();
@@ -70,7 +78,7 @@ bool MainApp::OnInit()
 	{
 		if(	client->Connect( _T("localhost"), APP_NAME, DDE_TOPIC))
 		{
-			client->GetConnection()->Poke(equpiment_id, wxEmptyString);
+			client->GetConnection()->Poke(equipment_id, wxEmptyString);
 			client->Disconnect();
 			wxDELETE(client);
 			return false;
@@ -82,8 +90,14 @@ bool MainApp::OnInit()
 			MainServer * server = new MainServer();
 			server->Create(APP_NAME);
 			m_server = wxDynamicCast(server, wxObject);
+			
+			if(equipment_id != EQUIPMENT_NULL )
+			{
+				LaunchEquipment(equipment_id);
+			}
 		}
 	}
+
 
 	// Display the log window
 	MainDialog * log_dialog = new MainDialog();
@@ -96,34 +110,14 @@ bool MainApp::OnInit()
 	taskbaricon->SetIcon(icon_xpm);
 	m_taskbaricon = wxDynamicCast(taskbaricon, wxObject) ;
 
-	// Setup the logging facility
-	// Send logs to both log window and log file
-	wxFileName log_file( "log", wxDateTime::Now().Format(FILENAME_DATETIME_FORMAT), "log");
-	if( ! log_file.DirExists())
-	{
-		// create ./log directory if required
-		log_file.Mkdir();
-	}
-	m_log_fp = fopen(log_file.GetFullPath(), "w+");
-	if(m_log_fp != NULL)
-	{
-		// Only log to file when the file is created
-		wxLog * m_log = new wxLogStderr(m_log_fp) ;
-		wxLog::SetActiveTarget(m_log);
-		wxLog::SetLogLevel(wxLOG_Message );
-		wxLog::SetLogLevel(wxLOG_Trace  );
-		wxLog::EnableLogging(true);
-		wxLog::SetTimestamp(FILENAME_DATETIME_FORMAT);
-	}
-
-	Log(_T("Seems this is the only instance. Starting application"));
-
 	// Init the config file
 	wxString config_file_name("config/default.ini");
 	if(cmd_parser.Parse() == 0)
 	{
 		cmd_parser.Found(wxT("config-file"), &config_file_name) ;
 	}
+
+	Log(wxT("Seems this is the only instance. Starting application"));
 
 	wxFileInputStream cfg_stream(config_file_name);
 	if(cfg_stream.IsOk())
@@ -133,13 +127,21 @@ bool MainApp::OnInit()
 		Log(_T("Loading from config file ") + config_file_name);
 		m_config_file_name = config_file_name ;
 
-		ProjectUpdater::Get()->Update() ;
+		wxArrayString projects ;
+		if( wxDir::GetAllFiles(wxT("projects"), &projects, wxT("*.ini")) == 0)
+		{
+			ProjectUpdater::Get()->Update() ;
+		}
 		ProjectUpdater::Get()->Start() ;
 	}
 	else
 	{
-		Log(_T("Failed to load config file ") + config_file_name);
+		Log(wxT("Failed to load config file ") + config_file_name);
 	}
+	
+	// init the process controller
+	// data transfer will start automatically from now on
+	ProcessController::Get() ;
 
 	return true;
 }
@@ -196,16 +198,76 @@ void MainApp::ExitApplication()
 
 void MainApp::Log(const wxString & string)
 {
-	// send string to log file
-	wxLogMessage(string);
-	wxLog::FlushActive();
+	wxFileName log_file( "log", wxDateTime::Today().Format(DATETIME_FORMAT_DATE), "log");
+
+	if( m_log_file_name==wxEmptyString || m_log_file_name!= log_file.GetFullName())
+	{
+		m_log_file_name = log_file.GetFullName() ;
+		if( ! log_file.DirExists())
+		{
+			// create ./log directory if required
+			log_file.Mkdir();
+		}
+		wxLog::EnableLogging(false);
+		if(m_log_fp!=NULL)
+		{
+			fclose(m_log_fp);
+		}
+
+		m_log_fp = fopen(log_file.GetFullPath(), "a+");
+		if(m_log_fp != NULL)
+		{
+			// Only log to file when the file is created
+			wxLog * m_log = new wxLogStderr(m_log_fp) ;
+			wxLog::SetActiveTarget(m_log);
+			wxLog::SetLogLevel(wxLOG_Message );
+			wxLog::SetLogLevel(wxLOG_Trace  );
+			wxLog::EnableLogging(true);
+			wxLog::DisableTimestamp();
+		}
+	}
+
+
 
 	// Send string to log window
-	wxString  msg = wxDateTime::Now().Format(FILENAME_DATETIME_FORMAT) + wxT(" - ") + string ;
+	wxString  msg = wxDateTime::Now().Format(DATETIME_FORMAT_DEFAULT) + wxT(" - ") + string ;
 	wxDynamicCast(m_log_dialog, MainDialog)->AppendLog( msg) ;
+
+	// send string to log file
+	wxLogMessage(msg);
+	wxLog::FlushActive();
 }
 
 wxString MainApp::GetConfigFileName()
 {
 	return m_config_file_name ;
+}
+
+void MainApp::LaunchEquipment(const wxString & equ_id)
+{
+	wxString equipment_id(equ_id);
+
+	// if an equipment is specified, start monitoring this equipment
+	Log(wxT("Received a request to launch equipment ") + equipment_id);
+	if( equipment_id == EQUIPMENT_NULL )
+	{
+		Log(wxT("Invalid Equipment. Loading default equipment from configuration"));
+		wxStringTokenizer tokenizer( wxConfig::Get()->Read( wxT("equipment.list")), ",");
+		while ( tokenizer.HasMoreTokens() )
+		{
+			equipment_id = tokenizer.GetNextToken();
+			break;
+		}
+	}
+	
+	if( wxConfig::Get()->Read( wxT("equipment.") + equipment_id + ".id" ) == wxEmptyString )
+	{
+		Log(wxT("Equipment ") + equipment_id + wxT(" not defined"));
+	}
+	else
+	{
+		Log(wxT("Start session confirmation for equipment ") + equipment_id);
+		ProcessController::Get()->ConfirmNewSession(equipment_id);
+	}
+
 }
