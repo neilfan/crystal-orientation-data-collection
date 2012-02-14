@@ -49,6 +49,7 @@ ProcessController::ProcessController()
 ProcessController::~ProcessController()
 {
 	FinaliseSession();
+	DataFileStorage::Get()->Stop() ;
 
 	if(m_confirm_dialog!=NULL)
 	{

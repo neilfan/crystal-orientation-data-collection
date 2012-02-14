@@ -93,6 +93,15 @@ bool DataFileStorage::Stop()
 
 		m_isTransferring = false ;
 	}
+
+	// remove the tmp cache file
+	wxFileName cache(DATAFILE_STORAGE_CACHE_FILENAME) ;
+	wxString cache_tmp (cache.GetFullPath() + wxT(".TMP") );
+	if( wxFileExists(cache_tmp))
+	{
+		wxRemoveFile(cache_tmp);
+	}
+
 	return true ;
 }
 
@@ -201,12 +210,7 @@ void DataFileStorage::OnTimer( wxTimerEvent& event )
 			break ;
 
 		}
-		
-		// remove the tmp cache file
-		if( wxFileExists(cache_tmp))
-		{
-			wxRemoveFile(cache_tmp);
-		}
+
 	}
 
 	// Here, we have a list of task to go
