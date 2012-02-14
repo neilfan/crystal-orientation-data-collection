@@ -283,7 +283,7 @@ bool ProcessController::OnNewDataFileFound(const wxString & file)
 {
 	// shall we ignore all sub-folders?
 	bool isFlatFolder = wxFileConfig::Get()->ReadBool(
-			wxT("sys.network.smb.flatfolder"),
+			wxString::Format(wxT("equipment.%s.storage.flatfolder"), GetEquipmentId()),
 			false
 		) ;
 

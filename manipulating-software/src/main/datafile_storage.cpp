@@ -104,8 +104,11 @@ void DataFileStorage::OnTimer( wxTimerEvent& event )
 
 		// check if any task exists
 		wxFileName cache(DATAFILE_STORAGE_CACHE_FILENAME) ;
+		
+		wxString cache_tmp (cache.GetFullPath() + wxT(".TMP") );
+		wxCopyFile (cache.GetFullPath(), cache_tmp);
 
-		wxFileInputStream input( cache.GetFullPath() );
+		wxFileInputStream input( cache_tmp );
 		if( ! input.IsOk() )
 		{
 			// failed to load cache file
@@ -140,6 +143,7 @@ void DataFileStorage::OnTimer( wxTimerEvent& event )
 			if( ! session_ini.FileExists() )
 			{
 				// bad session id, ini file not exist
+				FinaliseSession(line);
 				continue ;
 			}
 
@@ -158,6 +162,7 @@ void DataFileStorage::OnTimer( wxTimerEvent& event )
 			if( count == 0)
 			{
 				// no task for this session
+				FinaliseSession(line);
 				continue ;
 			}
 
@@ -195,6 +200,12 @@ void DataFileStorage::OnTimer( wxTimerEvent& event )
 			// when all transfer completed, this session will be removed from CACHE
 			break ;
 
+		}
+		
+		// remove the tmp cache file
+		if( wxFileExists(cache_tmp))
+		{
+			wxRemoveFile(cache_tmp);
 		}
 	}
 
