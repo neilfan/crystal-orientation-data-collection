@@ -36,7 +36,7 @@ bool MainServerConnection::OnExec(const wxString &topic, const wxString &data)
 
 bool MainServerConnection::OnPoke(const wxString &topic, const wxString &item, const void *data, size_t size, wxIPCFormat  format)
 {
-	wxGetApp().LaunchEquipment(item);
+	wxGetApp().ProcessEquipmentRequest(item);
 	return wxConnection::OnPoke(topic, item, data, size, format) ;
 }
 

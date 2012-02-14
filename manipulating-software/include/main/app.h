@@ -68,7 +68,11 @@ public:
 	  */
 	wxString GetConfigFileName() ;
 
-	void LaunchEquipment(const wxString &) ;
+	 /**
+	  * Launch a equipment
+	  * @return wxString the full path of config name
+	  */
+	void ProcessEquipmentRequest(const wxString &) ;
 
 private:
 	wxObject * m_server ;

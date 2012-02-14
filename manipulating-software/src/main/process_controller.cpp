@@ -90,10 +90,15 @@ wxString ProcessController::GetMetadata(const wxString & key, const wxString & d
 	
 	wxFileName cfg_filename = GetCurrentSessionFileName() ;
 
-	wxFileInputStream cfg_stream(cfg_filename.GetFullPath());
-	if(cfg_stream.IsOk())
+	if(cfg_filename.FileExists())
 	{
-		wxFileConfig metadata_config(cfg_stream);
+		wxFileConfig metadata_config(
+			wxEmptyString,
+			wxEmptyString, 
+			cfg_filename.GetFullPath(),
+			wxEmptyString,
+			wxCONFIG_USE_LOCAL_FILE|wxCONFIG_USE_NO_ESCAPE_CHARACTERS
+		);
 		return metadata_config.Read(wxT("metadata/") + key, defaultVal);
 
 	}
@@ -141,9 +146,16 @@ void ProcessController::StartNewSession(const wxString & exchange_file)
 
 	wxFileInputStream cfg_stream(exchange_file);
 
-	if(cfg_stream.IsOk())
+	if(wxFileExists(exchange_file))
 	{
-		wxFileConfig metadata_config(cfg_stream);
+		wxFileConfig metadata_config(
+			wxEmptyString,
+			wxEmptyString, 
+			exchange_file,
+			wxEmptyString,
+			wxCONFIG_USE_LOCAL_FILE|wxCONFIG_USE_NO_ESCAPE_CHARACTERS
+
+		);
 		/**
 		 * Create Session INI
 		 * name format session_id.ini where session_id is a time-based string
@@ -312,10 +324,15 @@ bool ProcessController::OnNewDataFileFound(const wxString & file)
 	// put the file in ini
 	wxFileName cfg_filename = GetCurrentSessionFileName() ;
 
-	wxFileInputStream cfg_stream(cfg_filename.GetFullPath());
-	if(cfg_stream.IsOk())
+	if(cfg_filename.FileExists())
 	{
-		wxFileConfig config(cfg_stream);
+		wxFileConfig config(
+			wxEmptyString,
+			wxEmptyString, 
+			cfg_filename.GetFullPath(),
+			wxEmptyString,
+			wxCONFIG_USE_LOCAL_FILE|wxCONFIG_USE_NO_ESCAPE_CHARACTERS
+		);
 		// enumeration variables
 		wxString str;
 

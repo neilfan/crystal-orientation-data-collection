@@ -110,13 +110,15 @@ void DataFileStorage::OnTimer( wxTimerEvent& event )
 	
 	if( m_sessionTasks.IsEmpty() )
 	{
+		wxFileName cache(DATAFILE_STORAGE_CACHE_FILENAME) ;
+
+		if( ! cache.FileExists())
+		{
+			return ;
+		}
 
 		// check if any task exists
-		wxFileName cache(DATAFILE_STORAGE_CACHE_FILENAME) ;
-		
 		wxString cache_tmp (cache.GetFullPath() + wxT(".TMP") );
-		wxCopyFile (cache.GetFullPath(), cache_tmp);
-
 		wxFileInputStream input( cache_tmp );
 		if( ! input.IsOk() )
 		{
@@ -162,8 +164,13 @@ void DataFileStorage::OnTimer( wxTimerEvent& event )
 			// http://code.google.com/p/crystal-orientation-data-collection/wiki/SoftwareInterfaceStandard
 
 			// Open the config file
-			wxFileInputStream session( session_ini.GetFullPath() );
-			wxFileConfig session_config( session );
+			wxFileConfig session_config( 
+				wxEmptyString,
+				wxEmptyString, 
+				session_ini.GetFullPath(),
+				wxEmptyString,
+				wxCONFIG_USE_LOCAL_FILE|wxCONFIG_USE_NO_ESCAPE_CHARACTERS
+			);
 
 			// Get the counts of files
 			long count = session_config.ReadLong(wxT("files/count"), 0);

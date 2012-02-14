@@ -26,16 +26,24 @@ TransferProcess::TransferProcess(const wxString & sessionId, const wxString & fi
 {
 	// load remote project directory
 	wxFileName session_ini("sessions", sessionId, "ini");
-	wxFileInputStream session( session_ini.GetFullPath() );
-	wxFileConfig session_config( session );
-
-	wxString project_id = session_config.Read(wxT("metadata/session.project.id"), wxEmptyString);
-	wxString equipment_id = session_config.Read(wxT("metadata/session.equipment.id"), wxEmptyString);
-	if( project_id!=wxEmptyString)
+	if( ! session_ini.FileExists() )
 	{
-		m_remoteDir = wxFileConfig::Get()->Read(wxT("sys.network.smb.storage")) ;
-		m_remoteDir.Replace(wxT("%PID%"), project_id) ;
-		m_remoteDir.Replace(wxT("%EID%"), equipment_id) ;
+		wxFileConfig session_config( 
+			wxEmptyString,
+			wxEmptyString, 
+			session_ini.GetFullPath(),
+			wxEmptyString,
+			wxCONFIG_USE_LOCAL_FILE|wxCONFIG_USE_NO_ESCAPE_CHARACTERS
+		);
+
+		wxString project_id = session_config.Read(wxT("metadata/session.project.id"), wxEmptyString);
+		wxString equipment_id = session_config.Read(wxT("metadata/session.equipment.id"), wxEmptyString);
+		if( project_id!=wxEmptyString)
+		{
+			m_remoteDir = wxFileConfig::Get()->Read(wxT("sys.network.smb.storage")) ;
+			m_remoteDir.Replace(wxT("%PID%"), project_id) ;
+			m_remoteDir.Replace(wxT("%EID%"), equipment_id) ;
+		}
 	}
 
 	m_sessionId   = sessionId ;

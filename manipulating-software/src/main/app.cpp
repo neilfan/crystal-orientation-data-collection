@@ -127,11 +127,16 @@ bool MainApp::OnInit()
 		cmd_parser.Found(wxT("config-file"), &config_file_name) ;
 	}
 
-	wxFileInputStream cfg_stream(config_file_name);
-	if(cfg_stream.IsOk())
+	if(wxFileExists(config_file_name))
 	{
 		Log(wxT("Loading from config file ") + config_file_name);
-		wxFileConfig * m_file_config = new wxFileConfig(cfg_stream);
+		wxFileConfig * m_file_config = new wxFileConfig(
+												wxEmptyString,
+												wxEmptyString, 
+												config_file_name,
+												wxEmptyString,
+												wxCONFIG_USE_LOCAL_FILE|wxCONFIG_USE_NO_ESCAPE_CHARACTERS
+				);
 		wxFileConfig::Set(m_file_config);
 		m_config_file_name = config_file_name ;
 
@@ -155,7 +160,7 @@ bool MainApp::OnInit()
 	// requesting a equipment to start ?
 	if(equipment_id != EQUIPMENT_NULL )
 	{
-		LaunchEquipment(equipment_id);
+		ProcessEquipmentRequest(equipment_id);
 	}
 
 	return true;
@@ -262,7 +267,7 @@ wxString MainApp::GetConfigFileName()
 	return m_config_file_name ;
 }
 
-void MainApp::LaunchEquipment(const wxString & equ_id)
+void MainApp::ProcessEquipmentRequest(const wxString & equ_id)
 {
 	wxString equipment_id(equ_id);
 
