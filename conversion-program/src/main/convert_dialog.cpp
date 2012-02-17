@@ -164,35 +164,6 @@ void ConvertDialog::OnThreadCompleted(wxThreadEvent & event)
 	
 	if(m_isAutoConvertMode)
 	{
-		Convertor * convertor = Convertor::Get() ;
-		wxArrayString file_lists(convertor->GetGeneratedFiles());
-
-		wxFileInputStream fis(m_exchange_filename.GetFullPath());
-		if(fis.IsOk())
-		{
-			wxFileConfig fc(fis);
-			long count = fc.ReadLong(wxT("files/count"), 0);
-			size_t i;
-			for(i=0; i<file_lists.GetCount() ; i++)
-			{
-				wxArrayString array = wxStringTokenize(file_lists.Item(i) , FILENAME_DELIM) ;
-				if(array.GetCount()==1)
-				{
-				// by default upload to SESSION directory
-					array.Add(wxT(""));
-				}
-
-				fc.Write(wxString::Format("files/file%d", count+i+1) ,array[0] ) ;
-				fc.Write(wxString::Format("files/destination%d", count+i+1) ,array[1] ) ;
-			}
-			fc.Write(wxT("files/count") , file_lists.GetCount() + count ) ;
-
-			wxFileOutputStream fs(m_exchange_filename.GetFullPath());
-			fc.Save(fs) ;
-			fc.Flush();
-			fs.Close();
-		}
-		
 		Destroy() ;
 	}
 }
@@ -217,6 +188,8 @@ bool ConvertDialog::AutoConvert(wxFileName filename)
 	if(fis.IsOk())
 	{
 		wxFileConfig fc(fis);
+		fc.SetStyle( fc.GetStyle() | wxCONFIG_USE_NO_ESCAPE_CHARACTERS );
+
 		long count = fc.ReadLong(wxT("files/count"), 0);
 		int i;
 		for(i=1; i<=count ; i++)
@@ -248,11 +221,11 @@ bool ConvertDialog::AutoConvert(wxFileName filename)
 		m_file_from->Disable();
 		m_sdbSizer4Apply->Disable();
 		
-		return true ;
 		// after the call to wxThread::Run(), the m_pThread pointer is "unsafe":
 		// at any moment the thread may cease to exist (because it completes its work).
 		// To avoid dangling pointers OnThreadExit() will set m_pThread
 		// to NULL when the thread dies.
+		return true ;
 	}
 	
 	return false;
