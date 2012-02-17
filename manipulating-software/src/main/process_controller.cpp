@@ -92,13 +92,9 @@ wxString ProcessController::GetMetadata(const wxString & key, const wxString & d
 
 	if(cfg_filename.FileExists())
 	{
-		wxFileConfig metadata_config(
-			wxEmptyString,
-			wxEmptyString, 
-			cfg_filename.GetFullPath(),
-			wxEmptyString,
-			wxCONFIG_USE_LOCAL_FILE|wxCONFIG_USE_NO_ESCAPE_CHARACTERS
-		);
+		wxFileInputStream fis(cfg_filename.GetFullPath()) ;
+		wxFileConfig metadata_config(fis);
+		metadata_config.SetStyle( metadata_config.GetStyle() | wxCONFIG_USE_NO_ESCAPE_CHARACTERS ) ;
 		return metadata_config.Read(wxT("metadata/") + key, defaultVal);
 
 	}
@@ -148,14 +144,10 @@ void ProcessController::StartNewSession(const wxString & exchange_file)
 
 	if(wxFileExists(exchange_file))
 	{
-		wxFileConfig metadata_config(
-			wxEmptyString,
-			wxEmptyString, 
-			exchange_file,
-			wxEmptyString,
-			wxCONFIG_USE_LOCAL_FILE|wxCONFIG_USE_NO_ESCAPE_CHARACTERS
+		wxFileInputStream fis(exchange_file) ;
+		wxFileConfig metadata_config(fis);
+		metadata_config.SetStyle( metadata_config.GetStyle() | wxCONFIG_USE_NO_ESCAPE_CHARACTERS ) ;
 
-		);
 		/**
 		 * Create Session INI
 		 * name format session_id.ini where session_id is a time-based string
@@ -326,30 +318,32 @@ bool ProcessController::OnNewDataFileFound(const wxString & file)
 
 	if(cfg_filename.FileExists())
 	{
-		wxFileConfig config(
-			wxEmptyString,
-			wxEmptyString, 
-			cfg_filename.GetFullPath(),
-			wxEmptyString,
-			wxCONFIG_USE_LOCAL_FILE|wxCONFIG_USE_NO_ESCAPE_CHARACTERS
-		);
+		wxFileInputStream fis(cfg_filename.GetFullPath()) ;
+		wxFileConfig config(fis);
+		config.SetStyle( config.GetStyle() | wxCONFIG_USE_NO_ESCAPE_CHARACTERS ) ;
+
 		// enumeration variables
 		wxString str;
+		
+		str = filename.GetFullPath() ;
+		str.Replace(wxT("\\"), wxT("/")) ;
 
 		long count = config.ReadLong(wxT("files/count"), 0) ;
 		count ++ ;
 		config.Write(wxT("files/count"), count) ;
 		config.Write(
 			wxString::Format("files/file%d", count),
-			filename.GetFullPath()
+			str
 			);
 
 		// if isFlatFolder is true, ignore all sub-folder settings
 		// all files will be stored in a flat directory
 		// Warning: files with same name may be overwritten
+		str = relativePath.GetPath(wxPATH_GET_SEPARATOR) ;
+		str.Replace(wxT("\\"), wxT("/")) ;
 		config.Write(
 			wxString::Format("files/destination%d", count),
-			relativePath.IsRelative() && !isFlatFolder ? relativePath.GetPath(wxPATH_GET_SEPARATOR) : wxT("")
+			(relativePath.IsRelative() && !isFlatFolder) ? str : wxT("")
 		);
 
 		wxFileOutputStream out_stream(cfg_filename.GetFullPath());

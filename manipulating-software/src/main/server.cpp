@@ -42,7 +42,7 @@ wxConnectionBase *MainServer::OnAcceptConnection(const wxString& topic)
     }
     //else: unknown topic
 
-    wxMessageBox("Unknown topic, connection refused");
+    wxGetApp().Log("Error: Unknown topic, connection refused");
     return NULL;
 }
 

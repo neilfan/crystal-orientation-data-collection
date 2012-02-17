@@ -42,6 +42,7 @@ ProjectUpdater::ProjectUpdater()
 	m_isBusy = false;
 	m_timer = new wxTimer(this) ;
 	m_projectIds = new wxArrayString ;
+	m_cmd = wxEmptyString ;
 	Connect( wxEVT_TIMER , wxTimerEventHandler( ProjectUpdater::OnTimer ));
 }
 
@@ -137,6 +138,7 @@ wxString ProjectUpdater::GetCommandLine(const wxString & cmd)
 
 		}
 	}
+	
 	return wxString::Format("%s -c \"%s\"",
 					m_cmd,
 					cmd ) ;

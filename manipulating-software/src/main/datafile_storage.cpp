@@ -119,6 +119,7 @@ void DataFileStorage::OnTimer( wxTimerEvent& event )
 
 		// check if any task exists
 		wxString cache_tmp (cache.GetFullPath() + wxT(".TMP") );
+		wxCopyFile (cache.GetFullPath(), cache_tmp);
 		wxFileInputStream input( cache_tmp );
 		if( ! input.IsOk() )
 		{
@@ -164,13 +165,9 @@ void DataFileStorage::OnTimer( wxTimerEvent& event )
 			// http://code.google.com/p/crystal-orientation-data-collection/wiki/SoftwareInterfaceStandard
 
 			// Open the config file
-			wxFileConfig session_config( 
-				wxEmptyString,
-				wxEmptyString, 
-				session_ini.GetFullPath(),
-				wxEmptyString,
-				wxCONFIG_USE_LOCAL_FILE|wxCONFIG_USE_NO_ESCAPE_CHARACTERS
-			);
+			wxFileInputStream fis(session_ini.GetFullPath()) ;
+			wxFileConfig session_config(fis);
+			session_config.SetStyle( session_config.GetStyle() | wxCONFIG_USE_NO_ESCAPE_CHARACTERS ) ;
 
 			// Get the counts of files
 			long count = session_config.ReadLong(wxT("files/count"), 0);
@@ -195,7 +192,6 @@ void DataFileStorage::OnTimer( wxTimerEvent& event )
 				wxString key_file = wxString::Format("files/file%d", i) ;
 				wxString filex = wxEmptyString ;
 				wxString destx = wxEmptyString ;
-
 				if(session_config.HasEntry(key_file))
 				{
 					filex = session_config.Read(key_file, wxEmptyString) ;
@@ -293,6 +289,7 @@ bool DataFileStorage::Transfer(const wxString & datafile, const wxString & dest)
 					GetCommandLine(),
 					process->GetRemoteDir(),
 					cmd );
+		wxGetApp().Log(wxString::Format(wxT("Transfer CMD: %s"),cmd)) ;
 		wxExecute(cmd_line, wxEXEC_ASYNC | wxEXEC_MAKE_GROUP_LEADER | wxEXEC_HIDE_CONSOLE , process);
 	}
 	else
@@ -319,7 +316,7 @@ bool DataFileStorage::OnTransferTerminate(int status, TransferProcess * process)
 						GetCommandLine(),
 						process->GetRemoteDir(),
 						cmd );
-			 wxExecute(cmd_line, wxEXEC_ASYNC | wxEXEC_MAKE_GROUP_LEADER | wxEXEC_HIDE_CONSOLE , process);
+			wxExecute(cmd_line, wxEXEC_ASYNC | wxEXEC_MAKE_GROUP_LEADER | wxEXEC_HIDE_CONSOLE , process);
 		}
 		else
 		{

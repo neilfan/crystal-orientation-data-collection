@@ -64,7 +64,7 @@ protected:
 	
 	// Virtual event handlers, overide them in your derived class
 	virtual void OnClick( wxMouseEvent& event ) ;
-	NotifyDialog( wxWindow* parent=NULL, wxWindowID id = wxID_ANY, const wxString& title = wxT("DC20A: Manipulating Software"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 330,194 ), long style = wxCAPTION|wxDIALOG_NO_PARENT|wxSTAY_ON_TOP|wxNO_BORDER|wxTRANSPARENT_WINDOW ); 
+	NotifyDialog( wxWindow* parent=NULL, wxWindowID id = wxID_ANY, const wxString& title = wxT("DC20A: Manipulating Software"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 330,194 ), long style = wxDEFAULT_DIALOG_STYLE|wxDIALOG_NO_PARENT|wxSTAY_ON_TOP ); 
 	static NotifyDialog * m_pInstance ;
 	
 

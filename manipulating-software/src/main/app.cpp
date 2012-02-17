@@ -130,13 +130,9 @@ bool MainApp::OnInit()
 	if(wxFileExists(config_file_name))
 	{
 		Log(wxT("Loading from config file ") + config_file_name);
-		wxFileConfig * m_file_config = new wxFileConfig(
-												wxEmptyString,
-												wxEmptyString, 
-												config_file_name,
-												wxEmptyString,
-												wxCONFIG_USE_LOCAL_FILE|wxCONFIG_USE_NO_ESCAPE_CHARACTERS
-				);
+		wxFileInputStream * fis = new wxFileInputStream(config_file_name) ;
+		wxFileConfig * m_file_config = new wxFileConfig(*fis);
+		m_file_config->SetStyle( m_file_config->GetStyle() | wxCONFIG_USE_NO_ESCAPE_CHARACTERS ) ;
 		wxFileConfig::Set(m_file_config);
 		m_config_file_name = config_file_name ;
 
