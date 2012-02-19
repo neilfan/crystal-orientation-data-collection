@@ -365,7 +365,8 @@ void ConfirmDialog::ConfirmNewSession(const wxString & equipment_id)
 void ConfirmDialog::ResetGridMetadata()
 {
 	wxString equipment_id;
-	
+
+	m_buttonLaunch->Enable(m_choiceProject->GetSelection()!=0) ;
 
 
 	if(m_gridMetadata->GetNumberRows()>0)
