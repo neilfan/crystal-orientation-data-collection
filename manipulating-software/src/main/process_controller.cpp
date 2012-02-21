@@ -30,6 +30,7 @@
 #include "main/export_process.h"
 #include "main/datafile_storage.h"
 #include "main/macro_scheduler.h"
+#include "main/dialog.h"
 #include "main/confirm_dialog.h"
 #include "main/notify_dialog.h"
 #include "main/async_process.h"
@@ -172,6 +173,11 @@ void ProcessController::StartNewSession(const wxString & exchange_file)
 			StartMonitoring();
 		}
 	}
+
+	NotifyDialog::Get()->Show(false);
+	MainDialog::Get()->Show(false);
+
+
 	LaunchEquipment();
 }
 
@@ -236,8 +242,8 @@ bool ProcessController::OnLaunchEquipmentTerminate(int pid, int status, LaunchEq
 bool ProcessController::StartMonitoring()
 {
 	// TODO: Start Monitor files here
+	DataFileMonitor::Reset();
 	DataFileMonitor * monitor = DataFileMonitor::Get() ;
-	monitor->Reset();
 	
 	wxString equipment_id = GetEquipmentId();
 
@@ -262,7 +268,7 @@ bool ProcessController::StartMonitoring()
 				wxString::Format(wxT("equipment.%s.monitor.directories"), equipment_id)
 			) ;
 
-		wxStringTokenizer tokenizer(folders, wxT(", "));
+		wxStringTokenizer tokenizer(folders, wxT(", ;"));
 		while ( tokenizer.HasMoreTokens() )
 		{
 			// Do not appoint the ext here, but force to be a file path
@@ -329,6 +335,19 @@ bool ProcessController::OnNewDataFileFound(const wxString & file)
 		str.Replace(wxT("\\"), wxT("/")) ;
 
 		long count = config.ReadLong(wxT("files/count"), 0) ;
+		
+		// check if the file is already recorded
+		// duplication will happen when monitoring a Network Location
+		long i ;
+		for(i=1; i<=count; i++)
+		{
+			wxString fn = config.Read(wxString::Format("files/file%d", i)) ;
+			if( fn!=wxEmptyString && fn==str)
+			{
+				return true ;
+			}
+		}
+		
 		count ++ ;
 		config.Write(wxT("files/count"), count) ;
 		config.Write(

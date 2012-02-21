@@ -32,10 +32,17 @@
 #include "main/app.h"
 #include "icon.xpm"
 
-IMPLEMENT_CLASS( MainDialog, wxDialog )
+MainDialog * MainDialog::m_pInstance = NULL;
 
-BEGIN_EVENT_TABLE(MainDialog, wxDialog)
-END_EVENT_TABLE()
+MainDialog * MainDialog::Get()
+{
+	if( ! m_pInstance)
+	{
+		m_pInstance = new MainDialog;
+	}
+	return m_pInstance ;
+}
+
 
 MainDialog::MainDialog( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
 {

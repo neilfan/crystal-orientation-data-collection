@@ -18,32 +18,13 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#ifndef INCLUDED_MAIN_DATAFILE_MONITOR_H
-#define INCLUDED_MAIN_DATAFILE_MONITOR_H
+#NoEnv
 
-#include <wx/fswatcher.h> 
+SetKeyDelay			50
+SetControlDelay		50
+BlockInput				SendAndMouse
 
-class DataFileMonitor : public wxFileSystemWatcher
-{
-public:
-	static DataFileMonitor * Get();
-	static void Reset();
+MsgBox Dummy Equipment`nClick OK to Exit Launcher
+Sleep 1000
 
-	~DataFileMonitor();
-	void OnFileSystemEvent(wxFileSystemWatcherEvent& event);
-	void AddExtension(const wxString & ext) ;
-	void Start();
-	void Stop();
-	bool IsMoniotring() ;
-
-
-private:
-	DataFileMonitor();
-	
-	static DataFileMonitor * m_pInstance ;
-	bool m_isMorniting ;
-	wxArrayString * m_arrayExts ;
-
-} ;
-
-#endif
+ExitApp

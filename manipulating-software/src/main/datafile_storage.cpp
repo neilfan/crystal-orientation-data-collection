@@ -281,7 +281,6 @@ bool DataFileStorage::Transfer(const wxString & datafile, const wxString & dest)
 
 	TransferProcess * process = new TransferProcess(m_currentTransferSessionID, datafile, dest);
 
-
 	wxString cmd = process->GetFirstCommand() ;
 	if( cmd != wxEmptyString )
 	{
@@ -289,7 +288,6 @@ bool DataFileStorage::Transfer(const wxString & datafile, const wxString & dest)
 					GetCommandLine(),
 					process->GetRemoteDir(),
 					cmd );
-		wxGetApp().Log(wxString::Format(wxT("Transfer CMD: %s"),cmd)) ;
 		wxExecute(cmd_line, wxEXEC_ASYNC | wxEXEC_MAKE_GROUP_LEADER | wxEXEC_HIDE_CONSOLE , process);
 	}
 	else

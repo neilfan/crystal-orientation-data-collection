@@ -40,8 +40,6 @@
 class MainDialog : public wxDialog
 {
 private:
-    DECLARE_CLASS(MainDialog)
-    DECLARE_EVENT_TABLE()
 
     void set_properties();
     void set_layout();
@@ -57,10 +55,9 @@ protected:
 	virtual void OnSetting( wxMouseEvent& event ) ;
 	virtual void OnClearLog( wxMouseEvent& event ) ;
 	virtual void OnCloseClicked( wxCommandEvent& event );
-	
 
-public:
-	
+	static MainDialog * m_pInstance ;
+
 	MainDialog( 
 		wxWindow* parent=NULL,
 		wxWindowID id = wxID_ANY,
@@ -69,7 +66,10 @@ public:
 		const wxSize& size = wxSize( -1,-1 ), 
 		long style = wxDEFAULT_DIALOG_STYLE|wxMAXIMIZE_BOX|wxMINIMIZE_BOX|wxRESIZE_BORDER|wxSYSTEM_MENU
 	); 
+public:
 	~MainDialog();
+
+	static MainDialog * Get();
 
     bool AppendLog(const wxString& );
 };

@@ -77,7 +77,6 @@ public:
 private:
 	wxObject * m_server ;
 	wxObject * m_taskbaricon;
-	wxObject * m_log_dialog ;
 	wxString   m_config_file_name ;
 	wxString   m_log_file_name ;
 	FILE * m_log_fp;

@@ -55,7 +55,6 @@ bool MainApp::OnInit()
 	
 	m_log_file_name = wxEmptyString ;
 	m_log_fp = NULL ;
-	m_log_dialog = NULL ;
 
 	wxLog::EnableLogging(false);
 
@@ -104,9 +103,8 @@ bool MainApp::OnInit()
 
 
 	// Display the log window
-	MainDialog * log_dialog = new MainDialog();
+	MainDialog * log_dialog = MainDialog::Get();
 	SetTopWindow(log_dialog);
-	m_log_dialog = wxDynamicCast(log_dialog, wxObject) ;
 	if( ! cmd_parser.Found(wxT("quiet")) )
 	{
 		log_dialog->Show();
@@ -183,12 +181,12 @@ int MainApp::OnExit()
 
 void MainApp::ShowLogDialog(bool show)
 {
-	wxDynamicCast(m_log_dialog, MainDialog)->Show(show);
+	MainDialog::Get()->Show(show);
 }
 
 bool MainApp::IsLogDialogShown()
 {
-	return wxDynamicCast(m_log_dialog, MainDialog)->IsShown();
+	return MainDialog::Get()->IsShown();
 }
 
 
@@ -196,7 +194,7 @@ void MainApp::ExitApplication()
 {
 	Log(wxT("Exiting application"));
 	
-	MainDialog * dialog = wxDynamicCast(m_log_dialog, MainDialog) ;
+	MainDialog * dialog = MainDialog::Get() ;
 	// Close the top window, notify application to exit
 	dialog->Close(false);
 
@@ -248,10 +246,7 @@ void MainApp::Log(const wxString & string)
 	// Send string to log window
 	wxString  msg = wxDateTime::Now().Format(DATETIME_FORMAT_DEFAULT) + wxT(" - ") + string ;
 	
-	if( m_log_dialog != NULL)
-	{
-		wxDynamicCast(m_log_dialog, MainDialog)->AppendLog( msg) ;
-	}
+	MainDialog::Get()->AppendLog( msg) ;
 
 	// send string to log file
 	wxLogMessage(msg);

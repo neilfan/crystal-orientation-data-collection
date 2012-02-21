@@ -41,7 +41,6 @@ DataFileMonitor :: DataFileMonitor()
 
 DataFileMonitor :: ~DataFileMonitor()
 {
-	Reset();
 	wxDELETE(m_arrayExts);
 }
 
@@ -55,6 +54,13 @@ void DataFileMonitor :: OnFileSystemEvent(wxFileSystemWatcherEvent& event)
 	{
 		wxFileName filename = event.GetNewPath() ;
 		wxString ext = filename.GetExt().Lower();
+
+		if( m_arrayExts->GetCount() == 0)
+		{
+			// TODO: Report to process controller of this file creation
+			ProcessController::Get()->OnNewDataFileFound( filename.GetFullPath() ) ;
+			return;
+		}
 
 		unsigned int i ;
 		for( i=0 ;i<m_arrayExts->GetCount() ; i++)
@@ -78,20 +84,18 @@ void DataFileMonitor :: Start()
 	{
 		wxGetApp().Log(wxT("DataFileMonitor Started") );
 
-		unsigned int i ;
+		size_t i ;
 		for( i=0 ;i<m_arrayExts->GetCount() ; i++)
 		{
 			wxGetApp().Log(wxT("  EXT:  ") + m_arrayExts->Item(i) );
 		}
 		
-		wxArrayString * paths = new wxArrayString;
-		GetWatchedPaths(paths) ;
-		for( i=0 ;i<paths->GetCount() ; i++)
+		wxArrayString paths ;
+		GetWatchedPaths(&paths) ;
+		for( i=0 ;i<paths.GetCount() ; i++)
 		{
-			wxGetApp().Log(wxT("  PATH: ") + paths->Item(i) );
+			wxGetApp().Log(wxT("  PATH: ") + paths.Item(i) );
 		}
-		wxDELETE(paths);
-
 
 		Connect(wxEVT_FSWATCHER,
 				wxFileSystemWatcherEventHandler(DataFileMonitor::OnFileSystemEvent));
@@ -153,7 +157,5 @@ bool DataFileMonitor :: IsMoniotring()
  */
 void DataFileMonitor :: Reset()
 {
-	Stop();
-	RemoveAll();
-	m_arrayExts->Clear();
+	wxDELETE(m_pInstance);
 }
