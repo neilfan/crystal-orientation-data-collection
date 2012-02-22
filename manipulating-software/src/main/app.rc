@@ -7,11 +7,11 @@ BEGIN
         BLOCK "080904E4"
         BEGIN
             VALUE "CompanyName", "Deakin.edu.au"
-            VALUE "FileDescription", "Crystal Orientation Data Collection"
-            VALUE "FileVersion", "1.0"
-            VALUE "InternalName", "crystal-orientation-data-collection"
+            VALUE "FileDescription", "ANDS DC20A - Crystal Orientation Data Collection"
+            VALUE "FileVersion", "1.2"
+            VALUE "InternalName", "CRYSTOsoftware"
             VALUE "LegalCopyright", "Deakin University"
-            VALUE "OriginalFilename", "crystal-orientation-data-collecton.exe"
+            VALUE "OriginalFilename", "CRYSTOsoftware.exe"
             VALUE "ProductName", "ANDS/DC20A"
             VALUE "ProductVersion", "1.0"
         END
