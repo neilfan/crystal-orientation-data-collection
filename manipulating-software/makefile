@@ -57,7 +57,7 @@ BLDDIR = build
 VPATH  = $(SRCDIR) : $(INCDIR)
 
 # Name of output file (EXE)
-DEST   = crystal-orientation-data-collection.exe
+DEST   = CRYSTOsoftware.exe
 
 
 # List of all .cpp files (no extension required)
