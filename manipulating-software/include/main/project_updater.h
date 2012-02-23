@@ -35,6 +35,10 @@ class ProjectUpdater : public wxEvtHandler
 public:
 
 	static ProjectUpdater * Get();
+	static void Reset();
+
+
+
 	~ProjectUpdater();
 	bool Start();
 	wxString GetCommandLine(const wxString & cmd=wxEmptyString) ;

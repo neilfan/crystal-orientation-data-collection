@@ -34,9 +34,11 @@
 #include "main/confirm_dialog.h"
 #include "main/notify_dialog.h"
 #include "main/async_process.h"
+#include "main/project_updater.h"
 #include "main/app.h"
 
 ProcessController * ProcessController::m_pInstance = NULL;
+wxMutex * ProcessController::m_pMutex = new wxMutex();
 
 ProcessController::ProcessController()
 {
@@ -50,7 +52,11 @@ ProcessController::ProcessController()
 ProcessController::~ProcessController()
 {
 	FinaliseSession();
-	DataFileStorage::Get()->Stop() ;
+
+	ProjectUpdater::Reset() ;
+	DataFileStorage::Reset() ;
+	DataFileMonitor::Reset();
+
 
 	if(m_confirm_dialog!=NULL)
 	{
@@ -292,6 +298,7 @@ bool ProcessController::StartMonitoring()
  */
 bool ProcessController::OnNewDataFileFound(const wxString & file)
 {
+
 	// shall we ignore all sub-folders?
 	bool isFlatFolder = wxFileConfig::Get()->ReadBool(
 			wxString::Format(wxT("equipment.%s.storage.flatfolder"), GetEquipmentId()),
@@ -315,9 +322,22 @@ bool ProcessController::OnNewDataFileFound(const wxString & file)
 		{
 			// make it a relative path
 			relativePath.MakeRelativeTo(path.GetFullPath());
-			continue;
+			break;
 		}
 	}
+
+	// enumeration variables
+	wxString path_file = filename.GetFullPath() ;
+	path_file.Replace(wxT("\\"), wxT("/")) ;
+
+	wxString path_dest = relativePath.GetPath(wxPATH_GET_SEPARATOR) ;
+	path_dest.Replace(wxT("\\"), wxT("/")) ;
+
+
+
+
+
+
 
 	// put the file in ini
 	wxFileName cfg_filename = GetCurrentSessionFileName() ;
@@ -328,12 +348,6 @@ bool ProcessController::OnNewDataFileFound(const wxString & file)
 		wxFileConfig config(fis);
 		config.SetStyle( config.GetStyle() | wxCONFIG_USE_NO_ESCAPE_CHARACTERS ) ;
 
-		// enumeration variables
-		wxString str;
-		
-		str = filename.GetFullPath() ;
-		str.Replace(wxT("\\"), wxT("/")) ;
-
 		long count = config.ReadLong(wxT("files/count"), 0) ;
 		
 		// check if the file is already recorded
@@ -342,27 +356,39 @@ bool ProcessController::OnNewDataFileFound(const wxString & file)
 		for(i=1; i<=count; i++)
 		{
 			wxString fn = config.Read(wxString::Format("files/file%d", i)) ;
-			if( fn!=wxEmptyString && fn==str)
+			if( fn!=wxEmptyString && fn==path_file)
 			{
 				return true ;
 			}
 		}
-		
+	}
+
+
+
+	wxMutexLocker lock( * m_pMutex );
+
+
+
+	if(cfg_filename.FileExists())
+	{
+		wxFileInputStream fis(cfg_filename.GetFullPath()) ;
+		wxFileConfig config(fis);
+		config.SetStyle( config.GetStyle() | wxCONFIG_USE_NO_ESCAPE_CHARACTERS ) ;
+
+		long count = config.ReadLong(wxT("files/count"), 0) ;
 		count ++ ;
 		config.Write(wxT("files/count"), count) ;
 		config.Write(
 			wxString::Format("files/file%d", count),
-			str
+			path_file
 			);
 
 		// if isFlatFolder is true, ignore all sub-folder settings
 		// all files will be stored in a flat directory
 		// Warning: files with same name may be overwritten
-		str = relativePath.GetPath(wxPATH_GET_SEPARATOR) ;
-		str.Replace(wxT("\\"), wxT("/")) ;
 		config.Write(
 			wxString::Format("files/destination%d", count),
-			(relativePath.IsRelative() && !isFlatFolder) ? str : wxT("")
+			(relativePath.IsRelative() && !isFlatFolder) ? path_dest : wxT("")
 		);
 
 		wxFileOutputStream out_stream(cfg_filename.GetFullPath());
@@ -399,10 +425,14 @@ void ProcessController::Export()
 				wxString::Format(wxT("equipment.%s.export.program"), GetEquipmentId())
 			) ;
 
+		wxString tmp_exchange = wxFileName::CreateTempFileName(wxT("Exchange"));
+		wxCopyFile(GetCurrentSessionFileName().GetFullPath(), tmp_exchange);
+
+
 		cmd = wxString::Format(
 						wxT("%s \"%s\""),
 						program,
-						GetCurrentSessionFileName().GetFullPath()
+						tmp_exchange
 						);
 
 		wxGetApp().Log(wxString::Format("Export cmd %s", cmd));
@@ -454,15 +484,20 @@ void ProcessController::Convert()
 		wxGetApp().Log(wxT("Starting processing program ") + convert_program);
 	}
 
-	ConvertDataProcess * process = new ConvertDataProcess(m_current_session_id) ;
+	wxString tmp_exchange = wxFileName::CreateTempFileName(wxT("Exchange"));
+	wxCopyFile(GetCurrentSessionFileName().GetFullPath(), tmp_exchange);
+
+	ConvertDataProcess * process = new ConvertDataProcess(m_current_session_id, tmp_exchange) ;
 
 	if( convert_program != wxEmptyString )
 	{
+	
+
 		wxFileName filename(convert_program);
 		cmd = wxString::Format(
 				"%s --launched-from-manipulating-software --research-exchange-file \"%s\"",
 				filename.GetFullPath(),
-				GetCurrentSessionFileName().GetFullPath()
+				tmp_exchange
 			);
 	}
 	else
@@ -476,6 +511,8 @@ void ProcessController::Convert()
 
 bool ProcessController::OnConvertTerminate(int pid, int status, ConvertDataProcess * process)
 {
+	// Merge the changes
+	
 	// check the error code
 	wxString error = GetMetadata(wxT("error.code"), wxT("0"));
 
@@ -548,9 +585,14 @@ void ProcessController::FinaliseSession()
 	}
 
 	// ITEM 2: stop monitoring
-	DataFileMonitor * monitor = DataFileMonitor::Get() ;
-	monitor->Reset();
+	DataFileMonitor::Reset();
 	
 
 
+}
+
+
+void ProcessController :: Reset()
+{
+	wxDELETE(m_pInstance);
 }

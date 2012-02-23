@@ -397,3 +397,12 @@ void DataFileStorage::FinaliseSession(const wxString & sessionID)
 	cache.Close();
 	m_isTransferring = false;
 }
+
+/**
+ * Reset the data file monitor
+ * Stop all monitoring and disconnect the event
+ */
+void DataFileStorage :: Reset()
+{
+	wxDELETE(m_pInstance);
+}

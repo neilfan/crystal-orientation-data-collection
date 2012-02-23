@@ -39,6 +39,7 @@ class DataFileStorage : public wxEvtHandler
 {
 public:
 	static DataFileStorage * Get();
+	static void Reset();
 
 	~DataFileStorage();
 

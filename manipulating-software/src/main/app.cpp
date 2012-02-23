@@ -200,7 +200,7 @@ void MainApp::ExitApplication()
 
 	// Some other objects to be cleared.
 	dialog->Destroy();
-	
+		
 	MainTaskBarIcon * taskbaricon = wxDynamicCast(m_taskbaricon, MainTaskBarIcon) ;
 	taskbaricon->Destroy();
 

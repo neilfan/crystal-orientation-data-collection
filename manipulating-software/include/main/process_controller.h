@@ -25,6 +25,8 @@
 #include <wx/wxprec.h>
 #include <wx/filename.h> 
 #include <wx/event.h> 
+#include <wx/thread.h>
+
 
 #ifndef WX_PRECOMP
 #include "wx/wx.h"
@@ -39,6 +41,8 @@ class ProcessController : public wxEvtHandler
 public:
 	
 	static ProcessController * Get();
+	static void Reset();
+
 	~ProcessController();
 
 	/**
@@ -73,6 +77,8 @@ private:
 	void Convert();
 
 	static ProcessController * m_pInstance ;
+	static wxMutex *  m_pMutex ;
+
 
 };
 

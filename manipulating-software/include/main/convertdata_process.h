@@ -27,11 +27,13 @@ class ConvertDataProcess : public AsyncProcess
 {
 protected:
 	wxString        m_sessionId ;
+	wxString        m_tmp_exchange ;
 
 public:
-	ConvertDataProcess(const wxString & sessionId);
+	ConvertDataProcess(const wxString & sessionId, const wxString & tmp_exchange);
 
 	const wxString & GetSessionId();
+	const wxString & GetExchangeFile();
 
 	// instead of overriding this virtual function we might as well process the
 	// event from it in the frame class - this might be more convenient in some

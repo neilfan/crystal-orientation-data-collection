@@ -73,6 +73,10 @@ void DataFileMonitor :: OnFileSystemEvent(wxFileSystemWatcherEvent& event)
 			}
 		}
 	}
+	else
+	{
+		wxGetApp().Log("Monitor Error: " + event.ToString());
+	}
 }
 
 /**

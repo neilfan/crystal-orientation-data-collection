@@ -22,14 +22,20 @@
 #include "main/process_controller.h"
 
 
-ConvertDataProcess::ConvertDataProcess(const wxString & sessionId) : AsyncProcess(false, false)
+ConvertDataProcess::ConvertDataProcess(const wxString & sessionId, const wxString & tmp_exchange) : AsyncProcess(false, false)
 {
 	m_sessionId = sessionId ;
+	m_tmp_exchange = tmp_exchange ;
 }
 
 const wxString & ConvertDataProcess::GetSessionId()
 {
 	return m_sessionId;
+}
+
+const wxString & ConvertDataProcess::GetExchangeFile()
+{
+	return m_tmp_exchange;
 }
 
 // instead of overriding this virtual function we might as well process the

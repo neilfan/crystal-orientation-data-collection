@@ -8,12 +8,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Deakin.edu.au"
             VALUE "FileDescription", "ANDS DC20A - Crystal Orientation Data Collection"
-            VALUE "FileVersion", "1.2"
+            VALUE "FileVersion", "1.3"
             VALUE "InternalName", "CRYSTOsoftware"
             VALUE "LegalCopyright", "Deakin University"
             VALUE "OriginalFilename", "CRYSTOsoftware.exe"
             VALUE "ProductName", "ANDS/DC20A"
-            VALUE "ProductVersion", "1.0"
+            VALUE "ProductVersion", "1.3"
         END
     END
 
