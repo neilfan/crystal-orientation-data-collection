@@ -199,7 +199,7 @@ void DataFileStorage::OnTimer( wxTimerEvent& event )
 					{
 						destx = session_config.Read(wxString::Format("files/destination%d", i) , wxEmptyString);
 						m_sessionTasks.Add( filex + DATAFILE_STORAGE_LINE_DELIM + destx );
-						wxGetApp().Log(wxString::Format("Adding session data file '%s' to be transferred to '%s'", filex, destx));
+//						wxGetApp().Log(wxString::Format("Adding session data file '%s' to be transferred to '%s'", filex, destx));
 					}
 				}
 			}
