@@ -6,16 +6,27 @@ ANDS project DC20A - Crystal Orientation Data Collection
 
 == This Software ==============================
 
-Welcome to CRYSTO, a software developed by Deakin University Australia aiming at research data acquirision and management. Current release works with a SMB/CIFS based network storage and provides facility to acquire/transfer data for a centralised storeage.
+Welcome to CRYSTO, a software developed by Deakin University Australia
+aiming at research data acquirision and management. Current release
+works with a SMB/CIFS based network storage and provides facility to
+acquire/transfer data for a centralised storeage.
 
-The project website is http://code.google.com/p/crystal-orientation-data-collection . Please read user manual available at http://code.google.com/p/crystal-orientation-data-collection/wiki/UserManual for installation and detailed usage.
+The project website is
+http://code.google.com/p/crystal-orientation-data-collection .
+
+Please read user manual available at
+http://code.google.com/p/crystal-orientation-data-collection/wiki/UserManual
+for installation package and detailed usage.
 
 
 
 
 == Acknowledge ================================
 
-This project is supported by the Australian National Data Service (ANDS). ANDS is supported by the Australian Government through the National Collaborative Research Infrastructure Strategy Program and the Education Investment Fund (EIF) Super Science Initiative.
+This project is supported by the Australian National Data Service (ANDS).
+ANDS is supported by the Australian Government through the National
+Collaborative Research Infrastructure Strategy Program and the Education
+Investment Fund (EIF) Super Science Initiative.
 
 
 
@@ -24,8 +35,15 @@ This project is supported by the Australian National Data Service (ANDS). ANDS i
 
 Copyright (c) 2011-2012 Deakin University.
 
-This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+This program is free software: you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
 
-This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+for more details.
 
-You should have received a copy of the GNU General Public License along with this program. If not, see <http://www.gnu.org/licenses/>. 
+You should have received a copy of the GNU General Public License along
+with this program. If not, see <http://www.gnu.org/licenses/>. 
