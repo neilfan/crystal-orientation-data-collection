@@ -45,21 +45,37 @@
 #include <wx/button.h>
 #include <wx/dialog.h>
 
+/**
+ * The confirm dialog shown when a request
+ * of new session is received
+ *
+ * Identify project and tech metadata here.
+ * This is the only user interface requires
+ * interaction.
+ */
 class ConfirmDialog : public wxDialog 
 {
 	private:
 	
 	protected:
-		wxFlexGridSizer* m_sizerMain;
-		wxPanel* m_panelBackground;
-		wxChoice* m_choiceProject;
-		wxStaticText* m_labelTips;
-		wxGrid* m_gridMetadata;
-		wxButton* m_buttonCancel;
-		wxButton* m_buttonLaunch;
+		wxFlexGridSizer       * m_sizerMain;
+		wxPanel               * m_panelBackground;
+		wxChoice              * m_choiceProject;
+		wxStaticText          * m_labelTips;
+		wxGrid                * m_gridMetadata;
+		wxButton              * m_buttonCancel;
+		wxButton              * m_buttonLaunch;
 	
 	public:
-		ConfirmDialog( wxWindow* parent=NULL, wxWindowID id = wxID_ANY, const wxString& title = wxT("Starting a new research session"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( -1,-1 ), long style = wxDEFAULT_DIALOG_STYLE|wxDIALOG_NO_PARENT|wxMAXIMIZE_BOX|wxMINIMIZE_BOX|wxRESIZE_BORDER|wxSTAY_ON_TOP ); 
+		ConfirmDialog(
+                wxWindow* parent=NULL,
+                wxWindowID id = wxID_ANY,
+                const wxString& title = wxT("Starting a new research session"),
+                const wxPoint& pos = wxDefaultPosition,
+                const wxSize& size = wxSize( -1,-1 ),
+                long style = wxDEFAULT_DIALOG_STYLE|wxDIALOG_NO_PARENT|wxMAXIMIZE_BOX |
+                             wxMINIMIZE_BOX|wxRESIZE_BORDER|wxSTAY_ON_TOP
+             ); 
 		~ConfirmDialog();
 		void OnProjectChoice( wxCommandEvent& event );
 		void OnSize( wxSizeEvent& event ) ;

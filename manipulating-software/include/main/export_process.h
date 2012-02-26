@@ -28,9 +28,17 @@
 /**
  * class ExportProcess
  *
+ * Stands for a process performing customised
+ * export action.
+ *
+ * An export action will integrate with the
+ * Equipment (microscope in DC20A) to generate
+ * data based on the raw data.
+ *
+ * Export is an option action and may not
+ * available for all equipment.
  */
 
-// This is the handler for process termination events
 class ExportProcess : public AsyncProcess
 {
 protected:

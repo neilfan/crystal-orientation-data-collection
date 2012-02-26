@@ -26,15 +26,35 @@
 #include <wx/timer.h> 
 
 
+/**
+ * Async Process
+ * This class defines a async process which stands
+ * for a execution of external program.
+ *
+ * When passed to wxExecute(), the execution will
+ * not block the main workflow of whole app and
+ * the application will be notified for the
+ * termination of external program.
+ *
+ * If m_capture is set, stderr and stdout will be
+ * captured and accessible by main application
+ *
+ * If m_hide is set, the external program will
+ * not show any dialog/frame on screen. A timer
+ * will be triger to force the output window hidden
+ * from user.
+ *
+ */
 class AsyncProcess : public wxProcess
 {
 protected:
-	wxTimer * m_timer ;
-	wxArrayString m_stdout ;
-	wxArrayString m_stderr ;
-	size_t m_lineCount ;
-	bool m_capture ;
-	bool m_hide ;
+	wxTimer          * m_timer ;
+	wxArrayString      m_stdout ;
+	wxArrayString      m_stderr ;
+	size_t             m_lineCount ;
+	bool               m_capture ;
+	bool               m_hide ;
+
 	void OnTimer( wxTimerEvent& event );
 
 public:

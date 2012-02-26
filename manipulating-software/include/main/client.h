@@ -25,6 +25,15 @@
 
 #include "main/client_connection.h"
 
+/**
+ * Client class
+ *
+ * Will be implemented as DDE in WINDOWS system.
+ *
+ * This client will try to connect to local
+ * server and pass the parameters to request for
+ * a session.
+ */
 class MainClient: public wxClient
 {
 public:

@@ -23,6 +23,11 @@
 
 #include <wx/ipc.h>
 
+/**
+ * Client connection.
+ *
+ * Will be inited when client connected to server.
+ */
 class MainClientConnection : public wxConnection
 {
 public:

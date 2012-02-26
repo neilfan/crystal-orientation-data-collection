@@ -35,10 +35,25 @@
 #endif
  
 class TransferProcess ;
+
+
+/**
+ * A class to transfer to network storage
+ *
+ * Currently version implements a transfer to
+ * SMB/CIFS based storage as existing facility
+ * in Deakin Universion.
+ *
+ * To extend to other protocols, simply implement
+ * the static methods.
+ *
+ * TODO extend this into an add-on mode to enable
+ * easy intergration, or plugin?
+ */
 class DataFileStorage : public wxEvtHandler 
 {
 public:
-	static DataFileStorage * Get();
+	static DataFileStorage      * Get();
 	static void Reset();
 
 	~DataFileStorage();
@@ -58,18 +73,18 @@ public:
 
 
 protected:
-	static DataFileStorage * m_pInstance ;
+	static DataFileStorage      * m_pInstance ;
 
 	// Timer to check if any transfer task
-	wxTimer * m_timer ;
-	bool m_isTransferring ;
-	long m_timer_interver ;
+	wxTimer                     * m_timer ;
+	bool                          m_isTransferring ;
+	long                          m_timer_interver ;
 	
 	// a string to record part of the command line
-	wxString m_cmd ;
+	wxString                      m_cmd ;
 	
-	wxArrayString m_sessionTasks ;
-	wxString m_currentTransferSessionID ;
+	wxArrayString                 m_sessionTasks ;
+	wxString                      m_currentTransferSessionID ;
 
 	void FinaliseSession(const wxString & );
 	void OnTimer( wxTimerEvent& event ) ;

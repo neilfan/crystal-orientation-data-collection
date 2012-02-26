@@ -37,6 +37,12 @@
 #include <wx/sizer.h> 
 #include <wx/event.h> 
 
+/**
+ * The log dialog
+ *
+ * Refer to doc/ folder for the UI design
+ * and the code genetator
+ */
 class MainDialog : public wxDialog
 {
 private:

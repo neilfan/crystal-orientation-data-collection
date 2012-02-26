@@ -23,10 +23,25 @@
 
 #include <wx/fswatcher.h> 
 
+/**
+ * A Filesystem monitor which reports new data
+ * cration during a session
+ *
+ * The monitor will start immiduately when a new
+ * session is triggered. Normally that happens
+ * when the "Launch" button is clicked.
+ *
+ * Implemented in a Singleton pattern.
+ *
+ */
 class DataFileMonitor : public wxFileSystemWatcher
 {
 public:
 	static DataFileMonitor * Get();
+
+    /**
+     * Reset this monitor
+     */
 	static void Reset();
 
 	~DataFileMonitor();
@@ -40,9 +55,9 @@ public:
 private:
 	DataFileMonitor();
 	
-	static DataFileMonitor * m_pInstance ;
-	bool m_isMorniting ;
-	wxArrayString * m_arrayExts ;
+	static DataFileMonitor      * m_pInstance ;
+	wxArrayString               * m_arrayExts ;
+	bool                          m_isMorniting ;
 
 } ;
 

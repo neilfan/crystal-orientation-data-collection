@@ -23,6 +23,21 @@
 
 #include "main/async_process.h"
 
+/**
+ * Convert Data Process
+ * defines a process when executing the extern
+ * Processing Program
+ *
+ * A Processing Program is an adopt component to
+ * communication with the research data. It is
+ * expected to have the knowledge about data and
+ * can perform validation, conversion, enhancement
+ * etc on top of the data acquired during a session.
+ *
+ * The processing program will always be invoked
+ * following an defined interface standard, which is
+ * available on wiki/SoftwareInterfaceStandard.
+ */
 class ConvertDataProcess : public AsyncProcess
 {
 protected:
