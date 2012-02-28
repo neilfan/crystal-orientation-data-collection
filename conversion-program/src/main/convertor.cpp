@@ -354,7 +354,7 @@ bool Convertor::Convert(Convertor::Format format, const wxString & output)
 						{
 							phases[7] = wxT("9") ;
 						}
-						else
+						else if(group==43)
 						{
 							phases[7] = wxT("11") ;
 						}
