@@ -20,8 +20,10 @@
 #include <wx/filename.h>
 #include <wx/arrstr.h>
 #include <wx/msgdlg.h>
-
-
+#include <wx/regex.h>
+#include <wx/tokenzr.h>
+#include <math.h>
+#include <float.h>
 
 #include "main/convertor.h"
 #include "main/app.h"
@@ -273,18 +275,251 @@ bool Convertor::Convert(Convertor::Format format, const wxString & output)
 			outRow = new DataRowTSL() ;
 			break;
 	}
+	/**
+	 * Process Header Section
+	 * Phases[]
+	 *     0-5 : 6 digits
+	 *     6: material name
+	 *     7: Luna group
+	 */
+	if(
+		current_format==Convertor::FORMAT_ASTAR ||
+		current_format==Convertor::FORMAT_TSL
+	)
+	{
+		wxString line;
+		int phase_current = 0;
+		int phase_max = 0 ;
+		wxArrayString phases  ;
 
+		wxString phase_output ("");
+
+		phases.Empty() ;
+		for(int i=0; i<8; i++)
+		{
+			phases.Add(wxEmptyString);
+		}
+		
+		int xcells = 0 ;
+		int ycells = 0 ;
+		float xstep = 0.0 ;
+		float ystep = 0.0 ;
+
+		float xmin=FLT_MAX_EXP ;
+		float xmax=FLT_MIN_EXP;
+		float ymin=FLT_MAX_EXP ;
+		float ymax=FLT_MIN_EXP;
+		float xprev=FLT_MIN_EXP;
+		float yprev=FLT_MIN_EXP;
+
+		for(line=m_textfile->GetFirstLine() ; !m_textfile->Eof() ; line=m_textfile->GetNextLine() )
+		{
+			outRow->Import(line) ;
+			if(outRow->IsComment())
+			{
+				{
+					wxRegEx reg("# Phase[ ]+([0-9]+)");
+					if( reg.Matches(line) )
+					{
+						for(int i=0; i<8; i++)
+						{
+							phases[i] = wxEmptyString ;
+						}
+
+						phase_current = wxAtoi(reg.GetMatch(line, 1));
+						if(phase_max < phase_current)
+						{
+							phase_max = phase_current ;
+						}
+						continue;
+					}
+				}
+
+				{
+					wxRegEx reg("# MaterialName[ ]+(.+)");
+					if( reg.Matches(line) )
+					{
+						wxString material = reg.GetMatch(line, 1) ;
+						phases[6] = material ;
+						continue;
+					}
+				}
+
+				{
+					wxRegEx reg("# Symmetry[ ]+([0-9]+)");
+					if( reg.Matches(line) )
+					{
+						int group = wxAtoi(reg.GetMatch(line, 1)) ;
+						if(group==6 || group==62)
+						{
+							phases[7] = wxT("9") ;
+						}
+						else
+						{
+							phases[7] = wxT("11") ;
+						}
+						continue;
+					}
+				}
+
+				{
+					wxRegEx reg("# XSTEP:[ ]+(.+)");
+					if( reg.Matches(line) )
+					{
+						xstep = wxAtof(reg.GetMatch(line, 1)) ;
+						continue;
+					}
+				}
+
+				{
+					wxRegEx reg("# YSTEP:[ ]+(.+)");
+					if( reg.Matches(line) )
+					{
+						ystep = wxAtof(reg.GetMatch(line, 1)) ;
+						continue;
+					}
+				}
+
+				{
+					wxRegEx reg("# NROWS:[ ]+(.+)");
+					if( reg.Matches(line) )
+					{
+						ycells = wxAtoi(reg.GetMatch(line, 1)) ;
+						continue;
+					}
+				}
+
+				{
+					wxRegEx reg("# NCOLS_[A-Z]+:[ ]+(.+)");
+					if( reg.Matches(line) )
+					{
+						xcells = wxAtoi(reg.GetMatch(line, 1)) ;
+						continue;
+					}
+				}
+
+				{
+					wxRegEx reg("# LatticeConstants[ ]+(.+)");
+					if( reg.Matches(line) )
+					{
+						wxString digit_str = reg.GetMatch(line, 1) ;
+						wxArrayString digits = wxStringTokenize(digit_str, wxT(" ")) ;
+						if(digits.GetCount()==6)
+						{
+							phases[0] = digits[0] ;
+							phases[1] = digits[1] ;
+							phases[2] = digits[2] ;
+							phases[3] = digits[3] ;
+							phases[4] = digits[4] ;
+							phases[5] = digits[5] ;
+						}
+						continue;
+					}
+				}
+
+				{
+					wxRegEx reg("# NumberFamilies.*");
+					if( reg.Matches(line) )
+					{
+						// this is end of a phase
+						// at least for the data we focus on
+						phase_output += wxString::Format(
+							wxT("%f;%f;%f\t%f;%f;%f\t%s\t%d\t\t\t\t"),
+							wxAtof(phases[0]),
+							wxAtof(phases[1]),
+							wxAtof(phases[2]),
+							wxAtof(phases[3]),
+							wxAtof(phases[4]),
+							wxAtof(phases[5]),
+							phases[6],
+							wxAtoi(phases[7])
+							);
+						continue;
+					}
+				}
+
+			}
+			else
+			{
+				if(
+					(xcells==0 || ycells==0 || xstep==0.0 || ystep==0.0) &&
+					current_format==Convertor::FORMAT_ASTAR
+				)
+				{
+					wxArrayString values = outRow->ToArrayString();
+					float x=wxAtof(values[3]);
+					float y=wxAtof(values[4]);
+
+					if(xstep==0.0 && xprev!=FLT_MIN_EXP && xprev!=x)
+					{
+						xstep = fabs(x-xprev) ;
+					}
+					else
+					{
+						xprev=x;
+					}
+
+					if(ystep==0.0 && yprev!=FLT_MIN_EXP && yprev!=y)
+					{
+						ystep = fabs(y-yprev) ;
+					}
+					else
+					{
+						yprev=y;
+					}
+
+
+					if(x < xmin)
+					{
+						xmin=x ;
+					}
+					if(x > xmax)
+					{
+						xmax=x ;
+					}
+
+					if(y < ymin)
+					{
+						ymin=y ;
+					}
+					if(y > ymax)
+					{
+						ymax=y ;
+					}
+
+
+				}
+			}
+		}
+		if(xcells==0.0 || ycells==0.0)
+		{ 
+			xcells = (xmax-xmin)/xstep  +1 ;
+			ycells = (ymax-ymin)/ystep  +1 ;
+		}
+		wxString h = wxString::Format(
+			wxT("Channel Text File\nPrj\t\nAuthor\t[Unknown]\nJobMode\tGrid\nXCells\t%d\nYCells\t%d\nXStep\t%f\nYStep\t%f\nAcqE1\t0\nAcqE2\t0\nAcqE3\t0\nEuler angles refer to Sample Coordinate system (CS0)!\tMag\t\tCoverage\t\tDevice\t\tKV\t\tTiltAngle\t\tTiltAxis\t\nPhases\t%d\n"),
+			xcells, ycells, xstep, ystep, phase_max
+		) ;
+		phase_output = h + phase_output;
+		phase_output += wxT("\nPhase	X	Y	Bands	Error	Euler1	Euler2	Euler3	MAD	BC	BS") ;
+
+		out.AddLine(phase_output);
+
+	}
+	
+
+
+	/**
+	 * Process Data Section
+	 */
 	wxString line;
+
 	for(line=m_textfile->GetFirstLine() ; !m_textfile->Eof() ; line=m_textfile->GetNextLine() )
 	{
 		m_progress = 100 * m_textfile->GetCurrentLine()  /  m_textfile->GetLineCount() ;
 
 		outRow->Import(line) ;
-		if(outRow->IsComment())
-		{
-			out.AddLine(line) ;
-		}
-		else
+		if(!outRow->IsComment())
 		{
 			wxString newLine ;
 			switch(format)
@@ -304,6 +539,7 @@ bool Convertor::Convert(Convertor::Format format, const wxString & output)
 			out.AddLine(newLine) ;
 		}
 	}
+
 	out.Write();
 	out.Close();
 
