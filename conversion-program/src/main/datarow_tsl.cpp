@@ -53,11 +53,13 @@ wxString DataRowTSL::ToHKL()
 		{
 			return wxEmptyString ;
 		}
+
+		float rad ;
 		float g = wxAtof(tsl[6]) ;
 		
 		// CTF-Phase Index
-		float h = wxAtof(tsl[7]) ;
-		hkl.Add( wxString::Format("%f", (g<0 ? 0 : (h==0 ? 1 : h) ))) ;
+		int h = wxAtoi(tsl[7]) ;
+		hkl.Add( wxString::Format("%d", (g<0.0 ? 0 : (h==0 ? 1 : h) ))) ;
 		
 		hkl.Add( tsl[3] ) ;
 		hkl.Add( tsl[4] ) ;
@@ -65,26 +67,37 @@ wxString DataRowTSL::ToHKL()
 		hkl.Add( wxT("0") ) ;
 		hkl.Add( wxT("0") ) ;
 		
-		float a=wxAtof(tsl[0]);
-		hkl.Add( wxString::Format("%f", g<0 ? 0 : round( a * pow(10,3) ) / pow(10,3) )) ;
+		// Euler to Radians
+		float a =  (g<0.0 ? 0.0 : round( wxAtof(tsl[0]) * pow(10.0,3.0) ) / pow(10.0,3.0)) ;
+		rad = a * M_PI / 180.0 ;
+		hkl.Add( wxString::Format("%f", rad) ) ;
 
-		float b=wxAtof(tsl[1]);
-		hkl.Add( wxString::Format("%f", g<0 ? 0 : round( b * pow(10,3) ) / pow(10,3) )) ;
+
+		// Euler to Radians
+		float b = ( g<0.0 ? 0.0 : round( wxAtof(tsl[1]) * pow(10.0,3.0) ) / pow(10.0,3.0) );
+		rad = b * M_PI / 180.0 ;
+		hkl.Add( wxString::Format("%f", rad )) ;
 
 		
-		float c=wxAtof(tsl[2]);
+		float c;
 		if( DataRowTSL::GetCrystalSystemType() == Cubic)
 		{
-			hkl.Add( wxString::Format("%f", g<0 ? 0 : round(  c           * pow(10,3) ) / pow(10,3) )) ;
+			// Euler to Radians
+			c = ( g<0.0 ? 0.0 : round(  wxAtof(tsl[2])            * pow(10.0,3.0) ) / pow(10.0,3.0) );
+			rad = c * M_PI / 180.0 ;
+			hkl.Add( wxString::Format("%f", rad )) ;
 		}
 		if( DataRowTSL::GetCrystalSystemType() == Hexagonal)
 		{
-			hkl.Add( wxString::Format("%f", g<0 ? 0 : round( (c + M_PI/2) * pow(10,3) ) / pow(10,3) )) ;
+			// Euler to Radians
+			c = ( g<0.0 ? 0.0 : round( (wxAtof(tsl[2]) + M_PI/2.0) * pow(10.0,3.0) ) / pow(10.0,3.0) );
+			rad = c * M_PI / 180.0 ;
+			hkl.Add( wxString::Format("%f", rad )) ;
 		}
 		
-		hkl.Add( wxString::Format("%f", (g<0 ? 0 : g)) );
+		hkl.Add( wxString::Format("%f", (g<0.0 ? 0.0 : g)) );
 
-		hkl.Add( wxString::Format("%f", round(255 * ( wxAtof(tsl[5]) - DataRowTSL::m_minIQ )/(DataRowTSL::m_maxIQ - DataRowTSL::m_minIQ)    )      ) );
+		hkl.Add( wxString::Format("%f", round(255.0 * ( wxAtof(tsl[5]) - DataRowTSL::m_minIQ )/(DataRowTSL::m_maxIQ - DataRowTSL::m_minIQ)    )      ) );
 		hkl.Add( wxT("0") ) ;
 
 		return wxJoin(hkl, wxT('\t'));

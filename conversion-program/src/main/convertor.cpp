@@ -291,8 +291,7 @@ bool Convertor::Convert(Convertor::Format format, const wxString & output)
 		int phase_current = 0;
 		int phase_max = 0 ;
 		wxArrayString phases  ;
-
-		wxString phase_output ("");
+		wxArrayString phase_output  ;
 
 		phases.Empty() ;
 		for(int i=0; i<8; i++)
@@ -423,17 +422,19 @@ bool Convertor::Convert(Convertor::Format format, const wxString & output)
 					{
 						// this is end of a phase
 						// at least for the data we focus on
-						phase_output += wxString::Format(
-							wxT("%f;%f;%f\t%f;%f;%f\t%s\t%d\t\t\t\t"),
-							wxAtof(phases[0]),
-							wxAtof(phases[1]),
-							wxAtof(phases[2]),
-							wxAtof(phases[3]),
-							wxAtof(phases[4]),
-							wxAtof(phases[5]),
-							phases[6],
-							wxAtoi(phases[7])
-							);
+						phase_output.Add(
+							wxString::Format(
+								wxT("%f;%f;%f	%d;%d;%d	%s	%d				"),
+								wxAtof(phases[0]),
+								wxAtof(phases[1]),
+								wxAtof(phases[2]),
+								wxAtoi(phases[3]),
+								wxAtoi(phases[4]),
+								wxAtoi(phases[5]),
+								phases[6],
+								wxAtoi(phases[7])
+							)
+						);
 						continue;
 					}
 				}
@@ -496,14 +497,28 @@ bool Convertor::Convert(Convertor::Format format, const wxString & output)
 			xcells = (xmax-xmin)/xstep  +1 ;
 			ycells = (ymax-ymin)/ystep  +1 ;
 		}
-		wxString h = wxString::Format(
-			wxT("Channel Text File\nPrj\t\nAuthor\t[Unknown]\nJobMode\tGrid\nXCells\t%d\nYCells\t%d\nXStep\t%f\nYStep\t%f\nAcqE1\t0\nAcqE2\t0\nAcqE3\t0\nEuler angles refer to Sample Coordinate system (CS0)!\tMag\t\tCoverage\t\tDevice\t\tKV\t\tTiltAngle\t\tTiltAxis\t\nPhases\t%d\n"),
-			xcells, ycells, xstep, ystep, phase_max
-		) ;
-		phase_output = h + phase_output;
-		phase_output += wxT("\nPhase	X	Y	Bands	Error	Euler1	Euler2	Euler3	MAD	BC	BS") ;
 
-		out.AddLine(phase_output);
+		/**
+		 * Output Headers
+		 */
+		out.AddLine(wxT("Channel Text File"));
+		out.AddLine(wxT("Prj"));
+		out.AddLine(wxT("Author	[Unknown]"));
+		out.AddLine(wxT("JobMode	Grid"));
+		out.AddLine(wxString::Format(wxT("XCells	%d"), xcells));
+		out.AddLine(wxString::Format(wxT("YCells	%d"), ycells));
+		out.AddLine(wxString::Format(wxT("XStep	%f"), xstep));
+		out.AddLine(wxString::Format(wxT("YStep	%f"), ystep));
+		out.AddLine(wxT("AcqE1	0"));
+		out.AddLine(wxT("AcqE2	0"));
+		out.AddLine(wxT("AcqE3	0"));
+		out.AddLine(wxT("Euler angles refer to Sample Coordinate system (CS0)!	Mag		Coverage		Device		KV		TiltAngle		TiltAxis	"));
+		out.AddLine(wxString::Format(wxT("Phases	%d"), phase_max));
+		for(size_t i=0; i<phase_output.GetCount();i++)
+		{
+			out.AddLine(phase_output[i]);
+		}
+		out.AddLine(wxT("Phase	X	Y	Bands	Error	Euler1	Euler2	Euler3	MAD	BC	BS"));
 
 	}
 	

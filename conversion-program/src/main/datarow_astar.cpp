@@ -31,6 +31,7 @@ DataRowASTAR::DataRowASTAR()
 wxString DataRowASTAR::ToHKL()
 {
 
+	float rad ;
 	if( IsComment() )
 	{
 		return m_data ;
@@ -45,24 +46,36 @@ wxString DataRowASTAR::ToHKL()
 			return wxEmptyString ;
 		}
 		
-		hkl.Add( astar[7] ) ;
+		hkl.Add( wxString::Format("%d", wxAtoi(astar[7]))) ;
 		hkl.Add( astar[3] ) ;
 		hkl.Add( astar[4] ) ;
 		hkl.Add( wxT("0") ) ;
 		hkl.Add( wxT("0") ) ;
-		hkl.Add( astar[0] ) ;
-		hkl.Add( astar[1] ) ;
+
+		// Euler to Radians
+		rad = wxAtof(astar[0]) * M_PI / 180.0 ;
+		hkl.Add( wxString::Format("%f", rad) ) ;
+
+		// Euler to Radians
+		rad = wxAtof(astar[1]) * M_PI / 180.0 ;
+		hkl.Add( wxString::Format("%f", rad) ) ;
+
 		if( DataRowASTAR::GetCrystalSystemType() == Cubic)
 		{
-			hkl.Add( astar[2] ) ;
+			// Euler to Radians
+			rad = wxAtof(astar[2]) * M_PI / 180.0 ;
+			hkl.Add( wxString::Format("%f", rad) ) ;
 		}
 		if( DataRowASTAR::GetCrystalSystemType() == Hexagonal)
 		{
-			hkl.Add( wxString::Format("%f", round( ( wxAtof(astar[2]) + M_PI/2) * pow(10,3) ) / pow(10,3)));
+			// Euler to Radians
+			rad = round( ( wxAtof(astar[2]) + M_PI/2.0) * pow(10.0,3.0) ) / pow(10.0,3.0) * M_PI / 180.0 ;
+			hkl.Add( wxString::Format("%f", rad) ) ;
+
 		}
 		hkl.Add( wxT("0") ) ;
 		hkl.Add( wxString::Format("%f", round( wxAtof(astar[5]) )) );
-		hkl.Add( wxString::Format("%f", wxAtof(astar[6]) * 100) );
+		hkl.Add( wxString::Format("%f", wxAtof(astar[6]) * 100.f) );
 
 		return wxJoin(hkl, wxT('\t'));
 	}
