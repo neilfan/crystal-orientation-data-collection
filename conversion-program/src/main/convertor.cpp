@@ -236,15 +236,15 @@ bool Convertor::Convert(Convertor::Format format, const wxString & output)
 				return false;
 				break;
 			case Convertor::FORMAT_ASTAR:
-				filename->SetName( filename->GetName() + wxT("-ASTAR") ) ;
+				filename->SetName( filename->GetName() + wxT("-Converted") ) ;
 				filename->SetExt(FILENAMEEXT_ANG);
 				break;
 			case Convertor::FORMAT_HKL:
-				filename->SetName( filename->GetName() + wxT("-HKL") ) ;
+				filename->SetName( filename->GetName() + wxT("-Converted") ) ;
 				filename->SetExt(FILENAMEEXT_CTF);
 				break;
 			case Convertor::FORMAT_TSL:
-				filename->SetName( filename->GetName() + wxT("-TSL") ) ;
+				filename->SetName( filename->GetName() + wxT("-Converted") ) ;
 				filename->SetExt(FILENAMEEXT_ANG);
 				break;
 		}
@@ -502,7 +502,7 @@ bool Convertor::Convert(Convertor::Format format, const wxString & output)
 		 * Output Headers
 		 */
 		out.AddLine(wxT("Channel Text File"));
-		out.AddLine(wxT("Prj"));
+		out.AddLine(wxT("Prj	"));
 		out.AddLine(wxT("Author	[Unknown]"));
 		out.AddLine(wxT("JobMode	Grid"));
 		out.AddLine(wxString::Format(wxT("XCells	%d"), xcells));
