@@ -9,7 +9,7 @@ ANDS project DC20A - Crystal Orientation Data Collection
 Welcome to CRYSTO, a software developed by Deakin University Australia
 aiming at research data acquirision and management. Current release
 works with a SMB/CIFS based network storage and provides facility to
-acquire/transfer data for a centralised storeage.
+acquire/transfer data to a centralised storeage.
 
 The project website is
 http://code.google.com/p/crystal-orientation-data-collection .
