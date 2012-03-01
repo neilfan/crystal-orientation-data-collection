@@ -52,24 +52,24 @@ wxString DataRowASTAR::ToHKL()
 		hkl.Add( wxT("0") ) ;
 		hkl.Add( wxT("0") ) ;
 
-		// Euler to Radians
-		rad = wxAtof(astar[0]) * M_PI / 180.0 ;
+		// Radians to Euler
+		rad = wxAtof(astar[0]) * 180.0 / M_PI ;
 		hkl.Add( wxString::Format("%f", rad) ) ;
 
-		// Euler to Radians
-		rad = wxAtof(astar[1]) * M_PI / 180.0 ;
+		// Radians to Euler
+		rad = wxAtof(astar[1]) * 180.0 / M_PI ;
 		hkl.Add( wxString::Format("%f", rad) ) ;
 
 		if( DataRowASTAR::GetCrystalSystemType() == Cubic)
 		{
-			// Euler to Radians
-			rad = wxAtof(astar[2]) * M_PI / 180.0 ;
+			// Radians to Euler
+			rad = wxAtof(astar[2]) * 180.0 / M_PI ;
 			hkl.Add( wxString::Format("%f", rad) ) ;
 		}
 		if( DataRowASTAR::GetCrystalSystemType() == Hexagonal)
 		{
-			// Euler to Radians
-			rad = round( ( wxAtof(astar[2]) + M_PI/2.0) * pow(10.0,3.0) ) / pow(10.0,3.0) * M_PI / 180.0 ;
+			// Radians to Euler
+			rad = round( ( wxAtof(astar[2]) + M_PI/2.0) * pow(10.0,3.0) ) / pow(10.0,3.0) * 180.0 / M_PI ;
 			hkl.Add( wxString::Format("%f", rad) ) ;
 
 		}

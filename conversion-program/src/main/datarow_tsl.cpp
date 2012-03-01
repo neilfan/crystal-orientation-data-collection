@@ -67,31 +67,31 @@ wxString DataRowTSL::ToHKL()
 		hkl.Add( wxT("0") ) ;
 		hkl.Add( wxT("0") ) ;
 		
-		// Euler to Radians
+		// Radians to Euler
 		float a =  (g<0.0 ? 0.0 : round( wxAtof(tsl[0]) * pow(10.0,3.0) ) / pow(10.0,3.0)) ;
-		rad = a * M_PI / 180.0 ;
+		rad = a * 180.0 / M_PI ;
 		hkl.Add( wxString::Format("%f", rad) ) ;
 
 
-		// Euler to Radians
+		// Radians to Euler
 		float b = ( g<0.0 ? 0.0 : round( wxAtof(tsl[1]) * pow(10.0,3.0) ) / pow(10.0,3.0) );
-		rad = b * M_PI / 180.0 ;
+		rad = b * 180.0 / M_PI ;
 		hkl.Add( wxString::Format("%f", rad )) ;
 
 		
 		float c;
 		if( DataRowTSL::GetCrystalSystemType() == Cubic)
 		{
-			// Euler to Radians
+			// Radians to Euler
 			c = ( g<0.0 ? 0.0 : round(  wxAtof(tsl[2])            * pow(10.0,3.0) ) / pow(10.0,3.0) );
-			rad = c * M_PI / 180.0 ;
+			rad = c * 180.0 / M_PI ;
 			hkl.Add( wxString::Format("%f", rad )) ;
 		}
 		if( DataRowTSL::GetCrystalSystemType() == Hexagonal)
 		{
-			// Euler to Radians
+			// Radians to Euler
 			c = ( g<0.0 ? 0.0 : round( (wxAtof(tsl[2]) + M_PI/2.0) * pow(10.0,3.0) ) / pow(10.0,3.0) );
-			rad = c * M_PI / 180.0 ;
+			rad = c * 180.0 / M_PI ;
 			hkl.Add( wxString::Format("%f", rad )) ;
 		}
 		
