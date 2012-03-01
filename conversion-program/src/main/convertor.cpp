@@ -339,7 +339,7 @@ bool Convertor::Convert(Convertor::Format format, const wxString & output)
 					if( reg.Matches(line) )
 					{
 						wxString material = reg.GetMatch(line, 1) ;
-						phases[6] = material ;
+						phases[6] = material.Trim().Trim(false) ;
 						continue;
 					}
 				}
