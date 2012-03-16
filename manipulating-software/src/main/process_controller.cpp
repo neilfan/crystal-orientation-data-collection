@@ -342,6 +342,11 @@ bool ProcessController::OnNewDataFileFound(const wxString & file)
 	// put the file in ini
 	wxFileName cfg_filename = GetCurrentSessionFileName() ;
 
+/**
+ * TODO:
+ * a performace issue here, when files are generated really really quickly
+ * one or two files are missing
+
 	if(cfg_filename.FileExists())
 	{
 		wxFileInputStream fis(cfg_filename.GetFullPath()) ;
@@ -362,13 +367,13 @@ bool ProcessController::OnNewDataFileFound(const wxString & file)
 			}
 		}
 	}
-
+*/
 
 
 	wxMutexLocker lock( * m_pMutex );
 
 
-
+	// reload the session file here as after a wait the session file may already changed
 	if(cfg_filename.FileExists())
 	{
 		wxFileInputStream fis(cfg_filename.GetFullPath()) ;
