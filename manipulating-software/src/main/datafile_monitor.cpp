@@ -53,11 +53,18 @@ void DataFileMonitor :: OnFileSystemEvent(wxFileSystemWatcherEvent& event)
 	if( ! event.IsError())
 	{
 		wxFileName filename = event.GetNewPath() ;
+
+		// if the dest file not exist, do nothing
+		if( ! filename.FileExists() )
+		{
+			return ;
+		}
+
 		wxString ext = filename.GetExt().Lower();
 
 		if( m_arrayExts->GetCount() == 0)
 		{
-			// TODO: Report to process controller of this file creation
+			// Report to process controller of this file creation
 			ProcessController::Get()->OnNewDataFileFound( filename.GetFullPath() ) ;
 			return;
 		}
@@ -67,7 +74,7 @@ void DataFileMonitor :: OnFileSystemEvent(wxFileSystemWatcherEvent& event)
 		{
 			if( m_arrayExts->Item(i) == ext)
 			{
-				// TODO: Report to process controller of this file creation
+				// Report to process controller of this file creation
 				ProcessController::Get()->OnNewDataFileFound( filename.GetFullPath() ) ;
 				break;
 			}

@@ -282,7 +282,7 @@ bool ProcessController::StartMonitoring()
 			wxFileName path(tokenizer.GetNextToken(), wxEmptyString, wxEmptyString);
 			if(path.DirExists())
 			{
-				monitor->AddTree( path , wxFSW_EVENT_CREATE ) ;
+				monitor->AddTree( path , wxFSW_EVENT_ALL ) ;
 			}
 		}
 	}
@@ -346,6 +346,7 @@ bool ProcessController::OnNewDataFileFound(const wxString & file)
  * TODO:
  * a performace issue here, when files are generated really really quickly
  * one or two files are missing
+*/
 
 	if(cfg_filename.FileExists())
 	{
@@ -367,7 +368,6 @@ bool ProcessController::OnNewDataFileFound(const wxString & file)
 			}
 		}
 	}
-*/
 
 
 	wxMutexLocker lock( * m_pMutex );
@@ -489,7 +489,7 @@ void ProcessController::Convert()
 		wxGetApp().Log(wxT("Starting processing program ") + convert_program);
 	}
 
-	wxString tmp_exchange = wxFileName::CreateTempFileName(wxT("Exchange"));
+	wxString tmp_exchange = GetCurrentSessionFileName().GetFullPath() + wxT(".tmp");
 	wxCopyFile(GetCurrentSessionFileName().GetFullPath(), tmp_exchange);
 
 	ConvertDataProcess * process = new ConvertDataProcess(m_current_session_id, tmp_exchange) ;
@@ -544,6 +544,16 @@ bool ProcessController::OnConvertTerminate(int pid, int status, ConvertDataProce
  */
 void ProcessController::FinaliseSession()
 {
+	// ITEM 0 : Restore session file from tmp exchange file
+	wxString tmp_exchange = GetCurrentSessionFileName().GetFullPath() + wxT(".tmp");
+	if(wxFileExists(tmp_exchange))
+	{
+		if( wxCopyFile( tmp_exchange , GetCurrentSessionFileName().GetFullPath() ) )
+		{
+			wxRemoveFile(tmp_exchange);
+		}
+	}
+
 	// ITEM 1 : add session to CACHE for storage
 	if(
 		m_current_session_id != wxEmptyString &&
