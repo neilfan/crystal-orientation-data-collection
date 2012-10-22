@@ -92,6 +92,7 @@ void ProjectUpdater::Update()
 		wxString cmd_line = GetCommandLine(wxT("dir")) ;
 
 		wxGetApp().Log(wxT("Updating Project Profiles"));
+		wxGetApp().Log(wxT("Retrieving project list, please wait"));
 		wxExecute(cmd_line, wxEXEC_ASYNC | wxEXEC_MAKE_GROUP_LEADER | wxEXEC_HIDE_CONSOLE , process);
 	}
 }
@@ -155,18 +156,26 @@ bool ProjectUpdater::OnCommandTerminate(int status, UpdateProcess * process)
 		// retrieving list of folders
 		wxRegEx reFolder ( " *(.*) +D +0 +.*" );
 		wxArrayString output = process->GetStdOutput() ;
+
 		size_t i ;
 		for(i=0; i<output.GetCount(); i++)
 		{
+
 			if( reFolder.Matches( output.Item(i) ) )
 			{
 				wxString pn = reFolder.GetMatch(output.Item(i),1).Trim(true).Trim(false) ;
+
 				if( pn != wxT(".") && pn != wxT("..") )
 				{
 					m_projectIds->Add( pn ) ;
 				}
 			}
 		}
+
+		wxGetApp().Log(
+			wxString::Format("%d project profiles found", m_projectIds->GetCount())
+		);
+
 	}
 	else
 	{
@@ -183,6 +192,7 @@ bool ProjectUpdater::OnCommandTerminate(int status, UpdateProcess * process)
 	else
 	{
 		wxString projectId = m_projectIds->Item(0) ;
+		wxGetApp().Log("Analysis Project Profile for " + projectId);
 
 		wxString remoteDir = wxFileConfig::Get()->Read(wxT("sys.network.smb.storage")) ;
 		remoteDir.Replace(wxT("%PID%"), projectId) ;

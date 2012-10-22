@@ -23,4 +23,6 @@ BEGIN
     END
 END
 
-2 ICON "art/icon.ico"
+APPICON ICON "art/icon.ico"
+
+#include "wx/msw/wx.rc"
