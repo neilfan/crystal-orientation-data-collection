@@ -41,6 +41,9 @@ ProjectUpdater::ProjectUpdater()
 {
 	m_isBusy = false;
 	m_timer = new wxTimer(this) ;
+
+	// a temp array of string listing all project ids to be updated
+	// will be clearen after all updated
 	m_projectIds = new wxArrayString ;
 	m_cmd = wxEmptyString ;
 	Connect( wxEVT_TIMER , wxTimerEventHandler( ProjectUpdater::OnTimer ));
@@ -76,6 +79,10 @@ bool ProjectUpdater::Start()
 	return true ;
 }
 
+bool ProjectUpdater::IsBusy()
+{
+	return m_isBusy;
+}
 
 void ProjectUpdater::OnTimer( wxTimerEvent& event )
 {
@@ -167,6 +174,7 @@ bool ProjectUpdater::OnCommandTerminate(int status, UpdateProcess * process)
 
 				if( pn != wxT(".") && pn != wxT("..") )
 				{
+					// pn here is all the project ids existing on remote server
 					m_projectIds->Add( pn ) ;
 				}
 			}
@@ -176,9 +184,45 @@ bool ProjectUpdater::OnCommandTerminate(int status, UpdateProcess * process)
 			wxString::Format("%d project profiles found", m_projectIds->GetCount())
 		);
 
+		// got a list of existing pids here
+		// store in a list file for further use
+		if(m_projectIds->GetCount() > 0)
+		{
+			wxFileName f("projects/", PROJECT_LIST_FILENAME) ;
+			wxTextFile f_pl(f.GetFullPath()) ;
+
+			if( ! f.DirExists())
+			{
+				f.Mkdir();
+			}
+
+			wxGetApp().Log( "Generating Project Cache List File" );
+
+			if(f_pl.Exists())
+			{
+				f_pl.Open();
+			}
+			else
+			{
+				f_pl.Create();
+			}
+
+			f_pl.Clear();
+
+			// TODO cache this list for other use.
+			for(i=0; i<m_projectIds->GetCount(); i++)
+			{
+				f_pl.AddLine(m_projectIds->Item(i));
+			}
+			f_pl.Write();
+			f_pl.Close();
+		}
+
+
 	}
 	else
 	{
+		// remove current project id from the project-to-update list
 		m_projectIds->Remove( process->GetProjectId() );
 	}
 
@@ -197,8 +241,12 @@ bool ProjectUpdater::OnCommandTerminate(int status, UpdateProcess * process)
 		wxString remoteDir = wxFileConfig::Get()->Read(wxT("sys.network.smb.storage")) ;
 		remoteDir.Replace(wxT("%PID%"), projectId) ;
 		
+		// remote file name
 		wxFileName rf(remoteDir, PROJECT_FILENAME) ;
+
+		// local file name
 		wxFileName lf(wxT("projects/"), projectId , wxT("ini"));
+
 		if( ! lf.DirExists())
 		{
 			lf.Mkdir();

@@ -27,6 +27,7 @@ OS      := $(shell uname -s)
 # Commands
 MKDIR := $(shell which mkdir) -p
 RM    := $(shell which rm) -rf
+CP    := $(shell which cp)
 
 # environment variable WXWIN for wx-config
 WXWIN   ?= .
@@ -148,7 +149,15 @@ ctags:
 
 # Reset the config file and Execute
 run:
-	$(MKDIR) $(BLDDIR)\config
-	cp config/sample.ini $(BLDDIR)/config/default.ini
-	cp -r utils $(BLDDIR)
-	$(BLDDIR)/$(DEST)
+	@echo Removing Project Cache
+	@$(RM) $(BLDDIR)/projects
+
+	@echo Updating utils
+	@$(CP) -r utils $(BLDDIR)
+
+	@echo Updating config files
+	@$(MKDIR) $(BLDDIR)\config
+	@$(CP) config/sample.ini $(BLDDIR)/config/default.ini
+
+	@echo Starting $(BLDDIR)/$(DEST) ...
+	@$(BLDDIR)/$(DEST)

@@ -20,8 +20,9 @@
 #ifndef INCLUDED_MAIN_PROJECT_UPDATER_H
 #define INCLUDED_MAIN_PROJECT_UPDATER_H
 
-#define PROJECT_FILENAME wxT("PROJECT.ini")
-#define INTERVAL_DAY     86400000 // millisecond
+#define PROJECT_FILENAME          wxT("PROJECT.ini")
+#define PROJECT_LIST_FILENAME     wxT("PROJECT_LIST.txt")
+#define INTERVAL_DAY              86400000 // millisecond
 
 #include <wx/wxprec.h>
 
@@ -43,6 +44,7 @@ public:
 	bool Start();
 	wxString GetCommandLine(const wxString & cmd=wxEmptyString) ;
 	void Update();
+	bool IsBusy();
 private:
 	static ProjectUpdater * 	m_pInstance ;
 	wxTimer * 					m_timer ;
