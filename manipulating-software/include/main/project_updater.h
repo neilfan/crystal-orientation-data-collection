@@ -20,15 +20,13 @@
 #ifndef INCLUDED_MAIN_PROJECT_UPDATER_H
 #define INCLUDED_MAIN_PROJECT_UPDATER_H
 
-#define PROJECT_FILENAME          wxT("PROJECT.ini")
-#define PROJECT_LIST_FILENAME     wxT("PROJECT_LIST.txt")
-#define INTERVAL_DAY              86400000 // millisecond
-
 #include <wx/wxprec.h>
 
 #ifndef WX_PRECOMP
 #include "wx/wx.h"
 #endif
+
+#include "main/define.h"
 
 class UpdateProcess ;
 class ProjectUpdater : public wxEvtHandler 

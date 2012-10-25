@@ -44,6 +44,8 @@
 #include <wx/grid.h>
 #include <wx/button.h>
 #include <wx/dialog.h>
+#include <wx/hyperlink.h>
+
 
 /**
  * The confirm dialog shown when a request
@@ -62,6 +64,7 @@ class ConfirmDialog : public wxDialog
 		wxPanel               * m_panelBackground;
 		wxChoice              * m_choiceProject;
 		wxStaticText          * m_labelTips;
+		wxHyperlinkCtrl       * m_linkProjNotFound;
 		wxGrid                * m_gridMetadata;
 		wxButton              * m_buttonCancel;
 		wxButton              * m_buttonLaunch;
@@ -80,6 +83,7 @@ class ConfirmDialog : public wxDialog
 		void OnProjectChoice( wxCommandEvent& event );
 		void OnSize( wxSizeEvent& event ) ;
 		void OnLaunch( wxCommandEvent& event );
+		void OnProjectNotFoundClicked( wxHyperlinkEvent& event );
 		void ConfirmNewSession(const wxString & equipment_id);
 		void ResetGridMetadata();
 

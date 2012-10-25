@@ -23,7 +23,7 @@
  * Refer to doc/UIDesign.wxFormBuilder.fbp (wxFormBUilder file)
  */
 
- ///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
 // C++ code generated with wxFormBuilder (version Jun 30 2011)
 // http://www.wxformbuilder.org/
 //
@@ -40,6 +40,7 @@
 #include "main/app.h"
 #include "main/confirm_dialog.h"
 #include "main/process_controller.h"
+#include "main/import_project_dialog.h"
 #include "icon.xpm"
 
 #define PROJECT_CHOICE_TIP_DEFAULT wxT("Please identify your research project.")
@@ -116,11 +117,29 @@ ConfirmDialog::ConfirmDialog( wxWindow* parent, wxWindowID id, const wxString& t
 	
 	
 	sizerMiddle->Add( 0, 0, 1, wxEXPAND, 5 );
+
+	wxFlexGridSizer* fgSizer6;
+	fgSizer6 = new wxFlexGridSizer( 1, 2, 0, 0 );
+	fgSizer6->AddGrowableCol( 0 );
+	fgSizer6->AddGrowableRow( 0 );
+	fgSizer6->SetFlexibleDirection( wxHORIZONTAL );
+	fgSizer6->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
+	
+
 	
 	m_labelTips = new wxStaticText( this, wxID_ANY, wxT("Please identify your research project ."), wxDefaultPosition, wxDefaultSize, 0 );
 	m_labelTips->Wrap( -1 );
-	sizerMiddle->Add( m_labelTips, 0, wxALL|wxEXPAND, 5 );
+	fgSizer6->Add( m_labelTips, 0, wxALL|wxEXPAND, 5 );
 	
+	m_linkProjNotFound = new wxHyperlinkCtrl(
+		this, wxID_ANY,
+		"Project Not Found?",
+		wxEmptyString, wxDefaultPosition, wxDefaultSize, wxHL_DEFAULT_STYLE );
+	m_linkProjNotFound->SetToolTip( "Click to import your project" );
+	
+	fgSizer6->Add( m_linkProjNotFound, 0, wxALL, 5 );
+	
+	sizerMiddle->Add( fgSizer6, 1, wxEXPAND, 5 );
 	
 	sizerMiddle->Add( 0, 0, 1, wxEXPAND, 5 );
 	
@@ -200,6 +219,8 @@ ConfirmDialog::ConfirmDialog( wxWindow* parent, wxWindowID id, const wxString& t
 	m_choiceProject->Connect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( ConfirmDialog::OnProjectChoice ), NULL, this );
 	m_gridMetadata->Connect( wxEVT_SIZE, wxSizeEventHandler( ConfirmDialog::OnSize ), NULL, this );
 	m_buttonLaunch->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ConfirmDialog::OnLaunch ), NULL, this );
+	m_linkProjNotFound->Connect( wxEVT_COMMAND_HYPERLINK, wxHyperlinkEventHandler( ConfirmDialog::OnProjectNotFoundClicked ), NULL, this );
+	
 
 
 	/**
@@ -227,6 +248,7 @@ ConfirmDialog::~ConfirmDialog()
 	m_choiceProject->Disconnect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( ConfirmDialog::OnProjectChoice ), NULL, this );
 	m_gridMetadata->Disconnect( wxEVT_SIZE, wxSizeEventHandler( ConfirmDialog::OnSize ), NULL, this );
 	m_buttonLaunch->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ConfirmDialog::OnLaunch ), NULL, this );
+	m_linkProjNotFound->Disconnect( wxEVT_COMMAND_HYPERLINK, wxHyperlinkEventHandler( ConfirmDialog::OnProjectNotFoundClicked ), NULL, this );
 }
 
 
@@ -295,6 +317,8 @@ void ConfirmDialog::OnProjectChoice( wxCommandEvent& event )
 		wxGetApp().Log(wxT("Failed to load project metadata list ") + projectINI.GetFullPath());
 
 	}
+
+    event.Skip();
 }
 
 void ConfirmDialog::OnSize( wxSizeEvent& event ) 
@@ -306,6 +330,8 @@ void ConfirmDialog::OnSize( wxSizeEvent& event )
 	{
 		m_gridMetadata->SetColSize( 0, col_size );
 	}
+
+    event.Skip();
 }
 
 void ConfirmDialog::OnLaunch( wxCommandEvent& event )
@@ -341,7 +367,6 @@ void ConfirmDialog::OnLaunch( wxCommandEvent& event )
 
 	ProcessController::Get()->StartNewSession(exchange_filename);
 
-	return ;
 }
 
 void ConfirmDialog::ConfirmNewSession(const wxString & equipment_id)
@@ -414,3 +439,8 @@ void ConfirmDialog::ResetGridMetadata()
 
 }
 
+void ConfirmDialog::OnProjectNotFoundClicked( wxHyperlinkEvent& event )
+{
+	ImportProjectDialog ipd(this);
+	ipd.ShowModal();
+}

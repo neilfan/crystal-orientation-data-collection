@@ -188,7 +188,7 @@ bool ProjectUpdater::OnCommandTerminate(int status, UpdateProcess * process)
 		// store in a list file for further use
 		if(m_projectIds->GetCount() > 0)
 		{
-			wxFileName f("projects/", PROJECT_LIST_FILENAME) ;
+			wxFileName f(PROJECT_LIST_FILENAME) ;
 			wxTextFile f_pl(f.GetFullPath()) ;
 
 			if( ! f.DirExists())

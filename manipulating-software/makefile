@@ -98,6 +98,8 @@ CPPS   = \
 		main/taskbaricon \
 		main/transfer_process \
 		main/update_process \
+		main/import_project_dialog \
+
 
 
 # Work out a list of all source files
@@ -120,7 +122,7 @@ $(SRCDIR)/main/dialog.cpp: $(ARTDIR)/icon.xpm
 
 
 # Logic Rule: setup the dependence between object file and it's source file
-$(SRCS) : $(SRCDIR)/%.cpp : $(INCDIR)/%.h $(INCDIR)/main/app.h
+$(SRCS) : $(SRCDIR)/%.cpp : $(INCDIR)/%.h $(INCDIR)/main/app.h $(INCDIR)/main/define.h
 
 $(OBJS) : $(BLDDIR)/%.o : $(SRCDIR)/%.cpp
 	$(MKDIR) $(dir $@)
@@ -147,11 +149,12 @@ ctags:
 	@echo #Rebuild CTAGS
 	ctags -f tags -R --exclude=*.svn* $(INCDIR) $(SRCDIR)
 
-# Reset the config file and Execute
-run:
+clearcache:
 	@echo Removing Project Cache
 	@$(RM) $(BLDDIR)/projects
 
+# Reset the config file and Execute
+run:
 	@echo Updating utils
 	@$(CP) -r utils $(BLDDIR)
 
