@@ -71,6 +71,7 @@ class ImportProjectDialog : public wxDialog
 		void OnGridCellChange( wxGridEvent& event ) ;
 		void OnApplyButtonClick( wxCommandEvent& event ) ;
 		void OnSize( wxSizeEvent& event );
+		void TransferProjectProfile();
         
 		
 

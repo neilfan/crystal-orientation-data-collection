@@ -146,6 +146,7 @@ void DataFileStorage::OnTimer( wxTimerEvent& event )
 				line.Find( wxUniChar('\\') ) != wxNOT_FOUND )
 			{
 				// it's not a good session id
+                // TODO check if is a file, transfer it
 				continue ;
 			}
 			

@@ -95,15 +95,16 @@ void DataFileMonitor :: Start()
 	{
 		wxGetApp().Log(wxT("DataFileMonitor Started") );
 
-		size_t i ;
-		for( i=0 ;i<m_arrayExts->GetCount() ; i++)
+		for( size_t i=0 ;i<m_arrayExts->GetCount() ; i++)
 		{
 			wxGetApp().Log(wxT("  EXT:  ") + m_arrayExts->Item(i) );
 		}
 		
 		wxArrayString paths ;
+
 		GetWatchedPaths(&paths) ;
-		for( i=0 ;i<paths.GetCount() ; i++)
+
+		for( size_t i=0 ;i<paths.GetCount() ; i++)
 		{
 			wxGetApp().Log(wxT("  PATH: ") + paths.Item(i) );
 		}

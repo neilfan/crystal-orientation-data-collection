@@ -33,6 +33,8 @@
 #include <wx/icon.h>
 #include <wx/file.h>
 #include <wx/textfile.h>
+#include <wx/fileconf.h> 
+#include <wx/utils.h> 
 
 
 #include "main/import_project_dialog.h"
@@ -395,11 +397,31 @@ void ImportProjectDialog::OnApplyButtonClick( wxCommandEvent& event )
 
 		if( is_committed )
 		{
-			// TODO translate file to remote server
+			// TODO transfer file to remote server
+            TransferProjectProfile();
 
             // And close this dialog
 			Close();
 		}
 	}
 
+}
+
+void ImportProjectDialog::TransferProjectProfile()
+{
+    wxString projectId = m_choiceProject->GetStringSelection() ;
+	wxFileName local("projects", projectId , "ini") ;
+
+    wxString remoteDir = wxFileConfig::Get()->Read(wxT("sys.network.smb.storage")) ;
+    remoteDir.Replace(wxT("%PID%"), projectId) ;
+
+	wxFileName dest(remoteDir , "PROJECT.ini") ;
+
+    wxString cmd_line = ProjectUpdater::Get()->GetCommandLine(wxString::Format(
+        "put %s %s",
+        local.GetFullPath(),
+        dest.GetFullPath()
+    )) ;
+
+    wxExecute(cmd_line,  wxEXEC_ASYNC | wxEXEC_NODISABLE | wxEXEC_NOEVENTS | wxEXEC_HIDE_CONSOLE );
 }
