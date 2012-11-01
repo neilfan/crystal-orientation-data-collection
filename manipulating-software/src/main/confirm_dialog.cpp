@@ -107,7 +107,6 @@ ConfirmDialog::ConfirmDialog( wxWindow* parent, wxWindowID id, const wxString& t
 	wxString m_choiceProjectChoices[] = { wxEmptyString, wxT("- Not a registered research project -") };
 	int m_choiceProjectNChoices = sizeof( m_choiceProjectChoices ) / sizeof( wxString );
 	m_choiceProject = new wxChoice( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_choiceProjectNChoices, m_choiceProjectChoices, 0 );
-	m_choiceProject->SetSelection( 0 );
 	sizerMiddle->Add( m_choiceProject, 0, wxALL|wxEXPAND, 5 );
 	
 	wxStaticText* staticText10;
@@ -231,6 +230,20 @@ ConfirmDialog::ConfirmDialog( wxWindow* parent, wxWindowID id, const wxString& t
 	this->SetIcon(icon_xpm);
 	m_sizerMain->Hide(m_panelBackground);
 
+    UpdateProjectList();
+
+}
+
+void ConfirmDialog::UpdateProjectList()
+{
+
+    m_choiceProject->Clear();
+
+    // Add default options
+    m_choiceProject->Append(wxEmptyString);
+    m_choiceProject->Append("- Not a registered research project -");
+
+    // add all projects
 	wxArrayString * projectInis = new wxArrayString ;
 	wxDir::GetAllFiles(wxT("projects"), projectInis, wxT("*.ini"), wxDIR_FILES );
 	size_t i ;
@@ -240,6 +253,7 @@ ConfirmDialog::ConfirmDialog( wxWindow* parent, wxWindowID id, const wxString& t
 		m_choiceProject->Append(filename.GetName());
 	}
 
+	m_choiceProject->SetSelection( 0 );
 }
 
 ConfirmDialog::~ConfirmDialog()
@@ -376,6 +390,9 @@ void ConfirmDialog::ConfirmNewSession(const wxString & equipment_id)
 		ResetGridMetadata();
 	}
 
+    // update project list
+    UpdateProjectList();
+
 	// update current date time
 	m_gridMetadata->SetCellValue (0, 0, wxDateTime::Now().FormatISOCombined());
 	
@@ -441,6 +458,9 @@ void ConfirmDialog::ResetGridMetadata()
 
 void ConfirmDialog::OnProjectNotFoundClicked( wxHyperlinkEvent& event )
 {
-	ImportProjectDialog ipd(this);
+    ImportProjectDialog ipd(this);
 	ipd.ShowModal();
+	ipd.Close();
+
+    UpdateProjectList();
 }

@@ -114,7 +114,7 @@ ImportProjectDialog::ImportProjectDialog( wxWindow* parent, wxWindowID id, const
 	m_gridMetadata = new wxGrid( this, wxID_ANY, wxDefaultPosition, wxSize(-1, -1), 0 );
 	
 	// Grid
-	m_gridMetadata->CreateGrid( 3, 2 );
+	m_gridMetadata->CreateGrid( 2, 2 );
 	m_gridMetadata->EnableEditing( true );
 	m_gridMetadata->EnableGridLines( true );
 	m_gridMetadata->EnableDragGridSize( false );
@@ -184,13 +184,10 @@ ImportProjectDialog::ImportProjectDialog( wxWindow* parent, wxWindowID id, const
 	this->SetIcon(icon_xpm);
 
 
-	m_gridMetadata->SetCellValue( 0, 0, "project.name" );
+
+	m_gridMetadata->SetCellValue( 0, 0, "project.owner" );
 	m_gridMetadata->SetReadOnly(  0, 0 );
 
-	m_gridMetadata->SetCellValue( 1, 0, "project.owner" );
-	m_gridMetadata->SetReadOnly(  1, 0 );
-
-	
 	LoadProjects();
 }
 
@@ -200,6 +197,7 @@ ImportProjectDialog::~ImportProjectDialog()
 	this->Disconnect( wxEVT_SIZE, wxSizeEventHandler( ImportProjectDialog::OnSize ) );
 	m_gridMetadata->Disconnect( wxEVT_GRID_CELL_CHANGE, wxGridEventHandler( ImportProjectDialog::OnGridCellChange ), NULL, this );
 	m_cmdButtonsApply->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ImportProjectDialog::OnApplyButtonClick ), NULL, this );
+
 }
 
 void ImportProjectDialog::LoadProjects()
@@ -291,19 +289,14 @@ void ImportProjectDialog::OnApplyButtonClick( wxCommandEvent& event )
 		errs.Add("Please select a project to import.");
 	}
 
-	// 2. provides project name ?
-	if(m_gridMetadata->GetCellValue(0,1).Length() == 0)
-	{
-		errs.Add("Please provide a project name.");
-	}
 
-	// 3. provides project owner ?
-	if(m_gridMetadata->GetCellValue(1,1).Length() == 0)
+	// 2. provides project owner ?
+	if(m_gridMetadata->GetCellValue(0,1).Length() == 0)
 	{
 		errs.Add("Please provide the contact of project owner.");
 	}
 
-	// 4. any metadata without a name?
+	// 3. any metadata without a name?
 	for(int i=2; i<m_gridMetadata->GetNumberRows(); i++)
 	{
 		if(
@@ -316,7 +309,7 @@ void ImportProjectDialog::OnApplyButtonClick( wxCommandEvent& event )
 		}
 	}
 
-	// 5. any metadata without a "=" in name?
+	// 4. any metadata without a "=" in name?
 	for(int i=2; i<m_gridMetadata->GetNumberRows(); i++)
 	{
 		if( m_gridMetadata->GetCellValue(i, 0).Contains("=") )
@@ -347,7 +340,7 @@ void ImportProjectDialog::OnApplyButtonClick( wxCommandEvent& event )
 		temp_file.Write("[project]");
 		temp_file.Write(wxTextFile::GetEOL());
 
-		for(int i=0; i<2; i++)
+		for(int i=0; i<1; i++)
 		{
 			temp_file.Write(
 				wxString::Format(
@@ -360,7 +353,8 @@ void ImportProjectDialog::OnApplyButtonClick( wxCommandEvent& event )
 
 		temp_file.Write("[metadata]");
 		temp_file.Write(wxTextFile::GetEOL());
-		for(int i=2; i<m_gridMetadata->GetNumberRows(); i++)
+
+		for(int i=1; i<m_gridMetadata->GetNumberRows(); i++)
 		{
 			wxString metadata_name = m_gridMetadata->GetCellValue(i, 0) ;
 			if( metadata_name.Length() > 0 )
@@ -397,7 +391,7 @@ void ImportProjectDialog::OnApplyButtonClick( wxCommandEvent& event )
 
 		if( is_committed )
 		{
-			// TODO transfer file to remote server
+			// transfer file to remote server
             TransferProjectProfile();
 
             // And close this dialog

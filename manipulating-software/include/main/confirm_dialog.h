@@ -86,6 +86,7 @@ class ConfirmDialog : public wxDialog
 		void OnProjectNotFoundClicked( wxHyperlinkEvent& event );
 		void ConfirmNewSession(const wxString & equipment_id);
 		void ResetGridMetadata();
+        void UpdateProjectList();
 
 };
 
