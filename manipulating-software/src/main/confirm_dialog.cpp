@@ -460,7 +460,7 @@ void ConfirmDialog::OnProjectNotFoundClicked( wxHyperlinkEvent& event )
 {
     ImportProjectDialog ipd(this);
 	ipd.ShowModal();
-	ipd.Close();
+	ipd.Destroy();
 
     UpdateProjectList();
 }

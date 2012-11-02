@@ -48,8 +48,8 @@ wxConnectionBase *MainServer::OnAcceptConnection(const wxString& topic)
 
 void MainServer::Disconnect()
 {
-    if ( m_connection )
-    {
-        wxDELETE(m_connection);
-    }
+	if (m_connection != NULL)
+	{
+		wxDELETE(m_connection);
+	}
 }

@@ -272,5 +272,8 @@ bool ProjectUpdater::OnCommandTerminate(int status, UpdateProcess * process)
  */
 void ProjectUpdater :: Reset()
 {
-	wxDELETE(m_pInstance);
+	if (m_pInstance != NULL)
+	{
+		wxDELETE(m_pInstance);
+	}
 }

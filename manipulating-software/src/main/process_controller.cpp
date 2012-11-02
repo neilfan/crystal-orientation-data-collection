@@ -570,6 +570,8 @@ void ProcessController::FinaliseSession()
 
 			NotifyDialog::Get()->Notify(csfn.GetFullPath());
 
+            wxGetApp().Log("Show Notify Dialog");
+
 			// if no current session, no action required
 			wxString str ;
 			bool is_id_in_cache = false;
@@ -599,15 +601,21 @@ void ProcessController::FinaliseSession()
 		m_current_session_id = wxEmptyString ;
 	}
 
-	// ITEM 2: stop monitoring
-	DataFileMonitor::Reset();
-	
+    wxGetApp().Log("Trying to reset FS Monitor");
 
+	// ITEM 2: stop monitoring
+    try{
+        DataFileMonitor::Reset();
+    }
+    catch(...){}
 
 }
 
 
 void ProcessController :: Reset()
 {
-	wxDELETE(m_pInstance);
+	if (m_pInstance != NULL)
+	{
+		wxDELETE(m_pInstance);
+	}
 }

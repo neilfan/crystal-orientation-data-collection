@@ -41,7 +41,7 @@ wxConnectionBase *MainClient::OnMakeConnection()
 
 void MainClient::Disconnect()
 {
-	if (m_connection)
+	if (m_connection != NULL)
 	{
 		m_connection->Disconnect();
 		wxDELETE(m_connection);

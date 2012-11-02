@@ -72,6 +72,9 @@ BLDDIR = build-$(OS)
 # Compiler will search for library and included files in this setting
 VPATH  = $(SRCDIR) : $(INCDIR)
 
+# Directory of distrib
+DISTRIBDIR = distrib
+
 # Name of output file (EXE)
 DEST   = CRYSTOsoftware.exe
 
@@ -156,11 +159,13 @@ clearcache:
 # Reset the config file and Execute
 run:
 	@echo Updating utils
-	@$(CP) -r utils $(BLDDIR)
+	@$(CP) -r utils $(DISTRIBDIR)
 
 	@echo Updating config files
-	@$(MKDIR) $(BLDDIR)\config
-	@$(CP) config/sample.ini $(BLDDIR)/config/default.ini
+	@$(CP) -r config $(DISTRIBDIR)
 
-	@echo Starting $(BLDDIR)/$(DEST) ...
-	@$(BLDDIR)/$(DEST)
+	@echo Copying execution
+	@$(CP) $(BLDDIR)/$(DEST) $(DISTRIBDIR)/$(DEST)
+
+	@echo Starting $(DISTRIBDIR)/$(DEST) ...
+	@$(DISTRIBDIR)\$(DEST) "-c" "config/sample.ini"

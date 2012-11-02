@@ -41,6 +41,7 @@ DataFileMonitor :: DataFileMonitor()
 
 DataFileMonitor :: ~DataFileMonitor()
 {
+    m_arrayExts->Clear();
 	wxDELETE(m_arrayExts);
 }
 
@@ -153,6 +154,13 @@ void DataFileMonitor :: AddExtension(const wxString & ext)
 	}
 }
 
+/**
+ * Clear all extensions
+ */
+void DataFileMonitor :: ClearExtensions()
+{
+    m_arrayExts->Clear();
+}
 
 /**
  * check if the monitor ON or OFF
@@ -169,5 +177,7 @@ bool DataFileMonitor :: IsMoniotring()
  */
 void DataFileMonitor :: Reset()
 {
+    DataFileMonitor::Get()->Stop();
+    DataFileMonitor::Get()->ClearExtensions();
 	wxDELETE(m_pInstance);
 }

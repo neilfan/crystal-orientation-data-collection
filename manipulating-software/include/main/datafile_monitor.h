@@ -49,6 +49,7 @@ public:
 	void AddExtension(const wxString & ext) ;
 	void Start();
 	void Stop();
+	void ClearExtensions();
 	bool IsMoniotring() ;
 
 

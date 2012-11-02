@@ -46,7 +46,10 @@ AsyncProcess::AsyncProcess(bool capture, bool hide) : wxProcess::wxProcess()
 AsyncProcess::~AsyncProcess()
 {
 	Disconnect( wxEVT_TIMER , wxTimerEventHandler( AsyncProcess::OnTimer ));
-	wxDELETE(m_timer);
+	if(m_timer != NULL)
+    {
+        wxDELETE(m_timer);
+    }
 }
 
 const wxArrayString & AsyncProcess::GetStdOutput()

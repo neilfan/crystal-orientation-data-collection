@@ -405,5 +405,8 @@ void DataFileStorage::FinaliseSession(const wxString & sessionID)
  */
 void DataFileStorage :: Reset()
 {
-	wxDELETE(m_pInstance);
+	if (m_pInstance != NULL)
+	{
+		wxDELETE(m_pInstance);
+	}
 }
