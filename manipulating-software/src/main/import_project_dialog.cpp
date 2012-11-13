@@ -212,6 +212,8 @@ void ImportProjectDialog::LoadProjects()
 	{
 		wxString str ;
 
+        wxArrayString projects;
+
 		wxTextFile f_pl(f.GetFullPath()) ;
 		f_pl.Open() ;
 
@@ -221,8 +223,13 @@ void ImportProjectDialog::LoadProjects()
 			wxFileName fn("projects", str, "ini") ;
 			if( ! fn.FileExists() )
 			{
-				m_choiceProject->Append(str) ;
+                projects.Add(str);
 			}
+        }
+        projects.Sort();
+        for(size_t i=0; i<projects.GetCount(); i++)
+        {
+            m_choiceProject->Append( projects.Item(i) ) ;
         }
 
 		f_pl.Close() ;
@@ -290,11 +297,13 @@ void ImportProjectDialog::OnApplyButtonClick( wxCommandEvent& event )
 	}
 
 
+    /**
 	// 2. provides project owner ?
 	if(m_gridMetadata->GetCellValue(0,1).Length() == 0)
 	{
 		errs.Add("Please provide the contact of project owner.");
 	}
+    **/
 
 	// 3. any metadata without a name?
 	for(int i=2; i<m_gridMetadata->GetNumberRows(); i++)

@@ -247,6 +247,9 @@ void ConfirmDialog::UpdateProjectList()
 	wxArrayString * projectInis = new wxArrayString ;
 	wxDir::GetAllFiles(wxT("projects"), projectInis, wxT("*.ini"), wxDIR_FILES );
 	size_t i ;
+
+    projectInis->Sort();
+
 	for(i=0; i<projectInis->GetCount(); i++)
 	{
 		wxFileName filename(projectInis->Item(i));
