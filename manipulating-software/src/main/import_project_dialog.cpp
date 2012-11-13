@@ -114,7 +114,7 @@ ImportProjectDialog::ImportProjectDialog( wxWindow* parent, wxWindowID id, const
 	m_gridMetadata = new wxGrid( this, wxID_ANY, wxDefaultPosition, wxSize(-1, -1), 0 );
 	
 	// Grid
-	m_gridMetadata->CreateGrid( 2, 2 );
+	m_gridMetadata->CreateGrid( 1, 2 );
 	m_gridMetadata->EnableEditing( true );
 	m_gridMetadata->EnableGridLines( true );
 	m_gridMetadata->EnableDragGridSize( false );
@@ -185,8 +185,6 @@ ImportProjectDialog::ImportProjectDialog( wxWindow* parent, wxWindowID id, const
 
 
 
-	m_gridMetadata->SetCellValue( 0, 0, "project.owner" );
-	m_gridMetadata->SetReadOnly(  0, 0 );
 
 	LoadProjects();
 }
@@ -306,7 +304,7 @@ void ImportProjectDialog::OnApplyButtonClick( wxCommandEvent& event )
     **/
 
 	// 3. any metadata without a name?
-	for(int i=2; i<m_gridMetadata->GetNumberRows(); i++)
+	for(int i=0; i<m_gridMetadata->GetNumberRows(); i++)
 	{
 		if(
 			m_gridMetadata->GetCellValue(i, 0).Length() == 0 &&
@@ -319,7 +317,7 @@ void ImportProjectDialog::OnApplyButtonClick( wxCommandEvent& event )
 	}
 
 	// 4. any metadata without a "=" in name?
-	for(int i=2; i<m_gridMetadata->GetNumberRows(); i++)
+	for(int i=0; i<m_gridMetadata->GetNumberRows(); i++)
 	{
 		if( m_gridMetadata->GetCellValue(i, 0).Contains("=") )
 		{
@@ -349,6 +347,7 @@ void ImportProjectDialog::OnApplyButtonClick( wxCommandEvent& event )
 		temp_file.Write("[project]");
 		temp_file.Write(wxTextFile::GetEOL());
 
+        /**
 		for(int i=0; i<1; i++)
 		{
 			temp_file.Write(
@@ -359,11 +358,12 @@ void ImportProjectDialog::OnApplyButtonClick( wxCommandEvent& event )
 			));
 			temp_file.Write(wxTextFile::GetEOL());
 		}
+        **/
 
 		temp_file.Write("[metadata]");
 		temp_file.Write(wxTextFile::GetEOL());
 
-		for(int i=1; i<m_gridMetadata->GetNumberRows(); i++)
+		for(int i=0; i<m_gridMetadata->GetNumberRows(); i++)
 		{
 			wxString metadata_name = m_gridMetadata->GetCellValue(i, 0) ;
 			if( metadata_name.Length() > 0 )
