@@ -295,15 +295,7 @@ void ImportProjectDialog::OnApplyButtonClick( wxCommandEvent& event )
 	}
 
 
-    /**
-	// 2. provides project owner ?
-	if(m_gridMetadata->GetCellValue(0,1).Length() == 0)
-	{
-		errs.Add("Please provide the contact of project owner.");
-	}
-    **/
-
-	// 3. any metadata without a name?
+	// 2. any metadata without a name?
 	for(int i=0; i<m_gridMetadata->GetNumberRows(); i++)
 	{
 		if(
@@ -316,7 +308,7 @@ void ImportProjectDialog::OnApplyButtonClick( wxCommandEvent& event )
 		}
 	}
 
-	// 4. any metadata without a "=" in name?
+	// 3. any metadata without a "=" in name?
 	for(int i=0; i<m_gridMetadata->GetNumberRows(); i++)
 	{
 		if( m_gridMetadata->GetCellValue(i, 0).Contains("=") )
@@ -346,19 +338,7 @@ void ImportProjectDialog::OnApplyButtonClick( wxCommandEvent& event )
 	{
 		temp_file.Write("[project]");
 		temp_file.Write(wxTextFile::GetEOL());
-
-        /**
-		for(int i=0; i<1; i++)
-		{
-			temp_file.Write(
-				wxString::Format(
-					"%s=%s",
-					m_gridMetadata->GetCellValue(i, 0),
-					m_gridMetadata->GetCellValue(i, 1)
-			));
-			temp_file.Write(wxTextFile::GetEOL());
-		}
-        **/
+		temp_file.Write(wxTextFile::GetEOL());
 
 		temp_file.Write("[metadata]");
 		temp_file.Write(wxTextFile::GetEOL());
