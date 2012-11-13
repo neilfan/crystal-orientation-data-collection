@@ -163,9 +163,10 @@ run:
 
 	@echo Updating config files
 	@$(CP) -r config $(DISTRIBDIR)
+	@$(CP) config/sample.ini $(DISTRIBDIR)/config/default.ini
 
 	@echo Copying execution
 	@$(CP) $(BLDDIR)/$(DEST) $(DISTRIBDIR)/$(DEST)
 
 	@echo Starting $(DISTRIBDIR)/$(DEST) ...
-	@$(DISTRIBDIR)\$(DEST) "-c" "config/sample.ini"
+	@$(DISTRIBDIR)\$(DEST) "-c" "config\sample.ini"
