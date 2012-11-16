@@ -28,7 +28,7 @@
 #ifndef INCLUDED_MAIN_NOTIFY_DIALOG_H
 #define INCLUDED_MAIN_NOTIFY_DIALOG_H
 
-#define NOTIFY_TEXT wxT("Your session is completed. \n\nAll data files acquired during this session are stored on local driver and placed in a queue for transfer to network storage. Please check session configuration file <b>%s</b> for list of data files.")
+#define NOTIFY_TEXT wxT("Your session is completed. \n\nAll data files acquired during this session are stored on the local drive and placed in a queue for transfer to network storage. \n\nPlease check the session configuration file <b>%s</b> for the list of data files.")
 
 #include <wx/artprov.h>
 #include <wx/xrc/xmlres.h>
@@ -63,7 +63,7 @@ protected:
 	wxButton* m_btnClose;
 	
 	// Virtual event handlers, overide them in your derived class
-	virtual void OnClick( wxMouseEvent& event ) ;
+	virtual void OnClick( wxCommandEvent& event ) ;
 	NotifyDialog( wxWindow* parent=NULL, wxWindowID id = wxID_ANY, const wxString& title = wxT("DC20A: Manipulating Software"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 330,194 ), long style = wxDEFAULT_DIALOG_STYLE|wxDIALOG_NO_PARENT|wxSTAY_ON_TOP ); 
 	static NotifyDialog * m_pInstance ;
 	

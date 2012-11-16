@@ -52,7 +52,7 @@ NotifyDialog::NotifyDialog( wxWindow* parent, wxWindowID id, const wxString& tit
 	this->Centre( wxBOTH );
 	
 	// Connect Events
-	this->Connect( wxEVT_LEFT_UP, wxMouseEventHandler( NotifyDialog::OnClick ) );
+	m_btnClose->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( NotifyDialog::OnClick ), NULL, this );
 }
 
 void NotifyDialog::Notify(const wxString & session_file)
@@ -66,11 +66,11 @@ void NotifyDialog::Notify(const wxString & session_file)
 NotifyDialog::~NotifyDialog()
 {
 	// Disconnect Events
-	this->Disconnect( wxEVT_LEFT_UP, wxMouseEventHandler( NotifyDialog::OnClick ) );
+	m_btnClose->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( NotifyDialog::OnClick ), NULL, this );
 	
 }
 
-void NotifyDialog::OnClick( wxMouseEvent& event )
+void NotifyDialog::OnClick( wxCommandEvent& event )
 {
 	Show(false);
 }
